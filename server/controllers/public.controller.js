@@ -67,8 +67,12 @@ export async function getCourseDetail(req, res, next) {
 
     let hasAccess = false;
     if (req.user) {
-      const access = await hasCourseAccess(req.user.id, course.id);
-      hasAccess = access.allowed;
+      if (req.user.role === 'admin' || (req.user.role === 'mentor' && course.mentor_user_id === req.user.id)) {
+        hasAccess = true;
+      } else {
+        const access = await hasCourseAccess(req.user.id, course.id);
+        hasAccess = access.allowed;
+      }
     }
 
     const [curriculum, reviews] = await Promise.all([

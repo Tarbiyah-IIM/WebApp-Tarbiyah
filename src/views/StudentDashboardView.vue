@@ -161,7 +161,7 @@ onMounted(fetchDashboard);
         <div>
           <h2 class="text-xl font-extrabold text-brand-900 mb-4">Enrolled Courses ({{ coursesData.enrolled.length }})</h2>
           <div
-            v-if="coursesData.enrolled.length === 0"
+            v-if="coursesData.enrolled.length === 0 && !coursesData.hasPremium"
             class="rounded-2xl border border-surface-border bg-white p-8 text-center space-y-3"
           >
             <p class="text-sm text-slate-600">You have not enrolled in any individual courses yet.</p>
@@ -169,6 +169,9 @@ onMounted(fetchDashboard);
               Browse Catalog
             </router-link>
           </div>
+          <p v-else-if="coursesData.enrolled.length === 0" class="text-sm text-slate-600">
+            Start any course from your Premium All-Access Library below to track progress here.
+          </p>
           <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <article
               v-for="course in coursesData.enrolled"

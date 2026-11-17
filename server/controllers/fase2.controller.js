@@ -1,5 +1,5 @@
 import { AppError } from '../middlewares/error.middleware.js';
-import { findMentorByUserId } from '../models/course.model.js';
+import { findCourseById, findMentorByUserId } from '../models/course.model.js';
 import {
   createCourseCommunityPost,
   deleteCommunityPost,
@@ -66,9 +66,14 @@ export async function getCommunityPosts(req, res, next) {
 export async function createCommunityPost(req, res, next) {
   try {
     const courseId = Number(req.params.courseId);
-    if (req.user.role === 'student') {
+    if (req.user.role !== 'admin') {
       const access = await hasCourseAccess(req.user.id, courseId);
-      if (!access.allowed) {
+      let isCourseMentor = false;
+      if (req.user.role === 'mentor') {
+        const [mentor, course] = await Promise.all([findMentorByUserId(req.user.id), findCourseById(courseId)]);
+        isCourseMentor = Boolean(mentor && course && course.mentor_id === mentor.id);
+      }
+      if (!access.allowed && !isCourseMentor) {
         return next(new AppError(403, 'NOT_ENROLLED', 'Daftar kursus atau aktifkan Premium untuk berdiskusi'));
       }
     }

@@ -106,8 +106,12 @@ async function handleImageUpload(event) {
 
 async function saveCourse() {
   try {
+    const resolvedApproval = courseForm.value.isPublished
+      ? 'approved'
+      : courseForm.value.approvalStatus;
     const payload = {
       ...courseForm.value,
+      approvalStatus: resolvedApproval,
       badge: courseForm.value.badge || null,
       thumbnailUrl: courseForm.value.thumbnailUrl || null
     };
@@ -420,14 +424,29 @@ onMounted(loadAll);
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Thumbnail URL or Upload</label>
-          <div class="flex gap-2">
-            <input v-model="courseForm.thumbnailUrl" type="text" placeholder="https://... or /uploads/..." class="min-h-[42px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
-            <label class="inline-flex min-h-[42px] cursor-pointer items-center gap-1.5 rounded-xl border border-surface-border bg-surface-page px-3 text-xs font-bold text-brand-700 hover:bg-brand-50">
-              <Upload class="h-4 w-4" />
-              Upload
-              <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
-            </label>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Subtitle</label>
+          <input v-model="courseForm.subtitle" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Approval Status</label>
+            <select v-model="courseForm.approvalStatus" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm">
+              <option value="approved">Approved</option>
+              <option value="pending_review">Pending Review</option>
+              <option value="draft">Draft</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Thumbnail URL or Upload</label>
+            <div class="flex gap-2">
+              <input v-model="courseForm.thumbnailUrl" type="text" placeholder="https://... or /uploads/..." class="min-h-[42px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
+              <label class="inline-flex min-h-[42px] cursor-pointer items-center gap-1.5 rounded-xl border border-surface-border bg-surface-page px-3 text-xs font-bold text-brand-700 hover:bg-brand-50">
+                <Upload class="h-4 w-4" />
+                Upload
+                <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
+              </label>
+            </div>
           </div>
         </div>
         <div>

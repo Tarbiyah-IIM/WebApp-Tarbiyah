@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { invalidateLandingCache } from '../config/cache.js';
 import { env } from '../config/env.js';
 import { AppError } from '../middlewares/error.middleware.js';
-import { findLessonWithCourse } from '../models/course.model.js';
+import { findCourseById, findLessonWithCourse, findMentorByUserId } from '../models/course.model.js';
 import {
   completeLessonAndSync,
   createReviewAndSyncCourse,
@@ -212,11 +212,28 @@ export async function paymentWebhook(req, res, next) {
   }
 }
 
+async function checkLearnOrMentorAccess(user, courseId) {
+  if (user.role === 'admin') {
+    return { allowed: true, source: 'admin' };
+  }
+  const access = await hasCourseAccess(user.id, courseId);
+  if (access.allowed) {
+    return access;
+  }
+  if (user.role === 'mentor') {
+    const [mentor, course] = await Promise.all([findMentorByUserId(user.id), findCourseById(courseId)]);
+    if (mentor && course && course.mentor_id === mentor.id) {
+      return { allowed: true, source: 'mentor_owner' };
+    }
+  }
+  return { allowed: false, source: null };
+}
+
 export async function learnCourse(req, res, next) {
   try {
     const courseId = Number(req.params.id);
-    const access = await hasCourseAccess(req.user.id, courseId);
-    if (!access.allowed && req.user.role !== 'admin') {
+    const access = await checkLearnOrMentorAccess(req.user, courseId);
+    if (!access.allowed) {
       return next(new AppError(403, 'NOT_ENROLLED', 'Anda belum membeli kursus ini atau belum memiliki paket Premium aktif'));
     }
 
@@ -225,7 +242,7 @@ export async function learnCourse(req, res, next) {
       return next(new AppError(404, 'COURSE_NOT_FOUND', 'Kursus tidak ditemukan'));
     }
 
-    return res.json({ ...data, accessSource: access.source || 'admin' });
+    return res.json({ ...data, accessSource: access.source });
   } catch (err) {
     return next(err);
   }
@@ -239,8 +256,8 @@ export async function completeLesson(req, res, next) {
       return next(new AppError(404, 'LESSON_NOT_FOUND', 'Pelajaran tidak ditemukan'));
     }
 
-    const access = await hasCourseAccess(req.user.id, lesson.course_id);
-    if (!access.allowed && req.user.role !== 'admin') {
+    const access = await checkLearnOrMentorAccess(req.user, lesson.course_id);
+    if (!access.allowed) {
       return next(new AppError(403, 'NOT_ENROLLED', 'Anda belum terdaftar di kursus ini'));
     }
 

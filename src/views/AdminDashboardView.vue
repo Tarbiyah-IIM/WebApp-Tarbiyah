@@ -202,7 +202,7 @@ onMounted(fetchOverviewData);
                       {{ o.status }}
                     </span>
                   </td>
-                  <td class="py-3 text-right">
+                  <td class="py-3 text-right space-x-1.5 whitespace-nowrap">
                     <button
                       v-if="o.status !== 'paid'"
                       type="button"
@@ -211,6 +211,14 @@ onMounted(fetchOverviewData);
                     >
                       <CheckCircle2 class="h-3.5 w-3.5" />
                       Mark Paid
+                    </button>
+                    <button
+                      v-if="o.status === 'pending'"
+                      type="button"
+                      class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700"
+                      @click="markOrder(o.id, 'failed')"
+                    >
+                      Mark Failed
                     </button>
                   </td>
                 </tr>
