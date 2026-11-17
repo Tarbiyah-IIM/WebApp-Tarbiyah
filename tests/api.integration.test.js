@@ -204,4 +204,30 @@ describe('Meekoo Platform Integration & Sync Suite', () => {
       .set('Authorization', `Bearer ${mentorToken}`)
       .send({ bio: originalBio });
   });
+
+  it('enforces owning mentor vs non-owning mentor access on learn and community', async () => {
+    const sarahLogin = await request(app).post('/api/v1/auth/login').send({
+      email: 'sarah@meekoo.test',
+      password: 'Meekoo123!'
+    });
+    const sarahToken = sarahLogin.body.accessToken;
+
+    const ownDetail = await request(app)
+      .get('/api/v1/courses/ai-driven-business-consulting')
+      .set('Authorization', `Bearer ${sarahToken}`);
+    expect(ownDetail.status).toBe(200);
+    expect(ownDetail.body.hasAccess).toBe(true);
+
+    const ownLearn = await request(app)
+      .get('/api/v1/courses/5/learn')
+      .set('Authorization', `Bearer ${sarahToken}`);
+    expect(ownLearn.status).toBe(200);
+    expect(ownLearn.body.accessSource).toBe('mentor_owner');
+
+    const otherCommunity = await request(app)
+      .post('/api/v1/courses/1/community')
+      .set('Authorization', `Bearer ${sarahToken}`)
+      .send({ body: 'Should not post to unowned course' });
+    expect(otherCommunity.status).toBe(403);
+  });
 });
