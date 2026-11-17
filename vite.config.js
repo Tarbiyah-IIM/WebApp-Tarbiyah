@@ -22,5 +22,8 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  test: {
+    include: ['tests/**/*.test.js']
   }
 });

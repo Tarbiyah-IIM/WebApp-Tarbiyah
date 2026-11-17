@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "start": "node server/server.js",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "check:server": "node -e \"import('node:fs').then(async fs=>{const {execSync}=await import('node:child_process');const walk=(d)=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?[...walk(d+'/'+e.name)]:e.name.endsWith('.js')?[d+'/'+e.name]:[]);for(const f of [...walk('server'),...walk('src')]){execSync('node --check \"'+f+'\"',{stdio:'inherit'})}console.log('All JS syntax OK')})\""
   },
   "dependencies": {
@@ -32,6 +33,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.3.5",
     "@vitejs/plugin-vue": "^6.0.11",
     "supertest": "^7.3.2",
