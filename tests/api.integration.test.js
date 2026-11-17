@@ -154,4 +154,54 @@ describe('Meekoo Platform Integration & Sync Suite', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ hero_title: originalTitle });
   });
+
+  it('activates premium subscription and populates premiumCourses library', async () => {
+    const subOrder = await request(app)
+      .post('/api/v1/orders')
+      .set('Authorization', `Bearer ${studentToken}`)
+      .send({ orderType: 'subscription' });
+    expect(subOrder.status).toBe(201);
+
+    const payRes = await request(app)
+      .post(`/api/v1/orders/${subOrder.body.order.id}/simulate-payment`)
+      .set('Authorization', `Bearer ${studentToken}`)
+      .send({ outcome: 'paid' });
+    expect(payRes.status).toBe(200);
+    expect(payRes.body.order.status).toBe('paid');
+
+    const myCoursesRes = await request(app)
+      .get('/api/v1/me/courses')
+      .set('Authorization', `Bearer ${studentToken}`);
+    expect(myCoursesRes.status).toBe(200);
+    expect(myCoursesRes.body.hasPremium).toBe(true);
+    expect(myCoursesRes.body.premiumCourses.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('syncs mentor profile update directly to mentors table and landing endpoint', async () => {
+    const mentorLogin = await request(app).post('/api/v1/auth/login').send({
+      email: 'sarah@meekoo.test',
+      password: 'Meekoo123!'
+    });
+    expect(mentorLogin.status).toBe(200);
+    const mentorToken = mentorLogin.body.accessToken;
+
+    const beforeLanding = await request(app).get('/api/v1/landing');
+    const sarahBefore = beforeLanding.body.mentors.find((m) => m.name === 'Sarah Johnson');
+    const originalBio = sarahBefore?.bio || '';
+
+    const updateRes = await request(app)
+      .patch('/api/v1/me')
+      .set('Authorization', `Bearer ${mentorToken}`)
+      .send({ bio: 'Synced Mentor Bio Verification' });
+    expect(updateRes.status).toBe(200);
+
+    const afterLanding = await request(app).get('/api/v1/landing');
+    const sarahAfter = afterLanding.body.mentors.find((m) => m.name === 'Sarah Johnson');
+    expect(sarahAfter?.bio).toBe('Synced Mentor Bio Verification');
+
+    await request(app)
+      .patch('/api/v1/me')
+      .set('Authorization', `Bearer ${mentorToken}`)
+      .send({ bio: originalBio });
+  });
 });
