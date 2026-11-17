@@ -9,6 +9,7 @@ const landingStore = useLandingStore();
 const toast = useToast();
 
 const settings = ref({});
+const loadingCms = ref(true);
 const testimonials = ref([]);
 const faqs = ref([]);
 const stats = ref([]);
@@ -22,6 +23,7 @@ const featureForm = ref({ id: null, title: '', description: '', icon: 'check', s
 const partnerForm = ref({ id: null, name: '', url: '', sortOrder: 0 });
 
 async function loadCms() {
+  loadingCms.value = true;
   try {
     const [sRes, tRes, fRes, stRes, ftRes, pRes] = await Promise.all([
       adminService.getSettings(),
@@ -39,6 +41,8 @@ async function loadCms() {
     partners.value = pRes.items;
   } catch (err) {
     toast.error(extractApiError(err));
+  } finally {
+    loadingCms.value = false;
   }
 }
 
@@ -145,7 +149,10 @@ onMounted(loadCms);
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div v-if="loadingCms" class="rounded-2xl border border-surface-border bg-white p-8 text-sm text-slate-500">
+    Loading CMS content...
+  </div>
+  <div v-else class="space-y-8">
     <form class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4" @submit.prevent="saveSettings">
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-extrabold text-brand-900">Hero, Pricing & Contact Settings</h2>
@@ -155,16 +162,16 @@ onMounted(loadCms);
       </div>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Hero Badge</label>
-          <input v-model="settings.hero_badge" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          <label for="cms-hero-badge" class="block text-xs font-bold uppercase text-slate-500 mb-1">Hero Badge</label>
+          <input id="cms-hero-badge" v-model="settings.hero_badge" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Premium Price (USD)</label>
-          <input v-model="settings.premium_price" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          <label for="cms-premium-price" class="block text-xs font-bold uppercase text-slate-500 mb-1">Premium Price (USD)</label>
+          <input id="cms-premium-price" v-model="settings.premium_price" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div class="sm:col-span-2">
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Hero Title</label>
-          <input v-model="settings.hero_title" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          <label for="cms-hero-title" class="block text-xs font-bold uppercase text-slate-500 mb-1">Hero Title</label>
+          <input id="cms-hero-title" v-model="settings.hero_title" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div class="sm:col-span-2">
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Hero Subtitle</label>
