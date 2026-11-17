@@ -177,6 +177,19 @@ async function removeLesson(lessonId) {
   }
 }
 
+async function removeSection(sectionId) {
+  try {
+    await mentorService.deleteSection(sectionId);
+    const res = await mentorService.getCourseCurriculum(activeCourse.value.id);
+    curriculum.value = res.curriculum;
+    lessonForm.value.sectionId = res.curriculum[0]?.id || '';
+    await fetchOverview();
+    toast.success('Section removed.');
+  } catch (err) {
+    toast.error(extractApiError(err));
+  }
+}
+
 async function createSession() {
   try {
     await mentorService.createLiveSession({
@@ -401,7 +414,10 @@ onMounted(fetchOverview);
         </form>
 
         <div v-for="sec in curriculum" :key="sec.id" class="rounded-xl border border-surface-border p-3 space-y-2">
-          <p class="text-sm font-bold text-brand-900">{{ sec.title }}</p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold text-brand-900">{{ sec.title }}</p>
+            <button type="button" class="text-xs text-rose-600 hover:underline" @click="removeSection(sec.id)">Delete Section</button>
+          </div>
           <div v-for="les in sec.lessons" :key="les.id" class="flex items-center justify-between text-xs bg-surface-page px-3 py-2 rounded-lg">
             <span>{{ les.title }}</span>
             <button type="button" class="text-rose-600 hover:underline" @click="removeLesson(les.id)">Remove</button>

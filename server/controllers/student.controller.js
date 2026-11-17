@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
+import { invalidateLandingCache } from '../config/cache.js';
 import { env } from '../config/env.js';
 import { AppError } from '../middlewares/error.middleware.js';
 import { findLessonWithCourse } from '../models/course.model.js';
@@ -38,6 +39,10 @@ export async function updateMe(req, res, next) {
     if (newPassword) {
       const hash = await bcrypt.hash(newPassword, 10);
       await updateUserPassword(req.user.id, hash);
+    }
+
+    if (req.user.role === 'mentor') {
+      invalidateLandingCache();
     }
 
     return res.json({ user: updated });

@@ -18,6 +18,7 @@ const partners = ref([]);
 const faqForm = ref({ id: null, question: '', answer: '', sortOrder: 0 });
 const testForm = ref({ id: null, name: '', jobTitle: '', quote: '', rating: 5, isVisible: true, sortOrder: 0 });
 const statForm = ref({ id: null, statGroup: 'hero', label: '', valueNum: '', suffix: '', sortOrder: 0 });
+const featureForm = ref({ id: null, title: '', description: '', icon: 'check', sortOrder: 0 });
 const partnerForm = ref({ id: null, name: '', url: '', sortOrder: 0 });
 
 async function loadCms() {
@@ -120,6 +121,23 @@ async function savePartner() {
 
 async function removePartner(id) {
   await adminService.deletePartner(id);
+  await syncLanding();
+}
+
+async function saveFeature() {
+  try {
+    if (featureForm.value.id) await adminService.updateFeature(featureForm.value.id, featureForm.value);
+    else await adminService.createFeature(featureForm.value);
+    featureForm.value = { id: null, title: '', description: '', icon: 'check', sortOrder: 0 };
+    await syncLanding();
+    toast.success('Feature saved & synced.');
+  } catch (err) {
+    toast.error(extractApiError(err));
+  }
+}
+
+async function removeFeature(id) {
+  await adminService.deleteFeature(id);
   await syncLanding();
 }
 
@@ -233,7 +251,7 @@ onMounted(loadCms);
       </section>
 
       <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
-        <h2 class="text-lg font-extrabold text-brand-900">FAQs ({{ features.length }} Features loaded)</h2>
+        <h2 class="text-lg font-extrabold text-brand-900">FAQs</h2>
         <form class="space-y-2" @submit.prevent="saveFaq">
           <input v-model="faqForm.question" type="text" required placeholder="Question" class="min-h-[40px] w-full rounded-xl border border-surface-border px-3 text-sm" />
           <textarea v-model="faqForm.answer" rows="2" required placeholder="Answer" class="w-full rounded-xl border border-surface-border p-2.5 text-sm" />
@@ -252,5 +270,28 @@ onMounted(loadCms);
         </div>
       </section>
     </div>
+
+    <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
+      <h2 class="text-lg font-extrabold text-brand-900">Powerful Features Section</h2>
+      <form class="grid grid-cols-1 gap-2 sm:grid-cols-12" @submit.prevent="saveFeature">
+        <input v-model="featureForm.title" type="text" required placeholder="Feature Title" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm sm:col-span-4" />
+        <input v-model="featureForm.description" type="text" required placeholder="Feature Description" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm sm:col-span-6" />
+        <button type="submit" class="min-h-[40px] rounded-xl bg-brand-600 px-4 text-xs font-bold text-white sm:col-span-2">
+          {{ featureForm.id ? 'Update Feature' : 'Add Feature' }}
+        </button>
+      </form>
+      <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div v-for="ft in features" :key="ft.id" class="flex items-center justify-between rounded-xl bg-surface-page px-3 py-2.5 text-xs">
+          <div class="pr-3 min-w-0">
+            <p class="font-bold text-brand-900 truncate">{{ ft.title }}</p>
+            <p class="text-slate-600 truncate">{{ ft.description }}</p>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <button type="button" class="text-brand-600 font-semibold" @click="featureForm = { id: ft.id, title: ft.title, description: ft.description, icon: ft.icon || 'check', sortOrder: ft.sort_order }">Edit</button>
+            <button type="button" class="text-rose-600" @click="removeFeature(ft.id)">Del</button>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>

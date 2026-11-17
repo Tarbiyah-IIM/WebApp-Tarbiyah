@@ -63,9 +63,31 @@ export async function getMyCourses(userId) {
 
   const [recommendedRows] = await pool.execute(recommendedQuery, params);
 
+  let premiumCourses = [];
+  if (subscribed) {
+    let premQuery = `
+      SELECT c.id, c.title, c.slug, c.subtitle, c.thumbnail_url, c.level, c.total_videos, c.duration_hours,
+             c.rating_avg, cat.name AS category_name, m.name AS mentor_name
+      FROM courses c
+      JOIN categories cat ON cat.id = c.category_id
+      JOIN mentors m ON m.id = c.mentor_id
+      WHERE c.is_published = 1 AND c.approval_status = 'approved'
+    `;
+    const premParams = [];
+    if (enrolledIds.length > 0) {
+      const placeholders = enrolledIds.map(() => '?').join(', ');
+      premQuery += ` AND c.id NOT IN (${placeholders})`;
+      premParams.push(...enrolledIds);
+    }
+    premQuery += ' ORDER BY c.id ASC';
+    const [premRows] = await pool.execute(premQuery, premParams);
+    premiumCourses = premRows;
+  }
+
   return {
     hasPremium: subscribed,
     enrolled: enrolledRows,
+    premiumCourses,
     recommended: recommendedRows
   };
 }

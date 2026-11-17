@@ -200,6 +200,15 @@ async function removeLesson(id) {
   await loadAll();
 }
 
+async function removeSection(id) {
+  await adminService.deleteSection(id);
+  const res = await adminService.getCourseCurriculum(activeCourse.value.id);
+  curriculum.value = res.curriculum;
+  lessonForm.value.sectionId = res.curriculum[0]?.id || '';
+  await loadAll();
+  toast.success('Section deleted.');
+}
+
 async function saveCategory() {
   try {
     if (categoryForm.value.id) {
@@ -364,7 +373,7 @@ onMounted(loadAll);
               <p class="text-xs text-slate-500">{{ m.title }}</p>
             </div>
             <div class="flex gap-2">
-              <button type="button" class="text-xs font-semibold text-brand-600" @click="mentorForm = { id: m.id, name: m.name, title: m.title, bio: m.bio || '', photoUrl: m.photo_url || '', sortOrder: m.sort_order, isActive: Boolean(m.is_active) }">Edit</button>
+              <button type="button" class="text-xs font-semibold text-brand-600" @click="mentorForm = { id: m.id, userId: m.user_id || null, name: m.name, title: m.title, bio: m.bio || '', photoUrl: m.photo_url || '', sortOrder: m.sort_order, isActive: Boolean(m.is_active) }">Edit</button>
               <button type="button" class="text-xs text-rose-600" @click="removeMentor(m.id)">Delete</button>
             </div>
           </div>
@@ -456,7 +465,10 @@ onMounted(loadAll);
           </div>
         </form>
         <div v-for="sec in curriculum" :key="sec.id" class="rounded-xl border border-surface-border p-3 space-y-1.5">
-          <p class="text-xs font-bold uppercase text-brand-900">{{ sec.title }}</p>
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-bold uppercase text-brand-900">{{ sec.title }}</p>
+            <button type="button" class="text-xs text-rose-600 hover:underline" @click="removeSection(sec.id)">Delete Section</button>
+          </div>
           <div v-for="les in sec.lessons" :key="les.id" class="flex items-center justify-between text-xs bg-surface-page px-3 py-1.5 rounded-lg">
             <span>{{ les.title }}</span>
             <button type="button" class="text-rose-600" @click="removeLesson(les.id)">Remove</button>

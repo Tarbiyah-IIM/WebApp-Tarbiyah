@@ -32,7 +32,7 @@ const { formatPrice, formatDate } = useFormatters();
 const { loading, error, isOffline, run } = useAsyncState();
 
 const activeTab = ref('courses');
-const coursesData = ref({ hasPremium: false, enrolled: [], recommended: [] });
+const coursesData = ref({ hasPremium: false, enrolled: [], premiumCourses: [], recommended: [] });
 const orders = ref([]);
 const certificates = ref([]);
 const subscription = ref(null);
@@ -202,6 +202,38 @@ onMounted(fetchDashboard);
                     {{ Number(course.progress_pct) > 0 ? 'Resume Learning' : 'Start Learning' }}
                   </router-link>
                 </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div v-if="coursesData.hasPremium && coursesData.premiumCourses?.length > 0">
+          <h2 class="text-xl font-extrabold text-brand-900 mb-4">Premium All-Access Library ({{ coursesData.premiumCourses.length }})</h2>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <article
+              v-for="course in coursesData.premiumCourses"
+              :key="`prem-${course.id}`"
+              class="flex flex-col overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-card"
+            >
+              <img
+                :src="course.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80'"
+                :alt="course.title"
+                class="aspect-[16/9] w-full object-cover"
+              />
+              <div class="flex flex-1 flex-col p-5 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-bold text-brand-600">{{ course.category_name }}</span>
+                  <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-amber-800">Premium Unlocked</span>
+                </div>
+                <h3 class="text-base font-extrabold text-brand-900">{{ course.title }}</h3>
+                <p class="text-xs text-slate-500">Mentor: {{ course.mentor_name }} · {{ course.total_videos }} videos</p>
+                <router-link
+                  :to="`/learn/${course.id}`"
+                  class="mt-auto inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-bold text-white hover:bg-brand-700"
+                >
+                  <Play class="h-4 w-4" />
+                  Start Learning
+                </router-link>
               </div>
             </article>
           </div>

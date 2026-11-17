@@ -243,14 +243,17 @@ onMounted(loadExistingOrderIfParam);
           </ul>
         </div>
 
-        <div v-else class="rounded-2xl border border-brand-200 bg-brand-50/50 p-6">
+        <div v-else class="rounded-2xl border border-brand-200 bg-brand-50/50 p-6 space-y-3">
           <div class="flex items-center gap-2 text-brand-800">
             <Crown class="h-5 w-5 text-amber-500" />
             <h2 class="text-lg font-extrabold">Meekoo Premium Annual Membership</h2>
           </div>
-          <p class="mt-2 text-sm text-slate-600">
+          <p class="text-sm text-slate-600">
             Unlock all 90+ categories, unlimited course video players, live mentor sessions, personalized learning roadmaps, and verified certificates for 12 months.
           </p>
+          <div v-if="auth.hasActiveSubscription" class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-900">
+            You already have an active Premium membership. Completing checkout below will extend your access by +12 months.
+          </div>
         </div>
       </div>
 

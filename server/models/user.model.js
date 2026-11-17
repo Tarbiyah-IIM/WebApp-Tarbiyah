@@ -29,6 +29,10 @@ export async function updateUserProfile(id, { name, avatarUrl, bio }) {
     'UPDATE users SET name = ?, avatar_url = ?, bio = ? WHERE id = ?',
     [name, avatarUrl, bio, id]
   );
+  await pool.execute(
+    'UPDATE mentors SET name = ?, bio = COALESCE(?, bio), photo_url = COALESCE(?, photo_url) WHERE user_id = ?',
+    [name, bio, avatarUrl, id]
+  );
   return findUserById(id);
 }
 

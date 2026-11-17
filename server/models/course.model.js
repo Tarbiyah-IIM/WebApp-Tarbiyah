@@ -56,11 +56,20 @@ export async function createMentor({ userId = null, name, title, bio = '', photo
   return findMentorById(result.insertId);
 }
 
-export async function updateMentor(id, { userId = null, name, title, bio = '', photoUrl = null, sortOrder = 0, isActive = true }) {
+export async function updateMentor(id, { userId, name, title, bio = '', photoUrl = null, sortOrder = 0, isActive = true }) {
+  const existing = await findMentorById(id);
+  if (!existing) return null;
+  const resolvedUserId = userId !== undefined ? userId : existing.user_id;
   await pool.execute(
     'UPDATE mentors SET user_id = ?, name = ?, title = ?, bio = ?, photo_url = ?, sort_order = ?, is_active = ? WHERE id = ?',
-    [userId, name, title, bio, photoUrl, sortOrder, isActive ? 1 : 0, id]
+    [resolvedUserId, name, title, bio, photoUrl, sortOrder, isActive ? 1 : 0, id]
   );
+  if (resolvedUserId) {
+    await pool.execute(
+      'UPDATE users SET name = ?, bio = COALESCE(?, bio), avatar_url = COALESCE(?, avatar_url) WHERE id = ?',
+      [name, bio, photoUrl, resolvedUserId]
+    );
+  }
   return findMentorById(id);
 }
 
