@@ -1,44 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { GraduationCap, Mail, Phone, MapPin, ArrowRight } from 'lucide-vue-next';
-import { publicService } from '../services/public.service.js';
-import { extractApiError } from '../services/api.js';
-import { useUiStore } from '../stores/ui.store.js';
-import { useToast } from '../composables/useToast.js';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
-
-const router = useRouter();
-const ui = useUiStore();
-const toast = useToast();
-
-const email = ref('');
-const submitting = ref(false);
-
-async function handleSubscribe() {
-  if (!email.value.trim()) return;
-  submitting.value = true;
-  try {
-    const res = await publicService.subscribe(email.value.trim(), 'footer');
-    ui.setPrefillEmail(email.value.trim());
-    toast.success(res.message);
-    email.value = '';
-  } catch (err) {
-    toast.error(extractApiError(err));
-  } finally {
-    submitting.value = false;
-  }
-}
-
-function goAuthWithEmail() {
-  if (email.value.trim()) {
-    ui.setPrefillEmail(email.value.trim());
-  }
-  router.push('/register');
-}
 </script>
 
 <template>
@@ -46,41 +11,37 @@ function goAuthWithEmail() {
     <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
       <div class="rounded-3xl bg-gradient-to-r from-brand-700 to-brand-600 p-8 sm:p-12 shadow-float">
         <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
-          <div class="lg:col-span-6 space-y-2">
+          <div class="lg:col-span-7 space-y-2">
             <h2 class="text-2xl font-extrabold text-white sm:text-3xl">
-              {{ settings.footer_cta_title || 'Start Your Learning Journey Today!' }}
+              {{ settings.footer_cta_title || 'Your Future Start Here!' }}
             </h2>
             <p class="text-sm text-brand-100 sm:text-base">
-              {{ settings.footer_cta_subtitle || 'Join 2 million+ learners building future-ready skills with Meekoo.' }}
+              {{
+                settings.footer_cta_subtitle ||
+                'Join more than 2,000 students who are developing the skills to become the educators and professionals of the future.'
+              }}
             </p>
           </div>
 
-          <form class="lg:col-span-6 flex flex-col gap-3 sm:flex-row" @submit.prevent="handleSubscribe">
-            <label for="footer-email" class="sr-only">Email address</label>
-            <input
-              id="footer-email"
-              v-model="email"
-              type="email"
-              required
-              placeholder="Enter your email address"
-              class="min-h-[48px] flex-1 rounded-xl border border-white/20 bg-white px-4 text-sm text-brand-900 placeholder:text-slate-400"
-            />
-            <button
-              type="submit"
-              :disabled="submitting"
-              class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 text-sm font-bold text-slate-900 hover:bg-amber-300 disabled:opacity-60 transition"
+          <div class="lg:col-span-5 flex flex-col gap-3 sm:flex-row lg:justify-end">
+            <a
+              href="https://wa.link/agu1p5"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 text-sm font-bold text-slate-900 hover:bg-amber-300 transition"
             >
-              <span>{{ submitting ? 'Saving...' : 'Subscribe' }}</span>
+              <span>PMB Center</span>
               <ArrowRight class="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/30 bg-white/10 px-5 text-sm font-semibold text-white hover:bg-white/20 transition"
-              @click="goAuthWithEmail"
+            </a>
+            <a
+              href="https://wa.link/qrwv15"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 text-sm font-semibold text-white hover:bg-white/20 transition"
             >
-              Login / Join
-            </button>
-          </form>
+              Admin Fakultas
+            </a>
+          </div>
         </div>
       </div>
 

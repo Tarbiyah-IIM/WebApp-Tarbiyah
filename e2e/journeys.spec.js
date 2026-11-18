@@ -132,6 +132,23 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(layananSection.getByRole('button', { name: /TRACER STUDY/i })).toBeVisible();
     await expect(layananSection.getByRole('button', { name: /Jurnal Tarbiyah/i })).toBeVisible();
 
+    const footerSection = page.locator('#footer-cta');
+    await expect(footerSection.getByText('Your Future Start Here!')).toBeVisible();
+    await expect(
+      footerSection.getByText(
+        'Join more than 2,000 students who are developing the skills to become the educators and professionals of the future.'
+      )
+    ).toBeVisible();
+    await expect(footerSection.locator('#footer-email')).toHaveCount(0);
+    await expect(footerSection.getByRole('link', { name: /PMB Center/i })).toHaveAttribute(
+      'href',
+      'https://wa.link/agu1p5'
+    );
+    await expect(footerSection.getByRole('link', { name: /Admin Fakultas/i })).toHaveAttribute(
+      'href',
+      'https://wa.link/qrwv15'
+    );
+
     await expect(page.locator('#courses-section article')).toHaveCount(3);
     await expect(page.locator('#courses-section [role="tab"]')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Load More Courses/i })).toHaveCount(0);
