@@ -8,26 +8,26 @@ defineProps({
 </script>
 
 <template>
-  <section id="features" class="bg-white py-16 sm:py-20">
-    <div class="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
-      <div class="flex justify-center lg:col-span-5">
+  <section id="features" class="bg-white pt-16 pb-0 sm:pt-20">
+    <div class="mx-auto grid max-w-7xl grid-cols-1 items-end gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-4 lg:px-8">
+      <div class="flex justify-center lg:justify-end self-end lg:col-span-5 lg:pr-4 order-2 lg:order-1">
         <img
           :src="howTarbiyahImage"
           alt="Mahasiswi Fakultas Tarbiyah"
           loading="lazy"
-          class="h-auto max-h-[580px] w-auto max-w-full object-contain select-none"
+          class="block h-auto max-h-[660px] w-auto max-w-full object-contain object-bottom select-none"
         />
       </div>
 
-      <div class="lg:col-span-7 space-y-6">
+      <div class="lg:col-span-7 pb-10 sm:pb-14 lg:pb-20 space-y-6 order-1 lg:order-2">
         <span class="inline-block rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700">
-          REASONS FOR GOING TO COLLEGE
+          Alasan Kuliah
         </span>
         <h2 class="text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl">
-          Why Study at the Faculty of Tarbiyah?
+          Kenapa Harus Kuliah di Fakultas Tarbiyah?
         </h2>
         <p class="text-base text-slate-600">
-          From personalized learning roadmaps to live mentor sessions and active peer discussions, every part of Meekoo stays synchronized.
+          Belajar dalam lingkungan kampus yang mendukung pengembangan intelektual, spiritual, karakter, dan kreativitas mahasiswa.
         </p>
 
         <ul class="space-y-4">

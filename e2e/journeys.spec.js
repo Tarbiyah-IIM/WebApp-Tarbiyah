@@ -21,8 +21,9 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('47+')).toBeVisible();
     await expect(page.getByText('academic system')).toBeVisible();
     await expect(page.getByText('Academic Program')).toBeVisible();
-    await expect(page.getByText('REASONS FOR GOING TO COLLEGE')).toBeVisible();
-    await expect(page.getByText('Why Study at the Faculty of Tarbiyah?')).toBeVisible();
+    await expect(page.getByText('Alasan Kuliah')).toBeVisible();
+    await expect(page.getByText('Kenapa Harus Kuliah di Fakultas Tarbiyah?')).toBeVisible();
+    await expect(page.getByText('Belajar dalam lingkungan kampus yang mendukung pengembangan intelektual, spiritual, karakter, dan kreativitas mahasiswa.')).toBeVisible();
     await expect(page.getByText('Pendidikan Berbasis Nilai-Nilai Islam.')).toBeVisible();
     await expect(page.getByText('Pendidikan Agama Islam')).toBeVisible();
     await expect(page.getByText('Pendidikan Guru Madrasah Ibtidaiyah')).toBeVisible();
