@@ -148,6 +148,30 @@ test.describe('Meekoo Critical User Journeys', () => {
       'href',
       'https://wa.link/qrwv15'
     );
+    await expect(footerSection.getByAltText('Logo Fakultas Tarbiyah')).toBeVisible();
+    await expect(footerSection.getByText('Gedung Kadtijo W.S - Kampus Pusat')).toBeVisible();
+    await expect(footerSection.getByText('Telp. : (0271) 633253')).toBeVisible();
+    await expect(footerSection.getByRole('link', { name: 'PAI', exact: true })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+    );
+    await expect(footerSection.getByRole('link', { name: 'PGMI', exact: true })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+    );
+    await expect(footerSection.getByRole('link', { name: 'PIAUD', exact: true })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+    );
+    await expect(footerSection.getByRole('link', { name: /Google Maps Kampus/i })).toHaveAttribute(
+      'href',
+      /google\.com\/maps\?ll=-7\.584322,110\.81806/
+    );
+    await expect(
+      footerSection.getByText('© 2026 Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. All rights reserved.')
+    ).toBeVisible();
+    await expect(footerSection.getByText('EdLink', { exact: true })).toBeVisible();
+    await expect(footerSection.getByText('Stripe Sandbox')).toHaveCount(0);
 
     await expect(page.locator('#courses-section article')).toHaveCount(3);
     await expect(page.locator('#courses-section [role="tab"]')).toHaveCount(0);
