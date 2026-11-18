@@ -66,7 +66,8 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(profilDialog).toBeVisible();
     await expect(profilDialog).toContainText('Ilmu Pendidikan Islam Rahmatan Lil’alamin pada tahun 2035');
     await expect(profilDialog).toContainText('Menyelenggarakan layanan pendidikan yang profesional dan berkualitas.');
-    await profilDialog.getByRole('button', { name: 'Tutup' }).click();
+    await expect(profilDialog.getByRole('button', { name: 'Tutup' })).toHaveCount(0);
+    await profilDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(profilDialog).toHaveCount(0);
 
     await expect(page.getByText('Become Future Educators with Global Impact')).toBeVisible();

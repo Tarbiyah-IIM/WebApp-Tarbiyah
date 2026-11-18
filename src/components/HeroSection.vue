@@ -73,7 +73,12 @@ function handleBeasiswa() {
       </div>
     </div>
 
-    <ModalDialog :open="profilModalOpen" title="Profil Fakultas Tarbiyah" @close="profilModalOpen = false">
+    <ModalDialog
+      :open="profilModalOpen"
+      title="Profil Fakultas Tarbiyah"
+      header-variant="macos"
+      @close="profilModalOpen = false"
+    >
       <div class="space-y-6">
         <div class="rounded-2xl border border-brand-100 bg-brand-50/70 p-5">
           <span class="inline-block rounded-full bg-brand-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
@@ -93,16 +98,6 @@ function handleBeasiswa() {
               {{ item }}
             </li>
           </ol>
-        </div>
-
-        <div class="flex justify-end">
-          <button
-            type="button"
-            class="inline-flex min-h-[42px] items-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700 transition"
-            @click="profilModalOpen = false"
-          >
-            Tutup
-          </button>
         </div>
       </div>
     </ModalDialog>
