@@ -541,10 +541,10 @@ INSERT INTO `faqs` (`id`, `question`, `answer`, `sort_order`) VALUES
 (5, 'What is Meekoo''s refund policy?', 'We offer a 14-day satisfaction guarantee on individual course purchases if less than 25% of the lessons have been completed. Contact support anytime for fast assistance.', 5);
 
 INSERT INTO `stats` (`id`, `stat_group`, `label`, `value_num`, `suffix`, `sort_order`) VALUES
-(1, 'hero', 'Satisfaction Rate', '100', '%', 1),
-(2, 'hero', 'Years of Experience', '12', '+', 2),
-(3, 'hero', 'Total Courses', '20k', '+', 3),
-(4, 'hero', 'Course Category', '90', '+', 4),
+(1, 'hero', 'Graduation Rate', '100', '%', 1),
+(2, 'hero', 'Years of Experience', '47', '+', 2),
+(3, 'hero', 'academic system', '4', '', 3),
+(4, 'hero', 'Academic Program', '3', '', 4),
 (5, 'journey', 'Learners', '59', '', 1),
 (6, 'journey', 'Mahasiswa Aktif', '2.298', '', 2),
 (7, 'journey', 'Doktor (S3)', '10', '', 3),
