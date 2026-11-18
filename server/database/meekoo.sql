@@ -569,9 +569,9 @@ INSERT INTO `partners` (`id`, `name`, `logo_url`, `url`, `sort_order`) VALUES
 (9, 'Teams', NULL, 'https://www.microsoft.com/microsoft-teams', 9);
 
 INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
-('hero_badge', '#1 Online Course 2025'),
-('hero_title', 'Shape Your Future with the Right Knowledge'),
-('hero_subtitle', 'Learn directly from top industry practitioners across 90+ career categories with personalized learning paths, live mentor sessions, and verified certificates.'),
+('hero_title', 'Selamat Datang di Fakultas Tarbiyah'),
+('hero_subtitle', 'Empowering the next generation of educators through academic excellence, innovative teaching, and strong Islamic values. We prepare future teachers and education leaders with the knowledge, skills, creativity, and global perspectives to inspire generations, transform education, and make a meaningful impact on society.'),
+('hero_tagline', 'Become Future Educators with Global Impact'),
 ('premium_price', '160'),
 ('premium_currency', 'USD'),
 ('premium_label', 'Premium Access All Courses'),
