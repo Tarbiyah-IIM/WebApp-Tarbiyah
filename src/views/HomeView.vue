@@ -39,7 +39,7 @@ onMounted(() => {
     <template v-else-if="landingStore.data">
       <HeroSection :settings="landingStore.data.settings" />
       <StatsStrip :stats="landingStore.data.stats.hero" />
-      <CoursesSection :categories="landingStore.data.categories" />
+      <CoursesSection />
       <FeaturesSection :features="landingStore.data.features" />
       <JourneySection :stats="landingStore.data.stats.journey" />
       <MentorCarousel :mentors="landingStore.data.mentors" />

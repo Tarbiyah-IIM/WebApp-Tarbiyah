@@ -10,7 +10,8 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Become Future Educators with Global Impact')).toBeVisible();
     await expect(page.getByText('#1 Online Course 2025')).toHaveCount(0);
     await expect(page.getByText('Best Collaboration')).toHaveCount(0);
-    await expect(page.getByText('Courses Designed for Success')).toBeVisible();
+    await expect(page.getByText('Akademik', { exact: true })).toBeVisible();
+    await expect(page.getByText('Program Studi Unggulan')).toBeVisible();
     await expect(page.getByText('Tarbiyah dalam Angka')).toBeVisible();
     await expect(page.getByText('Lembaga Akreditasi Mandiri Kependidikan')).toBeVisible();
     await expect(page.getByText('Mahasiswa Aktif')).toBeVisible();
@@ -25,22 +26,24 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Kenapa Harus Kuliah di Fakultas Tarbiyah?')).toBeVisible();
     await expect(page.getByText('Belajar dalam lingkungan kampus yang mendukung pengembangan intelektual, spiritual, karakter, dan kreativitas mahasiswa.')).toBeVisible();
     await expect(page.getByText('Pendidikan Berbasis Nilai-Nilai Islam.')).toBeVisible();
-    await expect(page.getByText('Pendidikan Agama Islam')).toBeVisible();
-    await expect(page.getByText('Pendidikan Guru Madrasah Ibtidaiyah')).toBeVisible();
-    await expect(page.getByText('Pendidikan Islam Anak Usia Dini')).toBeVisible();
+    await expect(page.getByText('Pendidikan Agama Islam').first()).toBeVisible();
+    await expect(page.getByText('Pendidikan Guru Madrasah Ibtidaiyah').first()).toBeVisible();
+    await expect(page.getByText('Pendidikan Islam Anak Usia Dini').first()).toBeVisible();
     await expect(page.getByText('Weekly Skill Growth')).toHaveCount(0);
     await expect(page.getByText('Course Progress')).toHaveCount(0);
     await expect(page.getByText('Meet Our Expert Mentors')).toBeVisible();
     await expect(page.getByText('What Our Learners Are Saying')).toBeVisible();
     await expect(page.getByText('Frequently Asked Questions')).toBeVisible();
 
-    const loadMoreBtn = page.getByRole('button', { name: /Load More Courses/i });
-    await expect(loadMoreBtn).toBeVisible();
-    await loadMoreBtn.click();
-    await expect(page.locator('#courses-section article')).toHaveCount(12);
+    await expect(page.locator('#courses-section article')).toHaveCount(3);
+    await expect(page.locator('#courses-section [role="tab"]')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Load More Courses/i })).toHaveCount(0);
 
-    await page.getByRole('tab', { name: 'Web Development' }).click();
-    await expect(page.locator('#courses-section article')).toHaveCount(2);
+    const pmbLinks = page.locator('#courses-section a', { hasText: 'Info PMB' });
+    await expect(pmbLinks).toHaveCount(3);
+    await expect(pmbLinks.nth(0)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208');
+    await expect(pmbLinks.nth(1)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232');
+    await expect(pmbLinks.nth(2)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239');
 
     await page.goto('/courses');
     await page.getByLabel('Search courses').fill('zzznonexistentcourse999');
