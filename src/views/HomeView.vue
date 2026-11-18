@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { useLandingStore } from '../stores/landing.store.js';
 import { useAsyncState } from '../composables/useAsyncState.js';
 import StateFeedback from '../components/StateFeedback.vue';
@@ -15,16 +14,11 @@ import TestimonialsSection from '../components/TestimonialsSection.vue';
 import FaqAccordion from '../components/FaqAccordion.vue';
 import FooterSection from '../components/FooterSection.vue';
 
-const router = useRouter();
 const landingStore = useLandingStore();
 const { loading, error, isOffline, run } = useAsyncState();
 
 async function loadLanding() {
   await run(() => landingStore.fetchLanding(true));
-}
-
-function goPremiumCheckout() {
-  router.push({ path: '/checkout', query: { plan: 'premium' } });
 }
 
 onMounted(() => {
@@ -43,10 +37,7 @@ onMounted(() => {
     />
 
     <template v-else-if="landingStore.data">
-      <HeroSection
-        :settings="landingStore.data.settings"
-        @upgrade-premium="goPremiumCheckout"
-      />
+      <HeroSection :settings="landingStore.data.settings" />
       <StatsStrip :stats="landingStore.data.stats.hero" />
       <CoursesSection :categories="landingStore.data.categories" />
       <FeaturesSection :features="landingStore.data.features" />

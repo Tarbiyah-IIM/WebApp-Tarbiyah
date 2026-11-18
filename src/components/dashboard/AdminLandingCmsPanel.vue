@@ -162,8 +162,8 @@ onMounted(loadCms);
       </div>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label for="cms-hero-badge" class="block text-xs font-bold uppercase text-slate-500 mb-1">Hero Badge</label>
-          <input id="cms-hero-badge" v-model="settings.hero_badge" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          <label for="cms-hero-tagline" class="block text-xs font-bold uppercase text-slate-500 mb-1">Hero Tagline</label>
+          <input id="cms-hero-tagline" v-model="settings.hero_tagline" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div>
           <label for="cms-premium-price" class="block text-xs font-bold uppercase text-slate-500 mb-1">Premium Price (USD)</label>

@@ -6,7 +6,10 @@ test.describe('Meekoo Critical User Journeys', () => {
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Shape Your Future');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Selamat Datang di Fakultas Tarbiyah');
+    await expect(page.getByText('Become Future Educators with Global Impact')).toBeVisible();
+    await expect(page.getByText('#1 Online Course 2025')).toHaveCount(0);
+    await expect(page.getByText('Best Collaboration')).toHaveCount(0);
     await expect(page.getByText('Courses Designed for Success')).toBeVisible();
     await expect(page.getByText('Meet Our Expert Mentors')).toBeVisible();
     await expect(page.getByText('What Our Learners Are Saying')).toBeVisible();
