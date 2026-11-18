@@ -6,11 +6,49 @@ test.describe('Meekoo Critical User Journeys', () => {
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     await page.goto('/');
+    const mainNav = page.getByLabel('Main Navigation');
+    await expect(mainNav.getByAltText('Logo Fakultas Tarbiyah')).toBeVisible();
+    await expect(mainNav.getByText('Fakultas Tarbiyah', { exact: true })).toBeVisible();
+    await expect(mainNav.getByText('Institut Islam Mambaul Ulum Surakarta', { exact: true })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: 'Tentang Kami' })).toBeVisible();
+    await expect(mainNav.getByRole('button', { name: 'Program Studi' })).toBeVisible();
+    await expect(mainNav.getByRole('button', { name: 'Akademik' })).toBeVisible();
+    await expect(mainNav.getByRole('button', { name: 'Publikasi' })).toBeVisible();
+    await expect(mainNav.getByRole('button', { name: 'RPL' })).toBeVisible();
+
+    await mainNav.getByRole('button', { name: 'Program Studi' }).click();
+    await expect(mainNav.getByRole('link', { name: 'Pendidikan Agama Islam' })).toHaveAttribute(
+      'href',
+      'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
+    );
+    await expect(mainNav.getByRole('link', { name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toHaveAttribute(
+      'href',
+      'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232'
+    );
+    await expect(mainNav.getByRole('link', { name: 'Pendidikan Islam Anak Usia Dini' })).toHaveAttribute(
+      'href',
+      'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239'
+    );
+
+    await mainNav.getByRole('button', { name: 'Akademik' }).click();
+    await expect(mainNav.getByRole('button', { name: 'Surat Aktif Mahasiswa' })).toBeVisible();
+    await expect(mainNav.getByRole('button', { name: 'Munaqasyah' })).toBeVisible();
+
+    await mainNav.getByRole('button', { name: 'Publikasi' }).click();
+    await expect(mainNav.getByRole('button', { name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();
+    await expect(mainNav.getByRole('button', { name: 'Penelitian dan Pengabdian' })).toBeVisible();
+
+    await mainNav.getByRole('button', { name: 'RPL' }).click();
+    await expect(mainNav.getByRole('button', { name: 'Pedoman RPL' })).toBeVisible();
+    await expect(mainNav.getByRole('button', { name: 'SK Pengelola' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(mainNav.getByRole('button', { name: 'SK Pengelola' })).toHaveCount(0);
+
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Selamat Datang di Fakultas Tarbiyah');
     await expect(page.getByText('Become Future Educators with Global Impact')).toBeVisible();
     await expect(page.getByText('#1 Online Course 2025')).toHaveCount(0);
     await expect(page.getByText('Best Collaboration')).toHaveCount(0);
-    await expect(page.getByText('Akademik', { exact: true })).toBeVisible();
+    await expect(page.locator('#courses-section').getByText('Akademik', { exact: true })).toBeVisible();
     await expect(page.getByText('Program Studi Unggulan')).toBeVisible();
     await expect(page.getByText('Tarbiyah dalam Angka')).toBeVisible();
     await expect(page.getByText('Lembaga Akreditasi Mandiri Kependidikan')).toBeVisible();
