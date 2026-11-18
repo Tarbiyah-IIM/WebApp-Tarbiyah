@@ -9,8 +9,8 @@ defineProps({
 
 <template>
   <section id="features" class="bg-white pt-16 pb-0 sm:pt-20">
-    <div class="mx-auto grid max-w-7xl grid-cols-1 items-end gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-4 lg:px-8">
-      <div class="flex justify-center lg:justify-end self-end lg:col-span-5 lg:pr-4 order-2 lg:order-1">
+    <div class="mx-auto grid max-w-7xl grid-cols-1 items-end gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:px-8">
+      <div class="flex justify-center self-end lg:col-span-5 order-2 lg:order-1">
         <img
           :src="howTarbiyahImage"
           alt="Mahasiswi Fakultas Tarbiyah"
