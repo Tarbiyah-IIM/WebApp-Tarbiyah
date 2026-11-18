@@ -553,11 +553,11 @@ INSERT INTO `testimonials` (`id`, `name`, `job_title`, `quote`, `rating`, `avata
 (24, 'Yudisium dan Pelepasan Calon Wisudawan Fakultas Tarbiyah 2026', '22 Agustus 2026 · Yudisium', 'Dekan Fakultas Tarbiyah melepas lulusan terbaik dari Prodi PAI, PGMI, dan PIAUD untuk berkarya sebagai pendidik profesional berkarakter.', 5, 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80', 1, 24);
 
 INSERT INTO `faqs` (`id`, `question`, `answer`, `sort_order`) VALUES
-(1, 'What types of courses are available on Meekoo?', 'Meekoo offers 90+ categories spanning UI/UX Design, Web Development, Digital Marketing, Marketing & Communication, Business Consulting, and Finance Management—taught by vetted industry practitioners.', 1),
-(2, 'What are the system requirements to learn on Meekoo?', 'You only need a modern web browser (Chrome, Edge, Firefox, or Safari) on desktop, tablet, or mobile with a stable internet connection. Coding courses include downloadable starter templates.', 2),
-(3, 'How do I enroll in a course or activate Premium?', 'Create a free account, choose any individual course or the USD 160/year Premium plan, complete checkout via our secure payment flow, and start watching immediately from your Student Dashboard.', 3),
-(4, 'Do I still have access to materials after completing a course?', 'Yes. Individual course purchases include lifetime access to all curriculum updates, and completing 100% of lessons automatically unlocks your verified Meekoo certificate.', 4),
-(5, 'What is Meekoo''s refund policy?', 'We offer a 14-day satisfaction guarantee on individual course purchases if less than 25% of the lessons have been completed. Contact support anytime for fast assistance.', 5);
+(1, 'Nilai pada KHS tidak muncul, bagaimana solusinya?', 'Pastikan anda sudah mengisi kuisioner evaluasi pembelajaran sebelum melihat KHS, jika sudah dipastikan telah mengisi, anda dapat langsung menghubungi dosen pengampu mata kuliah atau TU Fakultas masing-masing.', 1),
+(2, 'Jika sudah memasuki Semester Akhir apakah harus melakukan KRS?', 'sangat di WAJIB kan karena jika tidak melakukan pengisian KRS nilai mata kuliah Tugas Akhir/Skripsi & Ujian Lisan/Komprehensif tidak muncul di SIAKAD dan tidak tercatat pada PDDikti sebagai Mahasiswa Aktif.', 2),
+(3, 'Apakah bisa mengubah akun SIAKAD?', 'Bisa, silahkan menghubungi Tenaga Kependidikan Fakultas/Program Studi masing-masing untuk pengecekan.', 3),
+(4, 'Biodata di laman PDDikti tidak sesuai, apakah bisa di perbaiki?', 'Bisa, bagi mahasiswa/i atau alumni yang terdapat kesalahan biodata pada PDDikti bisa di perbaiki dengan cara mengirimkankan bukti pendukung seperti file SCAN KTP, KK, Akta Kelahiran, KTM (bagi mahasiswa aktif), Ijazah dan Transkrip Nilai (Bagi Alumni), bukti di kirim ke Fakultas/Program Studi masing-masing. syarat dan ketentuan bisa dilihat pada laman Perbaikan Data Diri', 4),
+(5, 'Ijazah atau Transkrip Nilai hilang/rusak, bagaimana solusinya?', 'Ijazah dan Transkrip Nilai hanya bisa dicetak satu kali, maka jika hilang/rusak kami hanya bisa mengeluarkan Surat Keterangan Pengganti Ijazah.', 5);
 
 INSERT INTO `stats` (`id`, `stat_group`, `label`, `value_num`, `suffix`, `sort_order`) VALUES
 (1, 'hero', 'Graduation Rate', '100', '%', 1),
