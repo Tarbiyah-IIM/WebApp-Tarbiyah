@@ -15,6 +15,7 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(mainNav.getByRole('button', { name: 'Akademik' })).toBeVisible();
     await expect(mainNav.getByRole('button', { name: 'Publikasi' })).toBeVisible();
     await expect(mainNav.getByRole('button', { name: 'RPL' })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: /Cart/i })).toHaveCount(0);
 
     await mainNav.getByRole('button', { name: 'Program Studi' }).click();
     await expect(mainNav.getByRole('link', { name: 'Pendidikan Agama Islam' })).toHaveAttribute(
@@ -91,17 +92,44 @@ test.describe('Meekoo Critical User Journeys', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('J2: Auth register, invalid password failure state, and RBAC route guard', async ({ page, createIsolatedStudent }) => {
+  test('J2: Tarbiyah login UI, admin forgot-password restriction, and RBAC route guard', async ({ page, createIsolatedStudent }) => {
     const student = await createIsolatedStudent('E2E Auth Student');
 
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByRole('heading', { name: 'Tarbiyah Login' })).toBeVisible();
+    await expect(page.getByText('Selamat datang ke Tarbiyah Login')).toBeVisible();
+    await expect(page.getByText('Sandbox Demo Accounts')).toHaveCount(0);
+    await expect(page.getByText('Create an account')).toHaveCount(0);
 
-    await page.getByLabel('Email').fill(student.email);
+    await page.getByLabel('Email').fill('tarbiyah@iim.ac.id');
     await page.getByLabel('Password').fill('WrongPass!');
     await page.getByRole('button', { name: 'Login' }).click();
     await expect(page.getByRole('alert')).toContainText('Email atau password salah');
 
+    await page.getByRole('link', { name: 'Forgot password?' }).click();
+    await expect(page).toHaveURL(/\/forgot-password/);
+    await page.getByLabel('Email Pemulihan Admin').fill('bukanemailadmin@gmail.com');
+    await page.getByRole('button', { name: 'Request Reset Token' }).click();
+    await expect(page.getByRole('alert')).toContainText('Email pemulihan salah');
+
+    await page.getByLabel('Email Pemulihan Admin').fill('iimtarbiyah20232@gmail.com');
+    await page.getByRole('button', { name: 'Request Reset Token' }).click();
+    await expect(page.getByRole('heading', { name: 'Set New Password' })).toBeVisible();
+
+    await page.getByRole('link', { name: 'Back to Login' }).click();
+    await expect(page).toHaveURL(/\/login/);
+
+    await page.getByLabel('Email').fill('tarbiyah@iim.ac.id');
+    await page.getByLabel('Password').fill('adminganteng');
+    await page.getByRole('button', { name: 'Login' }).click();
+    await expect(page).toHaveURL(/\/admin/);
+
+    await page.getByRole('button', { name: 'Logout' }).click();
+    await expect(page).toHaveURL('/');
+
+    await page.goto('/login');
+    await page.getByLabel('Email').fill(student.email);
     await page.getByLabel('Password').fill(student.password);
     await page.getByRole('button', { name: 'Login' }).click();
     await expect(page).toHaveURL(/\/dashboard/);

@@ -1,9 +1,11 @@
 import crypto from 'node:crypto';
+import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import { afterAll, describe, expect, it } from 'vitest';
 import app from '../server/app.js';
 import { env } from '../server/config/env.js';
 import { pool } from '../server/config/db.js';
+import { findUserByEmail, updateUserPassword } from '../server/models/user.model.js';
 
 describe('Meekoo Platform Integration & Sync Suite', () => {
   const testEmail = `test.${Date.now()}@meekoo.test`;
@@ -61,22 +63,47 @@ describe('Meekoo Platform Integration & Sync Suite', () => {
       .set('Authorization', `Bearer ${studentToken}`);
     expect(forbiddenAdmin.status).toBe(403);
 
-    const forgot = await request(app).post('/api/v1/auth/forgot-password').send({ email: testEmail });
-    expect(forgot.status).toBe(200);
-    expect(forgot.body.sandboxResetToken).toBeTruthy();
+    const wrongRecovery1 = await request(app).post('/api/v1/auth/forgot-password').send({ email: testEmail });
+    expect(wrongRecovery1.status).toBe(400);
 
-    const reset = await request(app).post('/api/v1/auth/reset-password').send({
-      token: forgot.body.sandboxResetToken,
-      newPassword: 'NewPassword123!'
-    });
-    expect(reset.status).toBe(200);
+    const wrongRecovery2 = await request(app)
+      .post('/api/v1/auth/forgot-password')
+      .send({ email: 'tarbiyah@iim.ac.id' });
+    expect(wrongRecovery2.status).toBe(400);
 
-    const relogin = await request(app).post('/api/v1/auth/login').send({
-      email: testEmail,
-      password: 'NewPassword123!'
+    const tarbiyahAdminLogin = await request(app).post('/api/v1/auth/login').send({
+      email: 'tarbiyah@iim.ac.id',
+      password: 'adminganteng'
     });
-    expect(relogin.status).toBe(200);
-    studentToken = relogin.body.accessToken;
+    expect(tarbiyahAdminLogin.status).toBe(200);
+    expect(tarbiyahAdminLogin.body.user.role).toBe('admin');
+
+    try {
+      const forgot = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'iimtarbiyah20232@gmail.com' });
+      expect(forgot.status).toBe(200);
+      expect(forgot.body.sandboxResetToken).toBeTruthy();
+
+      const reset = await request(app).post('/api/v1/auth/reset-password').send({
+        token: forgot.body.sandboxResetToken,
+        newPassword: 'TempAdminPass123!'
+      });
+      expect(reset.status).toBe(200);
+
+      const adminRelogin = await request(app).post('/api/v1/auth/login').send({
+        email: 'tarbiyah@iim.ac.id',
+        password: 'TempAdminPass123!'
+      });
+      expect(adminRelogin.status).toBe(200);
+      expect(adminRelogin.body.user.role).toBe('admin');
+    } finally {
+      const adminUser = await findUserByEmail('tarbiyah@iim.ac.id');
+      if (adminUser) {
+        const originalHash = await bcrypt.hash('adminganteng', 10);
+        await updateUserPassword(adminUser.id, originalHash);
+      }
+    }
   });
 
   it('creates order, verifies signed webhook HMAC, unlocks course, tracks progress & issues certificate', async () => {

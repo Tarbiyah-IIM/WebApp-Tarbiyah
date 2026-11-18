@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { KeyRound } from 'lucide-vue-next';
+import gedungIimBg from '../assets/gedung-iim.jpg';
 import { authService } from '../services/auth.service.js';
 import { extractApiError } from '../services/api.js';
 import { useToast } from '../composables/useToast.js';
@@ -54,14 +55,19 @@ async function confirmReset() {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-[80vh] max-w-md items-center px-4 py-12">
-    <div class="w-full rounded-3xl border border-surface-border bg-white p-8 shadow-float">
+  <div
+    class="relative flex min-h-[calc(100vh-73px)] items-center justify-center bg-cover bg-center px-4 py-12"
+    :style="{ backgroundImage: 'url(' + gedungIimBg + ')' }"
+  >
+    <div class="absolute inset-0 bg-brand-900/55 backdrop-blur-[2px]"></div>
+
+    <div class="relative z-10 w-full max-w-md rounded-3xl border border-white/30 bg-white/95 p-8 shadow-float backdrop-blur-md">
       <div class="flex items-center gap-2 text-brand-700 mb-2">
         <KeyRound class="h-5 w-5" />
-        <span class="text-xs font-bold uppercase tracking-wider">Account Recovery</span>
+        <span class="text-xs font-bold uppercase tracking-wider">Pemulihan Akun Admin</span>
       </div>
       <h1 class="text-2xl font-extrabold text-brand-900">
-        {{ step === 'request' ? 'Forgot Password' : 'Set New Password' }}
+        {{ step === 'request' ? 'Forgot Password Admin' : 'Set New Password' }}
       </h1>
 
       <div v-if="errorMessage" role="alert" class="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
@@ -70,19 +76,20 @@ async function confirmReset() {
 
       <form v-if="step === 'request'" class="mt-6 space-y-4" @submit.prevent="requestReset">
         <div>
-          <label for="fp-email" class="block text-sm font-semibold text-brand-900">Registered Email</label>
+          <label for="fp-email" class="block text-sm font-semibold text-brand-900">Email Pemulihan Admin</label>
           <input
             id="fp-email"
             v-model="email"
             type="email"
             required
-            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border px-4 text-sm"
+            placeholder="Masukkan email pemulihan admin"
+            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
         </div>
         <button
           type="submit"
           :disabled="submitting"
-          class="min-h-[48px] w-full rounded-xl bg-brand-600 px-5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+          class="min-h-[48px] w-full rounded-xl bg-brand-600 px-5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60 transition"
         >
           {{ submitting ? 'Sending...' : 'Request Reset Token' }}
         </button>
@@ -99,7 +106,7 @@ async function confirmReset() {
             v-model="resetToken"
             type="text"
             required
-            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border px-4 text-sm"
+            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900"
           />
         </div>
         <div>
@@ -110,20 +117,20 @@ async function confirmReset() {
             type="password"
             required
             minlength="6"
-            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border px-4 text-sm"
+            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900"
           />
         </div>
         <button
           type="submit"
           :disabled="submitting"
-          class="min-h-[48px] w-full rounded-xl bg-brand-600 px-5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+          class="min-h-[48px] w-full rounded-xl bg-brand-600 px-5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60 transition"
         >
-          {{ submitting ? 'Updating...' : 'Update Password' }}
+          {{ submitting ? 'Updating...' : 'Reset Password' }}
         </button>
       </form>
 
-      <p class="mt-6 text-center text-sm text-slate-600">
-        <router-link to="/login" class="font-bold text-brand-600 hover:underline">Back to Login</router-link>
+      <p class="mt-5 text-center text-sm text-slate-600">
+        <router-link to="/login" class="font-semibold text-brand-600 hover:underline">Back to Login</router-link>
       </p>
     </div>
   </div>

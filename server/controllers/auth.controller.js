@@ -166,24 +166,36 @@ export async function logout(req, res, next) {
   }
 }
 
+const ADMIN_RECOVERY_EMAIL = 'iimtarbiyah20232@gmail.com';
+const ADMIN_ACCOUNT_EMAIL = 'tarbiyah@iim.ac.id';
+
 export async function forgotPassword(req, res, next) {
   try {
     const normalizedEmail = req.body.email.trim().toLowerCase();
-    const user = await findUserByEmail(normalizedEmail);
-
-    let sandboxResetToken = null;
-    if (user && user.is_active) {
-      const rawToken = crypto.randomBytes(24).toString('hex');
-      const tokenHash = hashToken(rawToken);
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
-      await createPasswordReset({ userId: user.id, tokenHash, expiresAt });
-      if (env.nodeEnv !== 'production') {
-        sandboxResetToken = rawToken;
-      }
+    if (normalizedEmail !== ADMIN_RECOVERY_EMAIL) {
+      return next(
+        new AppError(
+          400,
+          'INVALID_RECOVERY_EMAIL',
+          'Email pemulihan salah. Masukkan email admin yang terdaftar.'
+        )
+      );
     }
 
+    const user = await findUserByEmail(ADMIN_ACCOUNT_EMAIL);
+    if (!user || !user.is_active) {
+      return next(new AppError(404, 'ADMIN_NOT_FOUND', 'Akun admin tidak ditemukan atau tidak aktif'));
+    }
+
+    const rawToken = crypto.randomBytes(24).toString('hex');
+    const tokenHash = hashToken(rawToken);
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+    await createPasswordReset({ userId: user.id, tokenHash, expiresAt });
+
+    const sandboxResetToken = env.nodeEnv !== 'production' ? rawToken : null;
+
     return res.json({
-      message: 'Jika email terdaftar, instruksi pemulihan password telah dibuat.',
+      message: 'Token pemulihan password admin berhasil dibuat.',
       ...(sandboxResetToken ? { sandboxResetToken } : {})
     });
   } catch (err) {

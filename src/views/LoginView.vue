@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { LogIn } from 'lucide-vue-next';
+import gedungIimBg from '../assets/gedung-iim.jpg';
 import { useAuthStore } from '../stores/auth.store.js';
 import { extractApiError } from '../services/api.js';
 import { useToast } from '../composables/useToast.js';
@@ -16,17 +17,12 @@ const password = ref('');
 const submitting = ref(false);
 const errorMessage = ref('');
 
-function fillDemo(demoEmail) {
-  email.value = demoEmail;
-  password.value = 'Meekoo123!';
-}
-
 async function handleLogin() {
   submitting.value = true;
   errorMessage.value = '';
   try {
     const user = await auth.login({ email: email.value, password: password.value });
-    toast.success(`Welcome back, ${user.name}!`);
+    toast.success('Selamat datang, ' + user.name + '!');
     const redirect = route.query.redirect;
     if (redirect && typeof redirect === 'string') {
       router.push(redirect);
@@ -46,10 +42,15 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-[80vh] max-w-md items-center px-4 py-12">
-    <div class="w-full rounded-3xl border border-surface-border bg-white p-8 shadow-float">
-      <h1 class="text-2xl font-extrabold text-brand-900">Sign in to Meekoo</h1>
-      <p class="mt-1 text-sm text-slate-600">Access your synchronized courses, live sessions, or management panel.</p>
+  <div
+    class="relative flex min-h-[calc(100vh-73px)] items-center justify-center bg-cover bg-center px-4 py-12"
+    :style="{ backgroundImage: 'url(' + gedungIimBg + ')' }"
+  >
+    <div class="absolute inset-0 bg-brand-900/55 backdrop-blur-[2px]"></div>
+
+    <div class="relative z-10 w-full max-w-md rounded-3xl border border-white/30 bg-white/95 p-8 shadow-float backdrop-blur-md">
+      <h1 class="text-2xl font-extrabold text-brand-900">Tarbiyah Login</h1>
+      <p class="mt-1 text-sm text-slate-600">Selamat datang ke Tarbiyah Login</p>
 
       <div v-if="errorMessage" role="alert" class="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
         {{ errorMessage }}
@@ -64,7 +65,8 @@ async function handleLogin() {
             type="email"
             required
             autocomplete="email"
-            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border px-4 text-sm"
+            placeholder="tarbiyah@iim.ac.id"
+            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
         </div>
         <div>
@@ -80,7 +82,7 @@ async function handleLogin() {
             type="password"
             required
             autocomplete="current-password"
-            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border px-4 text-sm"
+            class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
         </div>
 
@@ -93,38 +95,6 @@ async function handleLogin() {
           <span>{{ submitting ? 'Signing in...' : 'Login' }}</span>
         </button>
       </form>
-
-      <div class="mt-6 rounded-2xl border border-surface-border bg-surface-page p-4">
-        <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Sandbox Demo Accounts</p>
-        <div class="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            class="rounded-lg border border-surface-border bg-white py-2 text-xs font-semibold text-brand-900 hover:bg-brand-50"
-            @click="fillDemo('student@meekoo.test')"
-          >
-            Student
-          </button>
-          <button
-            type="button"
-            class="rounded-lg border border-surface-border bg-white py-2 text-xs font-semibold text-brand-900 hover:bg-brand-50"
-            @click="fillDemo('sarah@meekoo.test')"
-          >
-            Mentor
-          </button>
-          <button
-            type="button"
-            class="rounded-lg border border-surface-border bg-white py-2 text-xs font-semibold text-brand-900 hover:bg-brand-50"
-            @click="fillDemo('admin@meekoo.test')"
-          >
-            Admin
-          </button>
-        </div>
-      </div>
-
-      <p class="mt-6 text-center text-sm text-slate-600">
-        New to Meekoo?
-        <router-link to="/register" class="font-bold text-brand-600 hover:underline">Create an account</router-link>
-      </p>
     </div>
   </div>
 </template>

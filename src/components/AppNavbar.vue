@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   Menu,
   X,
-  ShoppingBag,
   LogOut,
   LayoutDashboard,
   ChevronDown,
@@ -12,13 +11,11 @@ import {
 } from 'lucide-vue-next';
 import ftarLogo from '../assets/ftar-logo.png';
 import { useAuthStore } from '../stores/auth.store.js';
-import { useUiStore } from '../stores/ui.store.js';
 import { useToast } from '../composables/useToast.js';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
-const ui = useUiStore();
 const toast = useToast();
 
 const navRef = ref(null);
@@ -259,20 +256,6 @@ async function handleLogout() {
       </div>
 
       <div class="hidden shrink-0 items-center gap-3 lg:flex">
-        <router-link
-          to="/checkout"
-          class="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-surface-border bg-surface-page px-3 text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition"
-          aria-label="Checkout Cart"
-        >
-          <ShoppingBag class="h-5 w-5" />
-          <span
-            v-if="ui.cartCount > 0"
-            class="absolute -top-1.5 -right-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brand-600 px-1 text-[11px] font-bold text-white"
-          >
-            {{ ui.cartCount }}
-          </span>
-        </router-link>
-
         <template v-if="auth.isAuthenticated">
           <router-link
             :to="dashboardRoute"
@@ -301,19 +284,6 @@ async function handleLogout() {
       </div>
 
       <div class="flex shrink-0 items-center gap-2 lg:hidden">
-        <router-link
-          to="/checkout"
-          class="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-surface-border text-slate-700"
-          aria-label="Cart"
-        >
-          <ShoppingBag class="h-5 w-5" />
-          <span
-            v-if="ui.cartCount > 0"
-            class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brand-600 px-1 text-[11px] font-bold text-white"
-          >
-            {{ ui.cartCount }}
-          </span>
-        </router-link>
         <button
           type="button"
           class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-surface-border text-slate-700"
