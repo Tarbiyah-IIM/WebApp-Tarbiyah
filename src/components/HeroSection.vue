@@ -1,10 +1,26 @@
 <script setup>
+import { ref } from 'vue';
 import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import heroTarbiyahImage from '../assets/hero-tarbiyah.png';
+import ModalDialog from './ModalDialog.vue';
+import { useToast } from '../composables/useToast.js';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
+
+const toast = useToast();
+const profilModalOpen = ref(false);
+
+const missionItems = [
+  'Menyelenggarakan layanan pendidikan yang profesional dan berkualitas.',
+  'Menyelenggarakan pengkajian, penelitian, dan pengabdian masyarakat dalam bidang Pendidikan Dasar dan Agama Islam.',
+  'Memperluas dan memperkuat jaringan kerjasama dalam bidang pendidikan yang berwawasan global serta menguasai ilmu pengetahuan dan teknologi.'
+];
+
+function handleBeasiswa() {
+  toast.info('Informasi program beasiswa sedang disiapkan.', 'Beasiswa');
+}
 </script>
 
 <template>
@@ -23,19 +39,21 @@ defineProps({
         </p>
 
         <div class="flex flex-wrap items-center gap-4 pt-2">
-          <router-link
-            to="/register"
+          <button
+            type="button"
             class="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-brand-600 px-7 py-3 text-base font-semibold text-white shadow-float hover:bg-brand-700 transition"
+            @click="profilModalOpen = true"
           >
-            Get Started
+            Profil
             <ArrowRight class="h-4 w-4" />
-          </router-link>
-          <router-link
-            to="/courses"
+          </button>
+          <button
+            type="button"
             class="inline-flex min-h-[48px] items-center rounded-xl border border-surface-border bg-white px-6 py-3 text-base font-semibold text-brand-900 hover:bg-surface-muted transition"
+            @click="handleBeasiswa"
           >
-            Browse Courses
-          </router-link>
+            Beasiswa
+          </button>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 pt-2 text-sm font-medium text-slate-600">
@@ -54,5 +72,39 @@ defineProps({
         />
       </div>
     </div>
+
+    <ModalDialog :open="profilModalOpen" title="Profil Fakultas Tarbiyah" @close="profilModalOpen = false">
+      <div class="space-y-6">
+        <div class="rounded-2xl border border-brand-100 bg-brand-50/70 p-5">
+          <span class="inline-block rounded-full bg-brand-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+            Visi
+          </span>
+          <p class="mt-3 text-sm leading-relaxed text-brand-900 sm:text-base font-medium">
+            Menjadi Fakultas yang unggul dalam menyiapkan tenaga pendidik, berwawasan global, dan menerapkan Ilmu Pendidikan Islam Rahmatan Lil’alamin pada tahun 2035.
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-surface-border bg-surface-page p-5">
+          <span class="inline-block rounded-full bg-amber-400 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+            Misi
+          </span>
+          <ol class="mt-3 space-y-2.5 list-decimal pl-5 text-sm leading-relaxed text-slate-700 sm:text-base">
+            <li v-for="item in missionItems" :key="item">
+              {{ item }}
+            </li>
+          </ol>
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            type="button"
+            class="inline-flex min-h-[42px] items-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700 transition"
+            @click="profilModalOpen = false"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </ModalDialog>
   </section>
 </template>

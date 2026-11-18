@@ -56,6 +56,19 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(mainNav.getByRole('button', { name: 'SK Pengelola' })).toHaveCount(0);
 
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Selamat Datang di Fakultas Tarbiyah');
+    await expect(page.getByRole('button', { name: 'Profil', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Beasiswa', exact: true })).toBeVisible();
+    await expect(page.getByText('Get Started')).toHaveCount(0);
+    await expect(page.getByText('Browse Courses')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Profil', exact: true }).click();
+    const profilDialog = page.getByRole('dialog', { name: 'Profil Fakultas Tarbiyah' });
+    await expect(profilDialog).toBeVisible();
+    await expect(profilDialog).toContainText('Ilmu Pendidikan Islam Rahmatan Lil’alamin pada tahun 2035');
+    await expect(profilDialog).toContainText('Menyelenggarakan layanan pendidikan yang profesional dan berkualitas.');
+    await profilDialog.getByRole('button', { name: 'Tutup' }).click();
+    await expect(profilDialog).toHaveCount(0);
+
     await expect(page.getByText('Become Future Educators with Global Impact')).toBeVisible();
     await expect(page.getByText('#1 Online Course 2025')).toHaveCount(0);
     await expect(page.getByText('Best Collaboration')).toHaveCount(0);
