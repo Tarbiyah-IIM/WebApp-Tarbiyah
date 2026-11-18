@@ -32,8 +32,18 @@ test.describe('Meekoo Critical User Journeys', () => {
     );
 
     await mainNav.getByRole('button', { name: 'Akademik' }).click();
-    await expect(mainNav.getByRole('button', { name: 'Surat Aktif Mahasiswa' })).toBeVisible();
-    await expect(mainNav.getByRole('button', { name: 'Munaqasyah' })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: 'Surat Aktif Mahasiswa' })).toHaveAttribute(
+      'href',
+      'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/'
+    );
+    await expect(mainNav.getByRole('link', { name: 'Ujian Komprehensif' })).toHaveAttribute(
+      'href',
+      'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+    );
+    await expect(mainNav.getByRole('link', { name: 'Munaqasyah' })).toHaveAttribute(
+      'href',
+      'https://www.myskripsi.iimsurakarta.ac.id/myskripsi/dashboard/'
+    );
 
     await mainNav.getByRole('button', { name: 'Publikasi' }).click();
     await expect(mainNav.getByRole('button', { name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();

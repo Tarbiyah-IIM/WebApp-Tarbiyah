@@ -60,12 +60,21 @@ const navMenus = [
     id: 'akademik',
     label: 'Akademik',
     children: [
-      { label: 'Surat Aktif Mahasiswa' },
+      {
+        label: 'Surat Aktif Mahasiswa',
+        href: 'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/'
+      },
       { label: 'Administrasi Persuratan' },
       { label: 'Kalender Akademik' },
       { label: 'Kurikulum' },
-      { label: 'Ujian Komprehensif' },
-      { label: 'Munaqasyah' }
+      {
+        label: 'Ujian Komprehensif',
+        href: 'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+      },
+      {
+        label: 'Munaqasyah',
+        href: 'https://www.myskripsi.iimsurakarta.ac.id/myskripsi/dashboard/'
+      }
     ]
   },
   {
