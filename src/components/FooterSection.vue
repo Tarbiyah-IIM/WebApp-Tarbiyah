@@ -14,8 +14,8 @@ const journalLinks = [
 
 const campusBadges = ['IIM', 'Tarbiyah', 'SIAKAD', 'EdLink'];
 
-const mapsUrl =
-  'https://www.google.com/maps?ll=-7.584322,110.81806&z=13&t=m&hl=en-ID&gl=US&mapclient=embed&q=Jl.+Sadewa+No.14+Serengan+Kec.+Serengan+Kota+Surakarta,+Jawa+Tengah+57155';
+const mapsEmbedUrl =
+  'https://maps.google.com/maps?ll=-7.584322,110.81806&z=13&t=m&hl=en-ID&gl=US&q=Jl.+Sadewa+No.14+Serengan+Kec.+Serengan+Kota+Surakarta,+Jawa+Tengah+57155&output=embed';
 </script>
 
 <template>
@@ -112,24 +112,15 @@ const mapsUrl =
 
         <div class="space-y-3">
           <h3 class="text-sm font-bold uppercase tracking-wider text-white">Lokasi Kampus</h3>
-          <a
-            :href="mapsUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group flex items-start gap-2.5 rounded-2xl border border-white/15 bg-white/5 p-3.5 text-sm text-slate-300 transition hover:border-brand-400/50 hover:bg-white/10 hover:text-white"
-          >
-            <MapPin class="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-            <div class="min-w-0 space-y-1">
-              <p class="font-semibold text-white group-hover:text-amber-300 transition">Google Maps Kampus</p>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Jl. Sadewa No.14, Serengan, Kota Surakarta, Jawa Tengah 57155
-              </p>
-              <span class="inline-flex items-center gap-1 text-xs font-semibold text-brand-200">
-                <span>Buka Peta</span>
-                <ExternalLink class="h-3 w-3" />
-              </span>
-            </div>
-          </a>
+          <div class="overflow-hidden rounded-xl border border-white/20 bg-white shadow-sm">
+            <iframe
+              title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"
+              :src="mapsEmbedUrl"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              class="block h-36 w-full border-0"
+            />
+          </div>
         </div>
       </div>
 

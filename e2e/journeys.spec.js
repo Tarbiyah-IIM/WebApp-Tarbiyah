@@ -163,10 +163,11 @@ test.describe('Meekoo Critical User Journeys', () => {
       'href',
       'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
     );
-    await expect(footerSection.getByRole('link', { name: /Google Maps Kampus/i })).toHaveAttribute(
-      'href',
-      /google\.com\/maps\?ll=-7\.584322,110\.81806/
+    const campusMapFrame = footerSection.locator(
+      'iframe[title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"]'
     );
+    await expect(campusMapFrame).toBeVisible();
+    await expect(campusMapFrame).toHaveAttribute('src', /maps\.google\.com\/maps.*output=embed/);
     await expect(
       footerSection.getByText('© 2026 Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. All rights reserved.')
     ).toBeVisible();
