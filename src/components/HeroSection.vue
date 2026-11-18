@@ -8,9 +8,9 @@ defineProps({
 </script>
 
 <template>
-  <section class="relative overflow-hidden bg-gradient-to-b from-brand-50/80 via-white to-white py-14 sm:py-20">
-    <div class="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
-      <div class="lg:col-span-6 space-y-6">
+  <section class="relative overflow-hidden bg-gradient-to-b from-brand-50/80 via-white to-white pt-12 pb-0 sm:pt-16 lg:pt-12">
+    <div class="mx-auto grid max-w-7xl grid-cols-1 items-end gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:gap-6 lg:px-8">
+      <div class="lg:col-span-6 pb-4 lg:pb-16 space-y-6">
         <h1 class="text-4xl font-extrabold tracking-tight text-brand-900 sm:text-5xl lg:text-[52px] lg:leading-[1.12]">
           {{ settings.hero_title || 'Selamat Datang di Fakultas Tarbiyah' }}
         </h1>
@@ -46,16 +46,12 @@ defineProps({
         </div>
       </div>
 
-      <div class="relative lg:col-span-6">
-        <div class="relative mx-auto max-w-lg">
-          <div class="overflow-hidden rounded-3xl border border-brand-100 bg-brand-100/40 p-3 shadow-float">
-            <img
-              :src="heroTarbiyahImage"
-              alt="Fakultas Tarbiyah"
-              class="aspect-[4/3] w-full rounded-2xl object-cover"
-            />
-          </div>
-        </div>
+      <div class="lg:col-span-6 flex justify-center lg:justify-end self-end">
+        <img
+          :src="heroTarbiyahImage"
+          alt="Mahasiswa dan Lulusan Fakultas Tarbiyah"
+          class="w-full max-w-2xl h-auto max-h-[540px] object-contain object-bottom select-none"
+        />
       </div>
     </div>
   </section>
