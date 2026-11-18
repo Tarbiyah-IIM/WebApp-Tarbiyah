@@ -545,11 +545,10 @@ INSERT INTO `stats` (`id`, `stat_group`, `label`, `value_num`, `suffix`, `sort_o
 (2, 'hero', 'Years of Experience', '12', '+', 2),
 (3, 'hero', 'Total Courses', '20k', '+', 3),
 (4, 'hero', 'Course Category', '90', '+', 4),
-(5, 'journey', 'Learners', '2 Million', '', 1),
-(6, 'journey', '5 Star Feedbacks', '500k', '+', 2),
-(7, 'journey', 'Awards Won Globally', '40', '+', 3),
-(8, 'journey', 'Investment Fund Raised', '20M', '+', 4),
-(9, 'journey', 'Top Mentors', '300', '+', 5);
+(5, 'journey', 'Learners', '59', '', 1),
+(6, 'journey', 'Mahasiswa Aktif', '2.298', '', 2),
+(7, 'journey', 'Doktor (S3)', '10', '', 3),
+(8, 'journey', 'Total Alumni', '9.871', '', 4);
 
 INSERT INTO `features` (`id`, `title`, `description`, `icon`, `sort_order`) VALUES
 (1, 'Personalized Learning Paths', 'Answer a quick goal and skill check to get a tailored, reorderable sequence of courses aligned with your target role.', 'compass', 1),
