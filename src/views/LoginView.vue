@@ -49,8 +49,10 @@ async function handleLogin() {
     <div class="absolute inset-0 bg-brand-900/55 backdrop-blur-[2px]"></div>
 
     <div class="relative z-10 w-full max-w-md rounded-3xl border border-white/30 bg-white/95 p-8 shadow-float backdrop-blur-md">
-      <h1 class="text-2xl font-extrabold text-brand-900">Tarbiyah Login</h1>
-      <p class="mt-1 text-sm text-slate-600">Selamat datang ke Tarbiyah Login</p>
+      <div class="text-center">
+        <h1 class="text-2xl font-extrabold text-brand-900">Tarbiyah Login</h1>
+        <p class="mt-1 text-sm text-slate-600">Selamat datang ke Tarbiyah Login</p>
+      </div>
 
       <div v-if="errorMessage" role="alert" class="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
         {{ errorMessage }}
@@ -58,20 +60,20 @@ async function handleLogin() {
 
       <form class="mt-6 space-y-4" @submit.prevent="handleLogin">
         <div>
-          <label for="login-email" class="block text-sm font-semibold text-brand-900">Email</label>
+          <label for="login-email" class="block text-sm font-semibold text-brand-900">Email / ID</label>
           <input
             id="login-email"
             v-model="email"
             type="email"
             required
             autocomplete="email"
-            placeholder="tarbiyah@iim.ac.id"
+            placeholder="Masukan Email atau ID anda"
             class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
         </div>
         <div>
           <div class="flex items-center justify-between">
-            <label for="login-password" class="block text-sm font-semibold text-brand-900">Password</label>
+            <label for="login-password" class="block text-sm font-semibold text-brand-900">Passcode</label>
             <router-link to="/forgot-password" class="text-xs font-semibold text-brand-600 hover:underline">
               Forgot password?
             </router-link>
@@ -82,6 +84,7 @@ async function handleLogin() {
             type="password"
             required
             autocomplete="current-password"
+            placeholder="Masukkan Passcode anda"
             class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
         </div>

@@ -97,13 +97,15 @@ test.describe('Meekoo Critical User Journeys', () => {
 
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole('heading', { name: 'Tarbiyah Login' })).toBeVisible();
-    await expect(page.getByText('Selamat datang ke Tarbiyah Login')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tarbiyah Login' })).toHaveCSS('text-align', 'center');
+    await expect(page.getByText('Selamat datang ke Tarbiyah Login')).toHaveCSS('text-align', 'center');
+    await expect(page.getByPlaceholder('Masukan Email atau ID anda')).toBeVisible();
+    await expect(page.getByPlaceholder('Masukkan Passcode anda')).toBeVisible();
     await expect(page.getByText('Sandbox Demo Accounts')).toHaveCount(0);
     await expect(page.getByText('Create an account')).toHaveCount(0);
 
-    await page.getByLabel('Email').fill('tarbiyah@iim.ac.id');
-    await page.getByLabel('Password').fill('WrongPass!');
+    await page.getByLabel('Email / ID').fill('tarbiyah@iim.ac.id');
+    await page.getByLabel('Passcode').fill('WrongPass!');
     await page.getByRole('button', { name: 'Login' }).click();
     await expect(page.getByRole('alert')).toContainText('Email atau password salah');
 
@@ -120,8 +122,8 @@ test.describe('Meekoo Critical User Journeys', () => {
     await page.getByRole('link', { name: 'Back to Login' }).click();
     await expect(page).toHaveURL(/\/login/);
 
-    await page.getByLabel('Email').fill('tarbiyah@iim.ac.id');
-    await page.getByLabel('Password').fill('adminganteng');
+    await page.getByLabel('Email / ID').fill('tarbiyah@iim.ac.id');
+    await page.getByLabel('Passcode').fill('adminganteng');
     await page.getByRole('button', { name: 'Login' }).click();
     await expect(page).toHaveURL(/\/admin/);
 
@@ -129,8 +131,8 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page).toHaveURL('/');
 
     await page.goto('/login');
-    await page.getByLabel('Email').fill(student.email);
-    await page.getByLabel('Password').fill(student.password);
+    await page.getByLabel('Email / ID').fill(student.email);
+    await page.getByLabel('Passcode').fill(student.password);
     await page.getByRole('button', { name: 'Login' }).click();
     await expect(page).toHaveURL(/\/dashboard/);
 
