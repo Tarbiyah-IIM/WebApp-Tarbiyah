@@ -558,15 +558,11 @@ INSERT INTO `features` (`id`, `title`, `description`, `icon`, `sort_order`) VALU
 (4, 'Pendidikan Islam Anak Usia Dini', 'Membangun Generasi Emas Sejak Usia Dini. PIAUD membekali mahasiswa dengan ilmu pendidikan, kreativitas, dan nilai-nilai keislaman untuk menjadi pendidik profesional, inovatif, dan inspiratif dalam membentuk karakter serta kecerdasan anak sejak usia dini.', 'users', 4);
 
 INSERT INTO `partners` (`id`, `name`, `logo_url`, `url`, `sort_order`) VALUES
-(1, 'HubSpot', NULL, 'https://www.hubspot.com', 1),
-(2, 'Zoom', NULL, 'https://zoom.us', 2),
-(3, 'Google Meet', NULL, 'https://meet.google.com', 3),
-(4, 'Zendesk', NULL, 'https://www.zendesk.com', 4),
-(5, 'Intercom', NULL, 'https://www.intercom.com', 5),
-(6, 'Trello', NULL, 'https://trello.com', 6),
-(7, 'Slack', NULL, 'https://slack.com', 7),
-(8, 'Asana', NULL, 'https://asana.com', 8),
-(9, 'Teams', NULL, 'https://www.microsoft.com/microsoft-teams', 9);
+(1, 'SIAKAD | Sistem Informasi Akademik Mahasiswa', NULL, 'https://iimsurakarta.siakadcloud.com/gate/login', 1),
+(2, 'PDDIKTI | Pangkalan Data Pendidikan Tinggi', NULL, 'https://pddikti.kemdiktisaintek.go.id/detail-pt/QrBX3IX1gZ4iZ0vcL5jD04MAIVUIW1CYiBp9uu64SFTix7u8RRpcyBQOlHF0R3_Y1xWi4A==', 2),
+(3, 'PMB | Penerimaan Mahasiswa Baru', NULL, 'https://iimsurakarta.siakadcloud.com/spmbfront/home', 3),
+(4, 'TRACER STUDY | Studi Pelacakan Jejak Alumni', NULL, NULL, 4),
+(5, 'Jurnal Tarbiyah', NULL, NULL, 5);
 
 INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
 ('hero_title', 'Selamat Datang di Fakultas Tarbiyah'),
