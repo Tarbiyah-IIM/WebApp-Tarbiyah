@@ -17,6 +17,10 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Total Alumni')).toBeVisible();
     await expect(page.getByText('Doktor (S3)')).toBeVisible();
     await expect(page.getByText('Top Mentors')).toHaveCount(0);
+    await expect(page.getByText('Graduation Rate')).toBeVisible();
+    await expect(page.getByText('47+')).toBeVisible();
+    await expect(page.getByText('academic system')).toBeVisible();
+    await expect(page.getByText('Academic Program')).toBeVisible();
     await expect(page.getByText('Meet Our Expert Mentors')).toBeVisible();
     await expect(page.getByText('What Our Learners Are Saying')).toBeVisible();
     await expect(page.getByText('Frequently Asked Questions')).toBeVisible();
