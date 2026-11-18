@@ -8,7 +8,6 @@ import StatsStrip from '../components/StatsStrip.vue';
 import CoursesSection from '../components/CoursesSection.vue';
 import FeaturesSection from '../components/FeaturesSection.vue';
 import JourneySection from '../components/JourneySection.vue';
-import MentorCarousel from '../components/MentorCarousel.vue';
 import PartnersGrid from '../components/PartnersGrid.vue';
 import TestimonialsSection from '../components/TestimonialsSection.vue';
 import FaqAccordion from '../components/FaqAccordion.vue';
@@ -42,7 +41,6 @@ onMounted(() => {
       <CoursesSection />
       <FeaturesSection :features="landingStore.data.features" />
       <JourneySection :stats="landingStore.data.stats.journey" />
-      <MentorCarousel :mentors="landingStore.data.mentors" />
       <PartnersGrid :partners="landingStore.data.partners" />
       <TestimonialsSection :testimonials="landingStore.data.testimonials" />
       <FaqAccordion :faqs="landingStore.data.faqs" />

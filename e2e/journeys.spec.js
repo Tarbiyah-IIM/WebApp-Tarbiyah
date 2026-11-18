@@ -80,7 +80,7 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Pendidikan Islam Anak Usia Dini').first()).toBeVisible();
     await expect(page.getByText('Weekly Skill Growth')).toHaveCount(0);
     await expect(page.getByText('Course Progress')).toHaveCount(0);
-    await expect(page.getByText('Meet Our Expert Mentors')).toBeVisible();
+    await expect(page.getByText('Meet Our Expert Mentors')).toHaveCount(0);
     await expect(page.locator('#testimonials').getByText('Kegiatan Terbaru', { exact: true })).toBeVisible();
     await expect(page.locator('#testimonials').getByText('Berita Fakultas', { exact: true })).toBeVisible();
     await expect(page.getByText('Verified reviews from professionals and students leveling up their careers on Meekoo.')).toHaveCount(0);
