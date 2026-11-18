@@ -551,10 +551,10 @@ INSERT INTO `stats` (`id`, `stat_group`, `label`, `value_num`, `suffix`, `sort_o
 (8, 'journey', 'Total Alumni', '9.871', '', 4);
 
 INSERT INTO `features` (`id`, `title`, `description`, `icon`, `sort_order`) VALUES
-(1, 'Personalized Learning Paths', 'Answer a quick goal and skill check to get a tailored, reorderable sequence of courses aligned with your target role.', 'compass', 1),
-(2, 'Live Sessions & Webinars', 'Join interactive Zoom and Google Meet workshops with mentors, ask questions live, and get reminders straight to your dashboard.', 'video', 2),
-(3, 'Student Dashboard', 'Track completion percentages, resume right from your last watched lesson, manage orders, and download verified certificates.', 'layout-dashboard', 3),
-(4, 'Community & Networking', 'Collaborate in course-specific discussion threads with mentors and fellow learners solving real industry challenges.', 'users', 4);
+(1, 'Pendidikan Berbasis Nilai-Nilai Islam.', 'Mengembangkan kompetensi akademik dan profesional dengan landasan nilai-nilai rahmatan lil''alamin.', 'compass', 1),
+(2, 'Pendidikan Agama Islam', 'Prodi ini menyelenggarakan pembelajaran yang profesional, responsif, dan berwawasan global hingga mampu menciptakan lulusan yang unggul.', 'video', 2),
+(3, 'Pendidikan Guru Madrasah Ibtidaiyah', 'PGMI mampu menyiapkan sarjana yang mempunyai kemampuan akademis yang profesional dan berkarakter, memiliki kecakapan sosial dan manajerial, serta dapat mengembangkan pola kemitraan dengan berbagai pihak dalam rangka pengembangan Madrasah Ibtidaiyah.', 'layout-dashboard', 3),
+(4, 'Pendidikan Islam Anak Usia Dini', 'Membangun Generasi Emas Sejak Usia Dini. PIAUD membekali mahasiswa dengan ilmu pendidikan, kreativitas, dan nilai-nilai keislaman untuk menjadi pendidik profesional, inovatif, dan inspiratif dalam membentuk karakter serta kecerdasan anak sejak usia dini.', 'users', 4);
 
 INSERT INTO `partners` (`id`, `name`, `logo_url`, `url`, `sort_order`) VALUES
 (1, 'HubSpot', NULL, 'https://www.hubspot.com', 1),
