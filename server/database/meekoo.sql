@@ -427,7 +427,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `role`, `avatar_url
 (1, 'Admin Meekoo', 'admin@meekoo.test', '$2b$10$OgY5P2N/5mGb53EBaNWYMO9qp.Ik/RYb1WQ84SIbtliHAEtr7aO9y', 'admin', 'https://api.dicebear.com/9.x/initials/svg?seed=Admin+Meekoo', 'Operations & Platform Administrator'),
 (2, 'Sarah Johnson', 'sarah@meekoo.test', '$2b$10$OgY5P2N/5mGb53EBaNWYMO9qp.Ik/RYb1WQ84SIbtliHAEtr7aO9y', 'mentor', 'https://api.dicebear.com/9.x/initials/svg?seed=Sarah+Johnson', 'AI Expert & Data Scientist with 10+ years of applied ML leadership.'),
 (3, 'Marcus Vance', 'marcus@meekoo.test', '$2b$10$OgY5P2N/5mGb53EBaNWYMO9qp.Ik/RYb1WQ84SIbtliHAEtr7aO9y', 'mentor', 'https://api.dicebear.com/9.x/initials/svg?seed=Marcus+Vance', 'Cybersecurity Specialist & Cloud Architecture Mentor.'),
-(4, 'Nadia Putri', 'student@meekoo.test', '$2b$10$OgY5P2N/5mGb53EBaNWYMO9qp.Ik/RYb1WQ84SIbtliHAEtr7aO9y', 'student', 'https://api.dicebear.com/9.x/initials/svg?seed=Nadia+Putri', 'Product Designer transitioning into Fullstack & AI Product Engineering.');
+(4, 'Nadia Putri', 'student@meekoo.test', '$2b$10$OgY5P2N/5mGb53EBaNWYMO9qp.Ik/RYb1WQ84SIbtliHAEtr7aO9y', 'student', 'https://api.dicebear.com/9.x/initials/svg?seed=Nadia+Putri', 'Product Designer transitioning into Fullstack & AI Product Engineering.'),
+(5, 'Admin Fakultas Tarbiyah', 'tarbiyah@iim.ac.id', '$2b$10$K6fR9sEtldyzTSctDWlvT.tj2y8o52Iz8KQVvBazyfHt5Ddx57QJq', 'admin', 'https://api.dicebear.com/9.x/initials/svg?seed=Admin+Tarbiyah', 'Administrator Fakultas Tarbiyah IIM Surakarta');
 
 INSERT INTO `mentors` (`id`, `user_id`, `name`, `title`, `bio`, `photo_url`, `sort_order`, `is_active`) VALUES
 (1, 2, 'Sarah Johnson', 'AI Expert & Data Scientist', 'Former Principal Data Scientist leading enterprise NLP and predictive analytics platforms.', 'https://api.dicebear.com/9.x/avataaars/svg?seed=SarahJohnson', 1, 1),
