@@ -11,6 +11,12 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('#1 Online Course 2025')).toHaveCount(0);
     await expect(page.getByText('Best Collaboration')).toHaveCount(0);
     await expect(page.getByText('Courses Designed for Success')).toBeVisible();
+    await expect(page.getByText('Tarbiyah dalam Angka')).toBeVisible();
+    await expect(page.getByText('Lembaga Akreditasi Mandiri Kependidikan')).toBeVisible();
+    await expect(page.getByText('Mahasiswa Aktif')).toBeVisible();
+    await expect(page.getByText('Total Alumni')).toBeVisible();
+    await expect(page.getByText('Doktor (S3)')).toBeVisible();
+    await expect(page.getByText('Top Mentors')).toHaveCount(0);
     await expect(page.getByText('Meet Our Expert Mentors')).toBeVisible();
     await expect(page.getByText('What Our Learners Are Saying')).toBeVisible();
     await expect(page.getByText('Frequently Asked Questions')).toBeVisible();
