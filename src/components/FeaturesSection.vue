@@ -9,17 +9,17 @@ defineProps({
 
 <template>
   <section id="features" class="bg-white pt-16 pb-0 sm:pt-20">
-    <div class="mx-auto grid max-w-7xl grid-cols-1 items-end gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:px-8">
-      <div class="flex justify-center self-end lg:col-span-5 order-2 lg:order-1">
+    <div class="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 sm:px-6 lg:flex-row lg:items-end lg:justify-center lg:gap-8 lg:px-8">
+      <div class="shrink-0 self-center lg:self-end order-2 lg:order-1">
         <img
           :src="howTarbiyahImage"
           alt="Mahasiswi Fakultas Tarbiyah"
           loading="lazy"
-          class="block h-auto max-h-[660px] w-auto max-w-full object-contain object-bottom select-none"
+          class="block h-auto max-h-[640px] w-auto max-w-[320px] sm:max-w-[360px] object-contain object-bottom select-none"
         />
       </div>
 
-      <div class="lg:col-span-7 pb-10 sm:pb-14 lg:pb-20 space-y-6 order-1 lg:order-2">
+      <div class="w-full max-w-2xl pb-10 sm:pb-14 lg:pb-20 space-y-6 order-1 lg:order-2">
         <span class="inline-block rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700">
           Alasan Kuliah
         </span>
