@@ -76,7 +76,7 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Program Studi Unggulan')).toBeVisible();
     await expect(page.getByText('Tarbiyah dalam Angka')).toBeVisible();
     await expect(page.getByText('Lembaga Akreditasi Mandiri Kependidikan')).toBeVisible();
-    await expect(page.getByText('Mahasiswa Aktif')).toBeVisible();
+    await expect(page.getByText('Mahasiswa Aktif', { exact: true })).toBeVisible();
     await expect(page.getByText('Total Alumni')).toBeVisible();
     await expect(page.getByText('Doktor (S3)')).toBeVisible();
     await expect(page.getByText('Top Mentors')).toHaveCount(0);
@@ -107,7 +107,12 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.locator('#testimonials').getByText('Pelepasan Mahasiswa KKN Tematik Pemberdayaan Masyarakat Desa')).toBeVisible();
     await newsNav.getByRole('button', { name: /Next/i }).click();
     await expect(page.locator('#testimonials').getByText('Penandatanganan MoU Kemitraan Madrasah Ibtidaiyah se-Surakarta')).toBeVisible();
-    await expect(page.getByText('Frequently Asked Questions')).toBeVisible();
+    await expect(page.locator('#faq').getByText('Berbagai macam pertanyaan yang sering ditanyakan antara lain')).toBeVisible();
+    await expect(page.getByText('Clear answers on course access, requirements, enrollment, and refund guarantees.')).toHaveCount(0);
+    await expect(page.locator('#faq').getByText('Nilai pada KHS tidak muncul, bagaimana solusinya?')).toBeVisible();
+    await page.locator('#faq').getByRole('button', { name: 'Nilai pada KHS tidak muncul, bagaimana solusinya?' }).click();
+    await expect(page.locator('#faq').getByText(/kuisioner evaluasi pembelajaran/i)).toBeVisible();
+    await expect(page.locator('#faq').getByText('Ijazah atau Transkrip Nilai hilang/rusak, bagaimana solusinya?')).toBeVisible();
 
     const layananSection = page.locator('#layanan-section');
     await expect(layananSection.getByText('Layanan Kami', { exact: true })).toBeVisible();

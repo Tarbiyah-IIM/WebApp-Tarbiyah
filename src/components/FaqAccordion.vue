@@ -21,11 +21,8 @@ function toggle(id) {
           FAQ
         </span>
         <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl">
-          Frequently Asked Questions
+          Berbagai macam pertanyaan yang sering ditanyakan antara lain
         </h2>
-        <p class="mt-2 text-base text-slate-600">
-          Clear answers on course access, requirements, enrollment, and refund guarantees.
-        </p>
       </div>
 
       <div class="mt-10 space-y-3">
