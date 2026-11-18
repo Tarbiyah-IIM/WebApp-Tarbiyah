@@ -6,6 +6,8 @@ test.describe('Meekoo Critical User Journeys', () => {
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     await page.goto('/');
+    await expect(page).toHaveTitle('Fakultas Tarbiyah | Institut Islam Mambaul Ulum Surakarta');
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.png');
     const mainNav = page.getByLabel('Main Navigation');
     await expect(mainNav.getByAltText('Logo Fakultas Tarbiyah')).toBeVisible();
     await expect(mainNav.getByText('Fakultas Tarbiyah', { exact: true })).toBeVisible();
