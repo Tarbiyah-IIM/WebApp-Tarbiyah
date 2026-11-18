@@ -17,7 +17,7 @@ const features = ref([]);
 const partners = ref([]);
 
 const faqForm = ref({ id: null, question: '', answer: '', sortOrder: 0 });
-const testForm = ref({ id: null, name: '', jobTitle: '', quote: '', rating: 5, isVisible: true, sortOrder: 0 });
+const testForm = ref({ id: null, name: '', jobTitle: '', quote: '', avatarUrl: '', rating: 5, isVisible: true, sortOrder: 0 });
 const statForm = ref({ id: null, statGroup: 'hero', label: '', valueNum: '', suffix: '', sortOrder: 0 });
 const featureForm = ref({ id: null, title: '', description: '', icon: 'check', sortOrder: 0 });
 const partnerForm = ref({ id: null, name: '', url: '', sortOrder: 0 });
@@ -81,9 +81,9 @@ async function saveTestimonial() {
   try {
     if (testForm.value.id) await adminService.updateTestimonial(testForm.value.id, testForm.value);
     else await adminService.createTestimonial(testForm.value);
-    testForm.value = { id: null, name: '', jobTitle: '', quote: '', rating: 5, isVisible: true, sortOrder: 0 };
+    testForm.value = { id: null, name: '', jobTitle: '', quote: '', avatarUrl: '', rating: 5, isVisible: true, sortOrder: 0 };
     await syncLanding();
-    toast.success('Testimonial saved & synced.');
+    toast.success('Berita fakultas saved & synced.');
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -235,22 +235,23 @@ onMounted(loadCms);
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
-        <h2 class="text-lg font-extrabold text-brand-900">Testimonials</h2>
+        <h2 class="text-lg font-extrabold text-brand-900">Berita Fakultas</h2>
         <form class="space-y-2" @submit.prevent="saveTestimonial">
           <div class="grid grid-cols-2 gap-2">
-            <input v-model="testForm.name" type="text" required placeholder="Learner Name" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
-            <input v-model="testForm.jobTitle" type="text" required placeholder="Job Title" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
+            <input v-model="testForm.name" type="text" required placeholder="Judul Berita" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
+            <input v-model="testForm.jobTitle" type="text" required placeholder="Tanggal & Kategori" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
           </div>
-          <textarea v-model="testForm.quote" rows="2" required placeholder="Quote" class="w-full rounded-xl border border-surface-border p-2.5 text-sm" />
+          <input v-model="testForm.avatarUrl" type="url" placeholder="URL Gambar Berita (opsional)" class="min-h-[40px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          <textarea v-model="testForm.quote" rows="2" required placeholder="Ringkasan Berita" class="w-full rounded-xl border border-surface-border p-2.5 text-sm" />
           <button type="submit" class="min-h-[40px] rounded-xl bg-brand-600 px-4 text-xs font-bold text-white">
-            {{ testForm.id ? 'Update Testimonial' : 'Add Testimonial' }}
+            {{ testForm.id ? 'Update Berita' : 'Add Berita' }}
           </button>
         </form>
         <div class="space-y-2 max-h-56 overflow-y-auto">
           <div v-for="t in testimonials" :key="t.id" class="flex items-center justify-between rounded-xl bg-surface-page px-3 py-2 text-xs">
             <span class="truncate pr-3"><strong>{{ t.name }}</strong>: "{{ t.quote }}"</span>
             <div class="flex gap-2 shrink-0">
-              <button type="button" class="text-brand-600 font-semibold" @click="testForm = { id: t.id, name: t.name, jobTitle: t.job_title, quote: t.quote, rating: t.rating, isVisible: Boolean(t.is_visible), sortOrder: t.sort_order }">Edit</button>
+              <button type="button" class="text-brand-600 font-semibold" @click="testForm = { id: t.id, name: t.name, jobTitle: t.job_title, quote: t.quote, avatarUrl: t.avatar_url || '', rating: t.rating, isVisible: Boolean(t.is_visible), sortOrder: t.sort_order }">Edit</button>
               <button type="button" class="text-rose-600" @click="removeTestimonial(t.id)">Del</button>
             </div>
           </div>

@@ -81,7 +81,19 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Weekly Skill Growth')).toHaveCount(0);
     await expect(page.getByText('Course Progress')).toHaveCount(0);
     await expect(page.getByText('Meet Our Expert Mentors')).toBeVisible();
-    await expect(page.getByText('What Our Learners Are Saying')).toBeVisible();
+    await expect(page.locator('#testimonials').getByText('Kegiatan Terbaru', { exact: true })).toBeVisible();
+    await expect(page.locator('#testimonials').getByText('Berita Fakultas', { exact: true })).toBeVisible();
+    await expect(page.getByText('Verified reviews from professionals and students leveling up their careers on Meekoo.')).toHaveCount(0);
+    await expect(page.locator('#testimonials article')).toHaveCount(6);
+    const newsNav = page.getByLabel('Navigasi Halaman Berita');
+    await expect(newsNav.getByRole('button', { name: '1', exact: true })).toBeVisible();
+    await expect(newsNav.getByRole('button', { name: '2', exact: true })).toBeVisible();
+    await expect(newsNav.getByRole('button', { name: '3', exact: true })).toBeVisible();
+    await expect(newsNav.getByRole('button', { name: /Next/i })).toBeVisible();
+    await newsNav.getByRole('button', { name: '2', exact: true }).click();
+    await expect(page.locator('#testimonials').getByText('Pelepasan Mahasiswa KKN Tematik Pemberdayaan Masyarakat Desa')).toBeVisible();
+    await newsNav.getByRole('button', { name: /Next/i }).click();
+    await expect(page.locator('#testimonials').getByText('Penandatanganan MoU Kemitraan Madrasah Ibtidaiyah se-Surakarta')).toBeVisible();
     await expect(page.getByText('Frequently Asked Questions')).toBeVisible();
 
     const layananSection = page.locator('#layanan-section');
