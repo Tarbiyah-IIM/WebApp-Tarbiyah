@@ -5,8 +5,10 @@ import { studentService } from '../../services/student.service.js';
 import { extractApiError } from '../../services/api.js';
 import { useFormatters } from '../../composables/useFormatters.js';
 import { useToast } from '../../composables/useToast.js';
+import { useI18n } from '../../composables/useI18n.js';
 
 const toast = useToast();
+const { t } = useI18n();
 const { formatDateTime } = useFormatters();
 
 const sessions = ref([]);
@@ -28,10 +30,10 @@ async function toggleRegistration(session) {
   try {
     if (session.is_registered) {
       await studentService.unregisterLiveSession(session.id);
-      toast.info('Session registration cancelled.');
+      toast.info(t('studentDashboard.liveSessions.cancelledToast'));
     } else {
       await studentService.registerLiveSession(session.id);
-      toast.success('Registered! Meeting link unlocked.');
+      toast.success(t('studentDashboard.liveSessions.registeredToast'));
     }
     await fetchSessions();
   } catch (err) {
@@ -44,9 +46,9 @@ onMounted(fetchSessions);
 
 <template>
   <div class="space-y-4">
-    <div v-if="loading" class="rounded-2xl bg-white p-6 text-sm text-slate-500">Loading live sessions...</div>
+    <div v-if="loading" class="rounded-2xl bg-white p-6 text-sm text-slate-500">{{ t('studentDashboard.liveSessions.loading') }}</div>
     <div v-else-if="sessions.length === 0" class="rounded-2xl border border-surface-border bg-white p-8 text-center text-sm text-slate-500">
-      No upcoming live sessions scheduled right now.
+      {{ t('studentDashboard.liveSessions.empty') }}
     </div>
 
     <div
@@ -66,10 +68,10 @@ onMounted(fetchSessions);
         <div class="flex flex-wrap items-center gap-4 pt-1 text-xs text-slate-500">
           <span class="inline-flex items-center gap-1">
             <Calendar class="h-3.5 w-3.5 text-brand-600" />
-            {{ formatDateTime(session.starts_at) }} ({{ session.duration_min }} mins)
+            {{ formatDateTime(session.starts_at) }} ({{ session.duration_min }} {{ t('studentDashboard.liveSessions.durationSuffix') }})
           </span>
-          <span>Mentor: {{ session.mentor_name }}</span>
-          <span>{{ session.registered_count }} registered</span>
+          <span>{{ t('studentDashboard.mentorPrefix') }}{{ session.mentor_name }}</span>
+          <span>{{ session.registered_count }} {{ t('studentDashboard.liveSessions.registeredSuffix') }}</span>
         </div>
       </div>
 
@@ -82,7 +84,7 @@ onMounted(fetchSessions);
           class="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700"
         >
           <Video class="h-4 w-4" />
-          Join Meeting
+          {{ t('studentDashboard.liveSessions.joinMeeting') }}
           <ExternalLink class="h-3.5 w-3.5" />
         </a>
         <button
@@ -96,7 +98,7 @@ onMounted(fetchSessions);
           @click="toggleRegistration(session)"
         >
           <CheckCircle2 v-if="session.is_registered" class="h-4 w-4 text-emerald-600" />
-          <span>{{ session.is_registered ? 'Registered (Cancel)' : 'Register Seat' }}</span>
+          <span>{{ session.is_registered ? t('studentDashboard.liveSessions.registeredCancel') : t('studentDashboard.liveSessions.registerSeat') }}</span>
         </button>
       </div>
     </div>

@@ -5,8 +5,10 @@ import { studentService } from '../../services/student.service.js';
 import { publicService } from '../../services/public.service.js';
 import { extractApiError } from '../../services/api.js';
 import { useToast } from '../../composables/useToast.js';
+import { useI18n } from '../../composables/useI18n.js';
 
 const toast = useToast();
+const { t } = useI18n();
 
 const paths = ref([]);
 const categories = ref([]);
@@ -42,7 +44,7 @@ async function handleGenerate() {
     });
     paths.value = res.items;
     goalTitle.value = '';
-    toast.success('Personalized learning path generated!');
+    toast.success(t('studentDashboard.learningPaths.generatedToast'));
   } catch (err) {
     toast.error(extractApiError(err));
   } finally {
@@ -60,7 +62,7 @@ async function moveItem(path, idx, delta) {
   try {
     const res = await studentService.reorderLearningPath(path.id, orderedItemIds);
     paths.value = res.items;
-    toast.success('Learning path order updated.');
+    toast.success(t('studentDashboard.learningPaths.reorderedToast'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -70,7 +72,7 @@ async function deletePath(pathId) {
   try {
     await studentService.deleteLearningPath(pathId);
     paths.value = paths.value.filter((p) => p.id !== pathId);
-    toast.success('Learning path removed.');
+    toast.success(t('studentDashboard.learningPaths.removedToast'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -87,43 +89,43 @@ onMounted(loadData);
     >
       <div class="flex items-center gap-2 text-brand-700">
         <Compass class="h-5 w-5" />
-        <h2 class="text-lg font-extrabold text-brand-900">Build Your Personalized Learning Path</h2>
+        <h2 class="text-lg font-extrabold text-brand-900">{{ t('studentDashboard.learningPaths.heading') }}</h2>
       </div>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-12">
         <input
           v-model="goalTitle"
           type="text"
           required
-          placeholder="Your career goal (e.g. Become Fullstack Engineer)"
+          :placeholder="t('studentDashboard.learningPaths.goalPlaceholder')"
           class="min-h-[44px] rounded-xl border border-surface-border px-4 text-sm sm:col-span-5"
         />
         <select
           v-model="categoryId"
           class="min-h-[44px] rounded-xl border border-surface-border px-3 text-sm sm:col-span-3"
         >
-          <option value="">Any Category</option>
+          <option value="">{{ t('studentDashboard.learningPaths.anyCategory') }}</option>
           <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
         </select>
         <select
           v-model="targetLevel"
           class="min-h-[44px] rounded-xl border border-surface-border px-3 text-sm sm:col-span-2"
         >
-          <option value="beginner">Beginner</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="advanced">Advanced</option>
+          <option value="beginner">{{ t('studentDashboard.learningPaths.beginner') }}</option>
+          <option value="intermediate">{{ t('studentDashboard.learningPaths.intermediate') }}</option>
+          <option value="advanced">{{ t('studentDashboard.learningPaths.advanced') }}</option>
         </select>
         <button
           type="submit"
           :disabled="loading"
           class="min-h-[44px] rounded-xl bg-brand-600 px-4 text-sm font-bold text-white hover:bg-brand-700 sm:col-span-2"
         >
-          Generate
+          {{ t('studentDashboard.learningPaths.generateBtn') }}
         </button>
       </div>
     </form>
 
     <div v-if="paths.length === 0 && !loading" class="rounded-2xl border border-surface-border bg-white p-8 text-center text-sm text-slate-500">
-      No learning paths yet. Fill the goal form above to generate a custom roadmap.
+      {{ t('studentDashboard.learningPaths.empty') }}
     </div>
 
     <div
@@ -135,13 +137,13 @@ onMounted(loadData);
         <div>
           <h3 class="text-lg font-extrabold text-brand-900">{{ path.goal_title }}</h3>
           <p class="text-xs text-slate-500">
-            {{ path.category_name || 'Cross-Discipline' }} · Level: {{ path.target_level }}
+            {{ path.category_name || t('studentDashboard.learningPaths.crossDiscipline') }} · {{ t('studentDashboard.learningPaths.levelPrefix') }}{{ path.target_level }}
           </p>
         </div>
         <button
           type="button"
           class="rounded-xl p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-          aria-label="Delete path"
+          :aria-label="t('studentDashboard.learningPaths.deletePathAria')"
           @click="deletePath(path.id)"
         >
           <Trash2 class="h-4 w-4" />
@@ -163,7 +165,7 @@ onMounted(loadData);
                 {{ item.title }}
               </router-link>
               <span class="text-xs text-slate-500">
-                {{ item.level }} · {{ item.duration_hours }} hrs · Progress: {{ Number(item.progress_pct).toFixed(0) }}%
+                {{ item.level }} · {{ item.duration_hours }} {{ t('studentDashboard.learningPaths.hoursSuffix') }} · {{ t('studentDashboard.learningPaths.progressPrefix') }}{{ Number(item.progress_pct).toFixed(0) }}%
               </span>
             </div>
           </div>
@@ -174,7 +176,7 @@ onMounted(loadData);
               type="button"
               :disabled="idx === 0"
               class="rounded-lg border border-surface-border bg-white p-1.5 text-slate-600 hover:bg-brand-50 disabled:opacity-30"
-              aria-label="Move up"
+              :aria-label="t('studentDashboard.learningPaths.moveUpAria')"
               @click="moveItem(path, idx, -1)"
             >
               <ArrowUp class="h-4 w-4" />
@@ -183,7 +185,7 @@ onMounted(loadData);
               type="button"
               :disabled="idx === path.items.length - 1"
               class="rounded-lg border border-surface-border bg-white p-1.5 text-slate-600 hover:bg-brand-50 disabled:opacity-30"
-              aria-label="Move down"
+              :aria-label="t('studentDashboard.learningPaths.moveDownAria')"
               @click="moveItem(path, idx, 1)"
             >
               <ArrowDown class="h-4 w-4" />

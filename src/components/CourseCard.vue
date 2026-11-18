@@ -1,6 +1,7 @@
 <script setup>
 import { PlayCircle, Star, ShoppingBag, ArrowRight } from 'lucide-vue-next';
 import { useFormatters } from '../composables/useFormatters.js';
+import { useI18n } from '../composables/useI18n.js';
 
 defineProps({
   course: { type: Object, required: true }
@@ -9,6 +10,7 @@ defineProps({
 defineEmits(['add-to-cart']);
 
 const { formatPrice } = useFormatters();
+const { t } = useI18n();
 </script>
 
 <template>
@@ -37,7 +39,7 @@ const { formatPrice } = useFormatters();
         </span>
         <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-600">
           <PlayCircle class="h-3.5 w-3.5 text-brand-600" />
-          {{ course.total_videos || 0 }} videos
+          {{ course.total_videos || 0 }} {{ t('catalog.videosSuffix') }}
         </span>
       </div>
 
@@ -77,7 +79,7 @@ const { formatPrice } = useFormatters();
             <button
               type="button"
               class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-surface-border bg-surface-muted px-3 text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition"
-              :aria-label="`Add ${course.title} to cart`"
+              :aria-label="t('catalog.addToCartLabelPrefix') + course.title + t('catalog.addToCartLabelSuffix')"
               @click="$emit('add-to-cart', course)"
             >
               <ShoppingBag class="h-4 w-4" />
@@ -86,7 +88,7 @@ const { formatPrice } = useFormatters();
               :to="`/courses/${course.slug}`"
               class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 transition"
             >
-              Enroll
+              {{ t('catalog.enrollBtn') }}
               <ArrowRight class="h-4 w-4" />
             </router-link>
           </div>

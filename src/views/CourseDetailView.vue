@@ -17,6 +17,7 @@ import { useFormatters } from '../composables/useFormatters.js';
 import { useAuthStore } from '../stores/auth.store.js';
 import { useUiStore } from '../stores/ui.store.js';
 import { useToast } from '../composables/useToast.js';
+import { useI18n } from '../composables/useI18n.js';
 import StateFeedback from '../components/StateFeedback.vue';
 import ModalDialog from '../components/ModalDialog.vue';
 
@@ -25,6 +26,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const ui = useUiStore();
 const toast = useToast();
+const { t } = useI18n();
 const { formatPrice, formatDuration, formatDate } = useFormatters();
 const { loading, error, isOffline, run } = useAsyncState();
 
@@ -46,7 +48,7 @@ function enrollNow() {
   }
   ui.addToCart(course);
   if (!auth.isAuthenticated) {
-    toast.info('Please login or register to complete enrollment.');
+    toast.info(t('courseDetail.loginFirstToast'));
     router.push({ path: '/login', query: { redirect: '/checkout' } });
     return;
   }
@@ -57,7 +59,7 @@ function addToCartOnly() {
   const course = detail.value?.course;
   if (!course) return;
   const added = ui.addToCart(course);
-  toast.success(added ? 'Added to cart.' : 'Already in cart.');
+  toast.success(added ? t('courseDetail.addedCartToast') : t('courseDetail.alreadyCartToast'));
 }
 
 onMounted(fetchDetail);
@@ -90,28 +92,28 @@ onMounted(fetchDetail);
                 <span class="inline-flex items-center gap-1.5">
                   <Star class="h-4 w-4 fill-amber-400 text-amber-400" />
                   <strong>{{ Number(detail.course.rating_avg || 0).toFixed(1) }}</strong>
-                  <span>({{ detail.course.rating_count }} reviews)</span>
+                  <span>({{ detail.course.rating_count }} {{ t('courseDetail.reviewsSuffix') }})</span>
                 </span>
                 <span class="inline-flex items-center gap-1.5">
                   <PlayCircle class="h-4 w-4 text-brand-400" />
-                  {{ detail.course.total_videos }} lessons
+                  {{ detail.course.total_videos }} {{ t('courseDetail.lessonsSuffix') }}
                 </span>
                 <span class="inline-flex items-center gap-1.5">
                   <Clock class="h-4 w-4 text-brand-400" />
-                  {{ detail.course.duration_hours }} total hours
+                  {{ detail.course.duration_hours }} {{ t('courseDetail.totalHoursSuffix') }}
                 </span>
               </div>
             </div>
 
             <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card">
-              <h2 class="text-xl font-extrabold text-brand-900">About This Course</h2>
+              <h2 class="text-xl font-extrabold text-brand-900">{{ t('courseDetail.aboutHeading') }}</h2>
               <p class="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
                 {{ detail.course.description }}
               </p>
             </section>
 
             <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card">
-              <h2 class="text-xl font-extrabold text-brand-900">Curriculum</h2>
+              <h2 class="text-xl font-extrabold text-brand-900">{{ t('courseDetail.curriculumHeading') }}</h2>
               <div class="mt-4 space-y-4">
                 <div
                   v-for="section in detail.curriculum"
@@ -139,7 +141,7 @@ onMounted(fetchDetail);
                           class="rounded-lg bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-100"
                           @click="previewLesson = lesson"
                         >
-                          Preview
+                          {{ t('courseDetail.previewBtn') }}
                         </button>
                         <span class="text-xs text-slate-500">{{ formatDuration(lesson.duration_sec) }}</span>
                       </div>
@@ -150,7 +152,7 @@ onMounted(fetchDetail);
             </section>
 
             <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card">
-              <h2 class="text-xl font-extrabold text-brand-900">Instructor</h2>
+              <h2 class="text-xl font-extrabold text-brand-900">{{ t('courseDetail.instructorHeading') }}</h2>
               <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <img
                   :src="detail.course.mentor_photo_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(detail.course.mentor_name)}`"
@@ -166,9 +168,9 @@ onMounted(fetchDetail);
             </section>
 
             <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card">
-              <h2 class="text-xl font-extrabold text-brand-900">Student Reviews</h2>
+              <h2 class="text-xl font-extrabold text-brand-900">{{ t('courseDetail.reviewsHeading') }}</h2>
               <p v-if="detail.reviews.length === 0" class="mt-3 text-sm text-slate-500">
-                No reviews yet. Enroll and be the first to share feedback!
+                {{ t('courseDetail.noReviews') }}
               </p>
               <div v-else class="mt-4 space-y-4">
                 <div
@@ -210,7 +212,7 @@ onMounted(fetchDetail);
                   {{ formatPrice(detail.course.price, detail.course.currency) }}
                 </span>
                 <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-                  14-day refund guarantee
+                  {{ t('courseDetail.refundBadge') }}
                 </span>
               </div>
 
@@ -220,7 +222,7 @@ onMounted(fetchDetail);
                   class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 text-sm font-bold text-white hover:bg-brand-700 transition"
                   @click="enrollNow"
                 >
-                  <span>{{ detail.hasAccess ? 'Continue Learning' : 'Enroll Now' }}</span>
+                  <span>{{ detail.hasAccess ? t('courseDetail.continueBtn') : t('courseDetail.enrollNowBtn') }}</span>
                   <ArrowRight class="h-4 w-4" />
                 </button>
                 <button
@@ -230,22 +232,14 @@ onMounted(fetchDetail);
                   @click="addToCartOnly"
                 >
                   <ShoppingBag class="h-4 w-4" />
-                  Add to Cart
+                  {{ t('courseDetail.addToCartBtn') }}
                 </button>
               </div>
 
               <ul class="space-y-2.5 border-t border-surface-border pt-4 text-sm text-slate-600">
-                <li class="flex items-center gap-2">
+                <li v-for="perk in t('courseDetail.perks')" :key="perk" class="flex items-center gap-2">
                   <CheckCircle2 class="h-4 w-4 text-emerald-600 shrink-0" />
-                  Full lifetime course access
-                </li>
-                <li class="flex items-center gap-2">
-                  <CheckCircle2 class="h-4 w-4 text-emerald-600 shrink-0" />
-                  Course community & mentor Q&A
-                </li>
-                <li class="flex items-center gap-2">
-                  <CheckCircle2 class="h-4 w-4 text-emerald-600 shrink-0" />
-                  Verified completion certificate
+                  {{ perk }}
                 </li>
               </ul>
             </div>
@@ -256,7 +250,7 @@ onMounted(fetchDetail);
 
     <ModalDialog
       :open="Boolean(previewLesson)"
-      :title="previewLesson ? `Free Preview: ${previewLesson.title}` : ''"
+      :title="previewLesson ? t('courseDetail.freePreviewPrefix') + previewLesson.title : ''"
       @close="previewLesson = null"
     >
       <div v-if="previewLesson" class="space-y-3">

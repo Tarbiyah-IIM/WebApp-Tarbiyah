@@ -6,10 +6,12 @@ import { extractApiError } from '../../services/api.js';
 import { useLandingStore } from '../../stores/landing.store.js';
 import { useFormatters } from '../../composables/useFormatters.js';
 import { useToast } from '../../composables/useToast.js';
+import { useI18n } from '../../composables/useI18n.js';
 import ModalDialog from '../ModalDialog.vue';
 
 const landingStore = useLandingStore();
 const toast = useToast();
+const { t } = useI18n();
 const { formatPrice } = useFormatters();
 
 const courses = ref([]);
@@ -98,7 +100,7 @@ async function handleImageUpload(event) {
   try {
     const res = await adminService.uploadImage(file);
     courseForm.value.thumbnailUrl = res.url;
-    toast.success('Thumbnail uploaded.');
+    toast.success(t('adminDashboard.catalogPanel.toasts.thumbnailUploaded'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -117,10 +119,10 @@ async function saveCourse() {
     };
     if (courseForm.value.id) {
       await adminService.updateCourse(courseForm.value.id, payload);
-      toast.success('Course updated & synced.');
+      toast.success(t('adminDashboard.catalogPanel.toasts.courseUpdated'));
     } else {
       await adminService.createCourse(payload);
-      toast.success('Course created & synced.');
+      toast.success(t('adminDashboard.catalogPanel.toasts.courseCreated'));
     }
     courseModalOpen.value = false;
     await Promise.all([loadAll(), landingStore.fetchLanding(true)]);
@@ -144,7 +146,11 @@ async function approveAndPublish(c) {
       approvalStatus: 'approved',
       isPublished: true
     });
-    toast.success(`"${c.title}" approved & published to catalog.`);
+    toast.success(
+      t('adminDashboard.catalogPanel.toasts.approvedPrefix') +
+        c.title +
+        t('adminDashboard.catalogPanel.toasts.approvedSuffix')
+    );
     await Promise.all([loadAll(), landingStore.fetchLanding(true)]);
   } catch (err) {
     toast.error(extractApiError(err));
@@ -155,7 +161,7 @@ async function removeCourse(id) {
   try {
     await adminService.deleteCourse(id);
     await Promise.all([loadAll(), landingStore.fetchLanding(true)]);
-    toast.success('Course deleted.');
+    toast.success(t('adminDashboard.catalogPanel.toasts.courseDeleted'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -194,7 +200,7 @@ async function addLesson() {
   const res = await adminService.getCourseCurriculum(activeCourse.value.id);
   curriculum.value = res.curriculum;
   await loadAll();
-  toast.success('Lesson added.');
+  toast.success(t('adminDashboard.catalogPanel.toasts.lessonAdded'));
 }
 
 async function removeLesson(id) {
@@ -210,7 +216,7 @@ async function removeSection(id) {
   curriculum.value = res.curriculum;
   lessonForm.value.sectionId = res.curriculum[0]?.id || '';
   await loadAll();
-  toast.success('Section deleted.');
+  toast.success(t('adminDashboard.catalogPanel.toasts.sectionDeleted'));
 }
 
 async function saveCategory() {
@@ -222,7 +228,7 @@ async function saveCategory() {
     }
     categoryForm.value = { id: null, name: '', slug: '', sortOrder: 0 };
     await Promise.all([loadAll(), landingStore.fetchLanding(true)]);
-    toast.success('Category saved & synced.');
+    toast.success(t('adminDashboard.catalogPanel.toasts.categorySaved'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -232,7 +238,7 @@ async function removeCategory(id) {
   try {
     await adminService.deleteCategory(id);
     await Promise.all([loadAll(), landingStore.fetchLanding(true)]);
-    toast.success('Category deleted.');
+    toast.success(t('adminDashboard.catalogPanel.toasts.categoryDeleted'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -247,7 +253,7 @@ async function saveMentor() {
     }
     mentorForm.value = { id: null, name: '', title: '', bio: '', photoUrl: '', sortOrder: 0, isActive: true };
     await Promise.all([loadAll(), landingStore.fetchLanding(true)]);
-    toast.success('Mentor saved & synced.');
+    toast.success(t('adminDashboard.catalogPanel.toasts.mentorSaved'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -257,7 +263,7 @@ async function removeMentor(id) {
   try {
     await adminService.deleteMentor(id);
     await Promise.all([loadAll(), landingStore.fetchLanding(true)]);
-    toast.success('Mentor removed.');
+    toast.success(t('adminDashboard.catalogPanel.toasts.mentorRemoved'));
   } catch (err) {
     toast.error(extractApiError(err));
   }
@@ -270,14 +276,14 @@ onMounted(loadAll);
   <div class="space-y-8">
     <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <h2 class="text-lg font-extrabold text-brand-900">Courses & Mentor Approvals</h2>
+        <h2 class="text-lg font-extrabold text-brand-900">{{ t('adminDashboard.catalogPanel.coursesHeading') }}</h2>
         <button
           type="button"
           class="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white hover:bg-brand-700"
           @click="openNewCourse"
         >
           <Plus class="h-4 w-4" />
-          Add Course
+          {{ t('adminDashboard.catalogPanel.addCourseBtn') }}
         </button>
       </div>
 
@@ -285,18 +291,18 @@ onMounted(loadAll);
         <table class="w-full text-left text-sm">
           <thead class="border-b border-surface-border text-xs uppercase text-slate-500">
             <tr>
-              <th class="py-3 pr-4">Course</th>
-              <th class="py-3 pr-4">Mentor</th>
-              <th class="py-3 pr-4">Price</th>
-              <th class="py-3 pr-4">Status</th>
-              <th class="py-3 text-right">Actions</th>
+              <th class="py-3 pr-4">{{ t('adminDashboard.catalogPanel.courseCol') }}</th>
+              <th class="py-3 pr-4">{{ t('adminDashboard.catalogPanel.mentorCol') }}</th>
+              <th class="py-3 pr-4">{{ t('adminDashboard.catalogPanel.priceCol') }}</th>
+              <th class="py-3 pr-4">{{ t('adminDashboard.catalogPanel.statusCol') }}</th>
+              <th class="py-3 text-right">{{ t('adminDashboard.catalogPanel.actionsCol') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-surface-border">
             <tr v-for="c in courses" :key="c.id">
               <td class="py-3 pr-4">
                 <p class="font-bold text-brand-900">{{ c.title }}</p>
-                <p class="text-xs text-slate-500">{{ c.category_name }} · {{ c.total_videos }} videos</p>
+                <p class="text-xs text-slate-500">{{ c.category_name }} · {{ c.total_videos }} {{ t('adminDashboard.catalogPanel.videosSuffix') }}</p>
               </td>
               <td class="py-3 pr-4 text-xs">{{ c.mentor_name }}</td>
               <td class="py-3 pr-4 font-bold">{{ formatPrice(c.price, c.currency) }}</td>
@@ -305,7 +311,7 @@ onMounted(loadAll);
                   class="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase"
                   :class="c.is_published && c.approval_status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
                 >
-                  {{ c.approval_status }} · {{ c.is_published ? 'Live' : 'Hidden' }}
+                  {{ c.approval_status }} · {{ c.is_published ? t('adminDashboard.catalogPanel.liveStatus') : t('adminDashboard.catalogPanel.hiddenStatus') }}
                 </span>
               </td>
               <td class="py-3 text-right space-x-1.5 whitespace-nowrap">
@@ -316,14 +322,14 @@ onMounted(loadAll);
                   @click="approveAndPublish(c)"
                 >
                   <CheckCircle2 class="h-3.5 w-3.5" />
-                  Approve
+                  {{ t('adminDashboard.catalogPanel.approveBtn') }}
                 </button>
                 <button type="button" class="rounded-lg border border-surface-border px-2.5 py-1 text-xs font-semibold" @click="openEditCourse(c)">
-                  Edit
+                  {{ t('adminDashboard.catalogPanel.editBtn') }}
                 </button>
                 <button type="button" class="inline-flex items-center gap-1 rounded-lg border border-surface-border px-2.5 py-1 text-xs font-semibold" @click="openCurriculum(c)">
                   <Layers class="h-3.5 w-3.5" />
-                  Syllabus
+                  {{ t('adminDashboard.catalogPanel.syllabusBtn') }}
                 </button>
                 <button type="button" class="rounded-lg p-1.5 text-rose-600 hover:bg-rose-50" @click="removeCourse(c.id)">
                   <Trash2 class="h-4 w-4" />
@@ -337,36 +343,36 @@ onMounted(loadAll);
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
-        <h2 class="text-lg font-extrabold text-brand-900">Categories</h2>
+        <h2 class="text-lg font-extrabold text-brand-900">{{ t('adminDashboard.catalogPanel.categoriesHeading') }}</h2>
         <form class="grid grid-cols-1 gap-2 sm:grid-cols-3" @submit.prevent="saveCategory">
-          <input v-model="categoryForm.name" type="text" required placeholder="Name" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
-          <input v-model="categoryForm.slug" type="text" required placeholder="slug-name" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
+          <input v-model="categoryForm.name" type="text" required :placeholder="t('adminDashboard.catalogPanel.catNamePlaceholder')" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
+          <input v-model="categoryForm.slug" type="text" required :placeholder="t('adminDashboard.catalogPanel.catSlugPlaceholder')" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
           <button type="submit" class="min-h-[40px] rounded-xl bg-brand-600 px-4 text-xs font-bold text-white">
-            {{ categoryForm.id ? 'Update' : 'Add Category' }}
+            {{ categoryForm.id ? t('adminDashboard.catalogPanel.updateBtn') : t('adminDashboard.catalogPanel.addCategoryBtn') }}
           </button>
         </form>
         <div class="space-y-2">
           <div v-for="cat in categories" :key="cat.id" class="flex items-center justify-between rounded-xl bg-surface-page px-3 py-2 text-sm">
             <span><strong>{{ cat.name }}</strong> <span class="text-xs text-slate-500">({{ cat.slug }})</span></span>
             <div class="flex gap-2">
-              <button type="button" class="text-xs font-semibold text-brand-600" @click="categoryForm = { id: cat.id, name: cat.name, slug: cat.slug, sortOrder: cat.sort_order }">Edit</button>
-              <button type="button" class="text-xs text-rose-600" @click="removeCategory(cat.id)">Delete</button>
+              <button type="button" class="text-xs font-semibold text-brand-600" @click="categoryForm = { id: cat.id, name: cat.name, slug: cat.slug, sortOrder: cat.sort_order }">{{ t('adminDashboard.catalogPanel.editBtn') }}</button>
+              <button type="button" class="text-xs text-rose-600" @click="removeCategory(cat.id)">{{ t('adminDashboard.catalogPanel.deleteBtn') }}</button>
             </div>
           </div>
         </div>
       </section>
 
       <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
-        <h2 class="text-lg font-extrabold text-brand-900">Mentors</h2>
+        <h2 class="text-lg font-extrabold text-brand-900">{{ t('adminDashboard.catalogPanel.mentorsHeading') }}</h2>
         <form class="space-y-2" @submit.prevent="saveMentor">
           <div class="grid grid-cols-2 gap-2">
-            <input v-model="mentorForm.name" type="text" required placeholder="Mentor Name" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
-            <input v-model="mentorForm.title" type="text" required placeholder="Specialization" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
+            <input v-model="mentorForm.name" type="text" required :placeholder="t('adminDashboard.catalogPanel.mentorNamePlaceholder')" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
+            <input v-model="mentorForm.title" type="text" required :placeholder="t('adminDashboard.catalogPanel.mentorTitlePlaceholder')" class="min-h-[40px] rounded-xl border border-surface-border px-3 text-sm" />
           </div>
           <div class="flex gap-2">
-            <input v-model="mentorForm.bio" type="text" placeholder="Short Bio" class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
+            <input v-model="mentorForm.bio" type="text" :placeholder="t('adminDashboard.catalogPanel.mentorBioPlaceholder')" class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
             <button type="submit" class="min-h-[40px] rounded-xl bg-brand-600 px-4 text-xs font-bold text-white">
-              {{ mentorForm.id ? 'Update' : 'Add Mentor' }}
+              {{ mentorForm.id ? t('adminDashboard.catalogPanel.updateBtn') : t('adminDashboard.catalogPanel.addMentorBtn') }}
             </button>
           </div>
         </form>
@@ -377,29 +383,29 @@ onMounted(loadAll);
               <p class="text-xs text-slate-500">{{ m.title }}</p>
             </div>
             <div class="flex gap-2">
-              <button type="button" class="text-xs font-semibold text-brand-600" @click="mentorForm = { id: m.id, userId: m.user_id || null, name: m.name, title: m.title, bio: m.bio || '', photoUrl: m.photo_url || '', sortOrder: m.sort_order, isActive: Boolean(m.is_active) }">Edit</button>
-              <button type="button" class="text-xs text-rose-600" @click="removeMentor(m.id)">Delete</button>
+              <button type="button" class="text-xs font-semibold text-brand-600" @click="mentorForm = { id: m.id, userId: m.user_id || null, name: m.name, title: m.title, bio: m.bio || '', photoUrl: m.photo_url || '', sortOrder: m.sort_order, isActive: Boolean(m.is_active) }">{{ t('adminDashboard.catalogPanel.editBtn') }}</button>
+              <button type="button" class="text-xs text-rose-600" @click="removeMentor(m.id)">{{ t('adminDashboard.catalogPanel.deleteBtn') }}</button>
             </div>
           </div>
         </div>
       </section>
     </div>
 
-    <ModalDialog :open="courseModalOpen" :title="courseForm.id ? 'Edit Course' : 'Add Course'" @close="courseModalOpen = false">
+    <ModalDialog :open="courseModalOpen" :title="courseForm.id ? t('adminDashboard.catalogPanel.editCourseTitle') : t('adminDashboard.catalogPanel.addCourseTitle')" @close="courseModalOpen = false">
       <form class="space-y-4" @submit.prevent="saveCourse">
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Title</label>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.title') }}</label>
           <input v-model="courseForm.title" type="text" required class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Category</label>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.category') }}</label>
             <select v-model="courseForm.categoryId" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm">
               <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mentor</label>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.mentor') }}</label>
             <select v-model="courseForm.mentorId" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm">
               <option v-for="m in mentors" :key="m.id" :value="m.id">{{ m.name }}</option>
             </select>
@@ -407,90 +413,90 @@ onMounted(loadAll);
         </div>
         <div class="grid grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Price (USD)</label>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.price') }}</label>
             <input v-model="courseForm.price" type="number" min="0" step="0.01" required class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Badge</label>
-            <input v-model="courseForm.badge" type="text" placeholder="Best Seller" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.badge') }}</label>
+            <input v-model="courseForm.badge" type="text" :placeholder="t('adminDashboard.catalogPanel.fields.badgePlaceholder')" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Level</label>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.level') }}</label>
             <select v-model="courseForm.level" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm">
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
+              <option value="beginner">{{ t('catalog.levels.beginner') }}</option>
+              <option value="intermediate">{{ t('catalog.levels.intermediate') }}</option>
+              <option value="advanced">{{ t('catalog.levels.advanced') }}</option>
             </select>
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Subtitle</label>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.subtitle') }}</label>
           <input v-model="courseForm.subtitle" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Approval Status</label>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.approvalStatus') }}</label>
             <select v-model="courseForm.approvalStatus" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm">
-              <option value="approved">Approved</option>
-              <option value="pending_review">Pending Review</option>
-              <option value="draft">Draft</option>
-              <option value="rejected">Rejected</option>
+              <option value="approved">{{ t('adminDashboard.catalogPanel.approvalOptions.approved') }}</option>
+              <option value="pending_review">{{ t('adminDashboard.catalogPanel.approvalOptions.pending_review') }}</option>
+              <option value="draft">{{ t('adminDashboard.catalogPanel.approvalOptions.draft') }}</option>
+              <option value="rejected">{{ t('adminDashboard.catalogPanel.approvalOptions.rejected') }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Thumbnail URL or Upload</label>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.thumbnail') }}</label>
             <div class="flex gap-2">
-              <input v-model="courseForm.thumbnailUrl" type="text" placeholder="https://... or /uploads/..." class="min-h-[42px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
+              <input v-model="courseForm.thumbnailUrl" type="text" :placeholder="t('adminDashboard.catalogPanel.fields.thumbnailPlaceholder')" class="min-h-[42px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
               <label class="inline-flex min-h-[42px] cursor-pointer items-center gap-1.5 rounded-xl border border-surface-border bg-surface-page px-3 text-xs font-bold text-brand-700 hover:bg-brand-50">
                 <Upload class="h-4 w-4" />
-                Upload
+                {{ t('adminDashboard.catalogPanel.fields.uploadBtn') }}
                 <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
               </label>
             </div>
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Description</label>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.catalogPanel.fields.description') }}</label>
           <textarea v-model="courseForm.description" rows="3" required minlength="10" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
         </div>
         <div class="flex items-center justify-between">
           <label class="inline-flex items-center gap-2 text-sm font-semibold">
             <input v-model="courseForm.isPublished" type="checkbox" />
-            Published on Catalog
+            {{ t('adminDashboard.catalogPanel.fields.publishedCatalog') }}
           </label>
           <div class="flex gap-2">
-            <button type="button" class="min-h-[42px] rounded-xl border border-surface-border px-4 text-sm font-semibold" @click="courseModalOpen = false">Cancel</button>
-            <button type="submit" class="min-h-[42px] rounded-xl bg-brand-600 px-5 text-sm font-bold text-white">Save Course</button>
+            <button type="button" class="min-h-[42px] rounded-xl border border-surface-border px-4 text-sm font-semibold" @click="courseModalOpen = false">{{ t('adminDashboard.catalogPanel.fields.cancelBtn') }}</button>
+            <button type="submit" class="min-h-[42px] rounded-xl bg-brand-600 px-5 text-sm font-bold text-white">{{ t('adminDashboard.catalogPanel.fields.saveCourseBtn') }}</button>
           </div>
         </div>
       </form>
     </ModalDialog>
 
-    <ModalDialog :open="curriculumModalOpen" :title="`Syllabus: ${activeCourse?.title || ''}`" @close="curriculumModalOpen = false">
+    <ModalDialog :open="curriculumModalOpen" :title="t('adminDashboard.catalogPanel.syllabusPrefix') + (activeCourse?.title || '')" @close="curriculumModalOpen = false">
       <div class="space-y-4">
         <form class="flex gap-2" @submit.prevent="addSection">
-          <input v-model="newSectionTitle" type="text" required placeholder="New Section Title" class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
-          <button type="submit" class="rounded-xl bg-brand-600 px-4 text-xs font-bold text-white">Add Section</button>
+          <input v-model="newSectionTitle" type="text" required :placeholder="t('adminDashboard.catalogPanel.newSectionPlaceholder')" class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
+          <button type="submit" class="rounded-xl bg-brand-600 px-4 text-xs font-bold text-white">{{ t('adminDashboard.catalogPanel.addSectionBtn') }}</button>
         </form>
         <form v-if="curriculum.length > 0" class="rounded-xl border border-surface-border bg-surface-page p-3 space-y-2" @submit.prevent="addLesson">
           <select v-model="lessonForm.sectionId" class="min-h-[38px] w-full rounded-lg border border-surface-border bg-white px-2 text-sm">
             <option v-for="sec in curriculum" :key="sec.id" :value="sec.id">{{ sec.title }}</option>
           </select>
-          <input v-model="lessonForm.title" type="text" required placeholder="Lesson Title" class="min-h-[38px] w-full rounded-lg border border-surface-border bg-white px-3 text-sm" />
-          <input v-model="lessonForm.videoUrl" type="url" required placeholder="Video MP4 URL" class="min-h-[38px] w-full rounded-lg border border-surface-border bg-white px-3 text-sm" />
+          <input v-model="lessonForm.title" type="text" required :placeholder="t('adminDashboard.catalogPanel.lessonTitlePlaceholder')" class="min-h-[38px] w-full rounded-lg border border-surface-border bg-white px-3 text-sm" />
+          <input v-model="lessonForm.videoUrl" type="url" required :placeholder="t('adminDashboard.catalogPanel.videoUrlPlaceholder')" class="min-h-[38px] w-full rounded-lg border border-surface-border bg-white px-3 text-sm" />
           <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold flex items-center gap-1.5"><input v-model="lessonForm.isPreview" type="checkbox" /> Preview</label>
-            <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-bold text-white">Add Lesson</button>
+            <label class="text-xs font-semibold flex items-center gap-1.5"><input v-model="lessonForm.isPreview" type="checkbox" /> {{ t('adminDashboard.catalogPanel.previewLabel') }}</label>
+            <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-bold text-white">{{ t('adminDashboard.catalogPanel.addLessonBtn') }}</button>
           </div>
         </form>
         <div v-for="sec in curriculum" :key="sec.id" class="rounded-xl border border-surface-border p-3 space-y-1.5">
           <div class="flex items-center justify-between">
             <p class="text-xs font-bold uppercase text-brand-900">{{ sec.title }}</p>
-            <button type="button" class="text-xs text-rose-600 hover:underline" @click="removeSection(sec.id)">Delete Section</button>
+            <button type="button" class="text-xs text-rose-600 hover:underline" @click="removeSection(sec.id)">{{ t('adminDashboard.catalogPanel.deleteSectionBtn') }}</button>
           </div>
           <div v-for="les in sec.lessons" :key="les.id" class="flex items-center justify-between text-xs bg-surface-page px-3 py-1.5 rounded-lg">
             <span>{{ les.title }}</span>
-            <button type="button" class="text-rose-600" @click="removeLesson(les.id)">Remove</button>
+            <button type="button" class="text-rose-600" @click="removeLesson(les.id)">{{ t('adminDashboard.catalogPanel.removeLessonBtn') }}</button>
           </div>
         </div>
       </div>

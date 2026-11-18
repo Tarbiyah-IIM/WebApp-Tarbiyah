@@ -18,6 +18,8 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(mainNav.getByRole('button', { name: 'Publikasi' })).toBeVisible();
     await expect(mainNav.getByRole('button', { name: 'RPL' })).toBeVisible();
     await expect(mainNav.getByRole('link', { name: /Cart/i })).toHaveCount(0);
+    await expect(mainNav.getByRole('link', { name: 'Login' })).toHaveCount(0);
+    await expect(mainNav.getByTestId('search-toggle')).toBeVisible();
 
     await mainNav.getByRole('button', { name: 'Program Studi' }).click();
     await expect(mainNav.getByRole('link', { name: 'Pendidikan Agama Islam' })).toHaveAttribute(
@@ -225,10 +227,25 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Selamat Datang di Fakultas Tarbiyah');
 
-    await page.goto('/courses');
-    await page.getByLabel('Search courses').fill('zzznonexistentcourse999');
-    await page.getByRole('button', { name: 'Filter' }).click();
+    await page.getByTestId('search-toggle').click();
+    const searchDialog = page.getByRole('dialog', { name: 'Pencarian Cepat Tarbiyah' });
+    await expect(searchDialog).toBeVisible();
+    await page.getByTestId('global-search-input').fill('zzznonexistentcourse999');
+    await expect(searchDialog.getByText('Tidak ada hasil yang cocok pada halaman beranda.')).toBeVisible();
+    await page.getByTestId('search-catalog-submit').click();
+
+    await expect(page).toHaveURL(/\/courses\?q=zzznonexistentcourse999/);
+    await expect(page.getByText('Tidak ada kursus yang cocok')).toBeVisible();
+
+    await page.getByTestId('lang-switch-en').click();
+    await expect(page.getByRole('heading', { name: 'Explore All Courses' })).toBeVisible();
     await expect(page.getByText('No matching courses found')).toBeVisible();
+    await page.getByTestId('lang-switch-id').click();
+
+    await mainNav.getByTestId('navbar-logo').click();
+    await mainNav.getByTestId('navbar-logo').click();
+    await mainNav.getByTestId('navbar-logo').click();
+    await expect(page).toHaveURL(/\/login/);
 
     expect(pageErrors).toEqual([]);
   });
@@ -290,7 +307,7 @@ test.describe('Meekoo Critical User Journeys', () => {
     }, student.accessToken);
 
     await page.goto('/courses/strategic-brand-communication');
-    await page.getByRole('button', { name: 'Enroll Now' }).click();
+    await page.getByRole('button', { name: 'Daftar Sekarang' }).click();
     await expect(page).toHaveURL(/\/checkout/);
 
     await page.getByRole('button', { name: /Proceed to Sandbox Payment/i }).click();
@@ -300,7 +317,7 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('failed', { exact: true }).first()).toBeVisible();
 
     await page.goto('/courses/strategic-brand-communication');
-    await page.getByRole('button', { name: 'Enroll Now' }).click();
+    await page.getByRole('button', { name: 'Daftar Sekarang' }).click();
     await page.getByRole('button', { name: /Proceed to Sandbox Payment/i }).click();
     await page.getByRole('button', { name: /Simulate Payment Success/i }).click();
 
@@ -349,27 +366,27 @@ test.describe('Meekoo Critical User Journeys', () => {
     await loginViaApi('sarah@meekoo.test');
     await page.goto('/mentor');
 
-    await page.getByRole('button', { name: 'New Course' }).click();
+    await page.getByRole('button', { name: 'Kursus Baru' }).click();
     await page.locator('form input[type="text"]').first().fill(uniqueTitle);
     await page.locator('form textarea').fill('End-to-end synchronized course description for testing.');
-    await page.getByRole('button', { name: 'Save Course' }).click();
+    await page.getByRole('button', { name: 'Simpan Kursus' }).click();
 
     const row = page.locator('tr', { hasText: uniqueTitle });
     await expect(row).toBeVisible();
-    await row.getByRole('button', { name: 'Submit' }).click();
+    await row.getByRole('button', { name: 'Ajukan' }).click();
     await expect(row).toContainText('pending_review');
 
     const adminAuth = await loginViaApi('admin@meekoo.test');
     await page.goto('/admin');
-    await page.getByRole('button', { name: 'Catalog & Approvals' }).click();
+    await page.getByRole('button', { name: 'Katalog & Persetujuan' }).click();
 
     const adminRow = page.locator('tr', { hasText: uniqueTitle });
     await expect(adminRow).toBeVisible();
-    await adminRow.getByRole('button', { name: 'Approve' }).click();
+    await adminRow.getByRole('button', { name: 'Setujui' }).click();
     await expect(adminRow).toContainText('approved');
 
     await page.goto('/courses');
-    await page.getByLabel('Search courses').fill(uniqueTitle);
+    await page.getByLabel('Cari kursus').fill(uniqueTitle);
     await page.getByRole('button', { name: 'Filter' }).click();
     await expect(page.getByText(uniqueTitle)).toBeVisible();
 
@@ -388,26 +405,26 @@ test.describe('Meekoo Critical User Journeys', () => {
   test('J6: Admin Landing CMS updates Hero Title and syncs immediately to Home', async ({ page, loginViaApi }) => {
     await loginViaApi('admin@meekoo.test');
     await page.goto('/admin');
-    await page.getByRole('button', { name: 'Landing Page CMS' }).click();
+    await page.getByRole('button', { name: 'CMS Halaman Utama' }).click();
 
-    const titleInput = page.getByLabel('Hero Title');
+    const titleInput = page.getByLabel('Judul Hero');
     await expect(titleInput).toHaveValue(/.+/);
     const originalTitle = await titleInput.inputValue();
     const updatedTitle = 'E2E Synced Hero Title 2026';
 
     await titleInput.fill(updatedTitle);
-    await page.getByRole('button', { name: 'Save & Sync Landing' }).click();
-    await expect(page.getByText('Site settings saved & landing page updated!')).toBeVisible();
+    await page.getByRole('button', { name: 'Simpan & Sinkronkan Landing' }).click();
+    await expect(page.getByText('Pengaturan situs disimpan & halaman utama diperbarui!')).toBeVisible();
 
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText(updatedTitle);
 
     await page.goto('/admin');
-    await page.getByRole('button', { name: 'Landing Page CMS' }).click();
-    const restoreInput = page.getByLabel('Hero Title');
+    await page.getByRole('button', { name: 'CMS Halaman Utama' }).click();
+    const restoreInput = page.getByLabel('Judul Hero');
     await expect(restoreInput).toHaveValue(/.+/);
     await restoreInput.fill(originalTitle);
-    await page.getByRole('button', { name: 'Save & Sync Landing' }).click();
-    await expect(page.getByText('Site settings saved & landing page updated!')).toBeVisible();
+    await page.getByRole('button', { name: 'Simpan & Sinkronkan Landing' }).click();
+    await expect(page.getByText('Pengaturan situs disimpan & halaman utama diperbarui!')).toBeVisible();
   });
 });

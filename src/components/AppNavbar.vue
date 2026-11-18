@@ -9,9 +9,11 @@ import {
   ChevronDown,
   ExternalLink,
   Sun,
-  Moon
+  Moon,
+  Search
 } from 'lucide-vue-next';
 import ftarLogo from '../assets/ftar-logo.png';
+import SearchModal from './SearchModal.vue';
 import { useAuthStore } from '../stores/auth.store.js';
 import { useUiStore } from '../stores/ui.store.js';
 import { useToast } from '../composables/useToast.js';
@@ -26,9 +28,12 @@ const { locale, setLocale, t } = useI18n();
 
 const navRef = ref(null);
 const mobileOpen = ref(false);
+const searchModalOpen = ref(false);
 const hoveredDropdown = ref(null);
 const pinnedDropdown = ref(null);
 const mobileExpanded = ref(null);
+const logoClickCount = ref(0);
+let logoClickTimer = null;
 
 const activeDropdown = computed(() => pinnedDropdown.value || hoveredDropdown.value);
 
@@ -176,7 +181,38 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleDocumentClick);
   document.removeEventListener('keydown', handleDocumentKeydown);
+  resetLogoClickTracker();
 });
+
+function resetLogoClickTracker() {
+  logoClickCount.value = 0;
+  if (logoClickTimer) {
+    clearTimeout(logoClickTimer);
+    logoClickTimer = null;
+  }
+}
+
+function handleLogoClick(event) {
+  closeAllMenus();
+  logoClickCount.value += 1;
+  if (logoClickTimer) {
+    clearTimeout(logoClickTimer);
+  }
+  if (logoClickCount.value >= 3) {
+    event.preventDefault();
+    resetLogoClickTracker();
+    router.push('/login');
+    return;
+  }
+  logoClickTimer = setTimeout(() => {
+    resetLogoClickTracker();
+  }, 1000);
+}
+
+function openSearchModal() {
+  closeAllMenus();
+  searchModalOpen.value = true;
+}
 
 async function handleLogout() {
   await auth.logout();
@@ -194,7 +230,12 @@ async function handleLogout() {
       class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8"
       :aria-label="t('nav.mainAria')"
     >
-      <router-link to="/" class="flex min-w-0 shrink-0 items-center gap-2.5 min-h-[44px]" @click="closeAllMenus">
+      <router-link
+        to="/"
+        data-testid="navbar-logo"
+        class="flex min-w-0 shrink-0 select-none items-center gap-2.5 min-h-[44px]"
+        @click="handleLogoClick"
+      >
         <img
           :src="ftarLogo"
           :alt="t('nav.logoAlt')"
@@ -315,6 +356,17 @@ async function handleLogout() {
           <span>{{ ui.isNight ? t('theme.night') : t('theme.light') }}</span>
         </button>
 
+        <button
+          type="button"
+          data-testid="search-toggle"
+          :aria-label="t('search.openLabel')"
+          :title="t('search.openLabel')"
+          class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-xl border border-surface-border bg-white text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+          @click="openSearchModal"
+        >
+          <Search class="h-4 w-4" />
+        </button>
+
         <template v-if="auth.isAuthenticated">
           <router-link
             :to="dashboardRoute"
@@ -332,14 +384,6 @@ async function handleLogout() {
             {{ t('nav.logout') }}
           </button>
         </template>
-        <template v-else>
-          <router-link
-            to="/login"
-            class="inline-flex min-h-[44px] items-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition"
-          >
-            {{ t('nav.login') }}
-          </router-link>
-        </template>
       </div>
 
       <div class="flex shrink-0 items-center gap-1.5 lg:hidden">
@@ -353,6 +397,16 @@ async function handleLogout() {
         >
           <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" />
           <Sun v-else class="h-4 w-4 text-amber-500" />
+        </button>
+        <button
+          type="button"
+          data-testid="search-toggle-mobile"
+          :aria-label="t('search.openLabel')"
+          :title="t('search.openLabel')"
+          class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-xl border border-surface-border text-slate-700"
+          @click="openSearchModal"
+        >
+          <Search class="h-4 w-4" />
         </button>
         <button
           type="button"
@@ -480,16 +534,9 @@ async function handleLogout() {
               {{ t('nav.logout') }}
             </button>
           </template>
-          <router-link
-            v-else
-            to="/login"
-            class="flex min-h-[44px] items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white"
-            @click="closeAllMenus"
-          >
-            {{ t('nav.login') }}
-          </router-link>
         </div>
       </div>
     </div>
+    <SearchModal :open="searchModalOpen" @close="searchModalOpen = false" />
   </header>
 </template>

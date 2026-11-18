@@ -1,16 +1,19 @@
 <script setup>
 import { AlertTriangle, Inbox, WifiOff, RefreshCw } from 'lucide-vue-next';
+import { useI18n } from '../composables/useI18n.js';
 
 defineProps({
   loading: { type: Boolean, default: false },
   error: { type: String, default: '' },
   offline: { type: Boolean, default: false },
   empty: { type: Boolean, default: false },
-  emptyTitle: { type: String, default: 'No data found' },
-  emptyDescription: { type: String, default: 'Try adjusting your filters or check back later.' }
+  emptyTitle: { type: String, default: '' },
+  emptyDescription: { type: String, default: '' }
 });
 
 defineEmits(['retry']);
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -35,7 +38,7 @@ defineEmits(['retry']);
     <WifiOff v-if="offline" class="mx-auto h-10 w-10 text-rose-600 mb-3" />
     <AlertTriangle v-else class="mx-auto h-10 w-10 text-rose-600 mb-3" />
     <h3 class="text-lg font-semibold text-brand-900 mb-1">
-      {{ offline ? 'Connection Interrupted' : 'Unable to Load Content' }}
+      {{ offline ? t('feedback.offlineTitle') : t('feedback.errorTitle') }}
     </h3>
     <p class="text-sm text-slate-600 max-w-md mx-auto mb-5">{{ error }}</p>
     <button
@@ -44,7 +47,7 @@ defineEmits(['retry']);
       @click="$emit('retry')"
     >
       <RefreshCw class="h-4 w-4" />
-      Try Again
+      {{ t('feedback.retryBtn') }}
     </button>
   </div>
 
@@ -53,8 +56,8 @@ defineEmits(['retry']);
     class="rounded-2xl border border-surface-border bg-white p-10 text-center shadow-card"
   >
     <Inbox class="mx-auto h-10 w-10 text-slate-400 mb-3" />
-    <h3 class="text-lg font-semibold text-brand-900 mb-1">{{ emptyTitle }}</h3>
-    <p class="text-sm text-slate-600 max-w-md mx-auto mb-5">{{ emptyDescription }}</p>
+    <h3 class="text-lg font-semibold text-brand-900 mb-1">{{ emptyTitle || t('feedback.noDataTitle') }}</h3>
+    <p class="text-sm text-slate-600 max-w-md mx-auto mb-5">{{ emptyDescription || t('feedback.noDataDesc') }}</p>
     <slot name="empty-action" />
   </div>
 
