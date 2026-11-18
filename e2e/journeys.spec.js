@@ -148,21 +148,26 @@ test.describe('Meekoo Critical User Journeys', () => {
       'href',
       'https://wa.link/qrwv15'
     );
-    await expect(footerSection.getByAltText('Logo Fakultas Tarbiyah')).toBeVisible();
+    await expect(footerSection.getByAltText('Logo Fakultas Tarbiyah')).toHaveCount(0);
+    await expect(footerSection.getByRole('link', { name: /PMB Center/i }).locator('svg')).toHaveCount(1);
+    await expect(footerSection.getByRole('link', { name: /Admin Fakultas/i }).locator('svg')).toHaveCount(1);
     await expect(footerSection.getByText('Gedung Kadtijo W.S - Kampus Pusat')).toBeVisible();
     await expect(footerSection.getByText('Telp. : (0271) 633253')).toBeVisible();
-    await expect(footerSection.getByRole('link', { name: 'PAI', exact: true })).toHaveAttribute(
-      'href',
-      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
-    );
-    await expect(footerSection.getByRole('link', { name: 'PGMI', exact: true })).toHaveAttribute(
-      'href',
-      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
-    );
-    await expect(footerSection.getByRole('link', { name: 'PIAUD', exact: true })).toHaveAttribute(
-      'href',
-      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
-    );
+    await expect(
+      footerSection.getByRole('link', { name: "PAI (Al'ulum Jurnal Pendidikan Islam)", exact: true })
+    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/alulum');
+    await expect(
+      footerSection.getByRole('link', {
+        name: 'PGMI (Journal of Research and Innovation in Madrasah Ibtidaiyah Education)',
+        exact: true
+      })
+    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/alulum');
+    await expect(
+      footerSection.getByRole('link', {
+        name: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)",
+        exact: true
+      })
+    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/alulum');
     const campusMapFrame = footerSection.locator(
       'iframe[title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"]'
     );

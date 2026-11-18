@@ -1,15 +1,36 @@
 <script setup>
-import { MapPin, ArrowRight, ExternalLink, Phone, Building2 } from 'lucide-vue-next';
-import ftarLogo from '../assets/ftar-logo.png';
+import { MapPin, ExternalLink, Phone, Building2 } from 'lucide-vue-next';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
 
 const journalLinks = [
-  { label: 'PAI', href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum' },
-  { label: 'PGMI', href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum' },
-  { label: 'PIAUD', href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum' }
+  {
+    label: "PAI (Al'ulum Jurnal Pendidikan Islam)",
+    href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+  },
+  {
+    label: 'PGMI (Journal of Research and Innovation in Madrasah Ibtidaiyah Education)',
+    href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+  },
+  {
+    label: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)",
+    href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+  }
+];
+
+const footerCtas = [
+  {
+    label: 'PMB Center',
+    href: 'https://wa.link/agu1p5',
+    classes: 'bg-amber-400 font-bold text-slate-900 hover:bg-amber-300'
+  },
+  {
+    label: 'Admin Fakultas',
+    href: 'https://wa.link/qrwv15',
+    classes: 'border border-white/30 bg-white/10 font-semibold text-white hover:bg-white/20'
+  }
 ];
 
 const campusBadges = ['IIM', 'Tarbiyah', 'SIAKAD', 'EdLink'];
@@ -37,21 +58,23 @@ const mapsEmbedUrl =
 
           <div class="lg:col-span-5 flex flex-col gap-3 sm:flex-row lg:justify-end">
             <a
-              href="https://wa.link/agu1p5"
+              v-for="cta in footerCtas"
+              :key="cta.label"
+              :href="cta.href"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 text-sm font-bold text-slate-900 hover:bg-amber-300 transition"
+              class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-6 text-sm transition"
+              :class="cta.classes"
             >
-              <span>PMB Center</span>
-              <ArrowRight class="h-4 w-4" />
-            </a>
-            <a
-              href="https://wa.link/qrwv15"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 text-sm font-semibold text-white hover:bg-white/20 transition"
-            >
-              Admin Fakultas
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="h-4 w-4 shrink-0"
+                aria-hidden="true"
+              >
+                <path d="M12.03 2a9.94 9.94 0 0 0-8.46 15.16L2 22l4.98-1.52A9.95 9.95 0 1 0 12.03 2Zm0 18.14a8.18 8.18 0 0 1-4.17-1.14l-.3-.18-2.95.9.92-2.87-.2-.3a8.18 8.18 0 1 1 6.7 3.59Zm4.49-6.12c-.25-.12-1.46-.72-1.69-.8-.23-.09-.39-.13-.56.12-.16.25-.64.8-.79.96-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.77-1.84-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.41 1.02 2.58c.12.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.17.2-.58.2-1.07.14-1.18-.06-.1-.23-.17-.48-.29Z" />
+              </svg>
+              <span>{{ cta.label }}</span>
             </a>
           </div>
         </div>
@@ -59,16 +82,9 @@ const mapsEmbedUrl =
 
       <div class="mt-14 grid grid-cols-1 gap-10 border-b border-white/10 pb-12 sm:grid-cols-2 lg:grid-cols-4">
         <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <img
-              :src="ftarLogo"
-              alt="Logo Fakultas Tarbiyah"
-              class="h-12 w-auto shrink-0 object-contain"
-            />
-            <div class="flex flex-col leading-tight">
-              <span class="text-base font-extrabold text-white">Fakultas Tarbiyah</span>
-              <span class="text-xs font-semibold text-slate-300">Institut Islam Mambaul Ulum Surakarta</span>
-            </div>
+          <div class="flex flex-col leading-tight">
+            <span class="text-base font-extrabold text-white">Fakultas Tarbiyah</span>
+            <span class="text-xs font-semibold text-slate-300">Institut Islam Mambaul Ulum Surakarta</span>
           </div>
           <p class="text-sm text-slate-400 leading-relaxed">
             Website resmi Fakultas Tarbiyah yang berguna untuk memberikan informasi kepada seluruh mahasiswa, terutama untuk para mahasiswa Fakultas Tarbiyah IIM Surakarta.
@@ -101,10 +117,10 @@ const mapsEmbedUrl =
                 :href="journal.href"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center gap-1.5 hover:text-white transition"
+                class="inline-flex items-start gap-1.5 hover:text-white transition"
               >
                 <span>{{ journal.label }}</span>
-                <ExternalLink class="h-3.5 w-3.5 text-slate-500" />
+                <ExternalLink class="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-500" />
               </a>
             </li>
           </ul>
