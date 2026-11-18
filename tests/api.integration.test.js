@@ -28,7 +28,7 @@ describe('Meekoo Platform Integration & Sync Suite', () => {
     expect(res.body.stats.journey.length).toBeGreaterThanOrEqual(4);
     expect(res.body.features.length).toBeGreaterThanOrEqual(4);
     expect(res.body.mentors.length).toBeGreaterThanOrEqual(1);
-    expect(res.body.partners.length).toBeGreaterThanOrEqual(9);
+    expect(res.body.partners.length).toBe(5);
     expect(res.body.testimonials.length).toBeGreaterThanOrEqual(6);
     expect(res.body.faqs.length).toBeGreaterThanOrEqual(5);
     expect(res.body.categories.length).toBeGreaterThanOrEqual(6);

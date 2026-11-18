@@ -1,33 +1,88 @@
 <script setup>
+import { ExternalLink } from 'lucide-vue-next';
+import { useToast } from '../composables/useToast.js';
+
 defineProps({
   partners: { type: Array, default: () => [] }
 });
+
+const toast = useToast();
+
+function splitServiceLabel(rawName) {
+  const parts = String(rawName || '').split('|');
+  const title = (parts[0] || '').trim();
+  const subtitle = parts.slice(1).join('|').trim();
+  return { title, subtitle };
+}
+
+function handlePendingService(partner) {
+  const { title } = splitServiceLabel(partner.name);
+  toast.info('Tautan layanan "' + title + '" sedang disiapkan.', 'Layanan Kami');
+}
 </script>
 
 <template>
-  <section class="border-y border-surface-border bg-white py-14">
+  <section id="layanan-section" class="border-y border-surface-border bg-white py-14">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <p class="text-center text-xs font-bold uppercase tracking-widest text-slate-500">
-        Our Trusted Partners & Collaboration Ecosystem
+        Layanan Kami
       </p>
-      <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9">
-        <a
-          v-for="partner in partners"
-          :key="partner.id"
-          :href="partner.url || '#'"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex min-h-[56px] items-center justify-center rounded-xl border border-surface-border bg-surface-page px-3 py-2.5 text-center text-sm font-bold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
-        >
-          <img
-            v-if="partner.logo_url"
-            :src="partner.logo_url"
-            :alt="partner.name"
-            loading="lazy"
-            class="h-6 max-w-full object-contain"
-          />
-          <span v-else>{{ partner.name }}</span>
-        </a>
+      <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <template v-for="partner in partners" :key="partner.id">
+          <a
+            v-if="partner.url"
+            :href="partner.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group flex min-h-[84px] flex-col items-center justify-center gap-1 rounded-2xl border border-surface-border bg-surface-page px-4 py-3.5 text-center shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50"
+          >
+            <img
+              v-if="partner.logo_url"
+              :src="partner.logo_url"
+              :alt="partner.name"
+              loading="lazy"
+              class="h-6 max-w-full object-contain"
+            />
+            <template v-else>
+              <span class="inline-flex items-center gap-1.5 text-sm font-extrabold text-brand-900 group-hover:text-brand-700">
+                <span>{{ splitServiceLabel(partner.name).title }}</span>
+                <ExternalLink class="h-3.5 w-3.5 shrink-0 text-slate-400 group-hover:text-brand-600" />
+              </span>
+              <span
+                v-if="splitServiceLabel(partner.name).subtitle"
+                class="text-xs font-medium leading-snug text-slate-500 group-hover:text-brand-700/80"
+              >
+                {{ splitServiceLabel(partner.name).subtitle }}
+              </span>
+            </template>
+          </a>
+
+          <button
+            v-else
+            type="button"
+            class="group flex min-h-[84px] flex-col items-center justify-center gap-1 rounded-2xl border border-surface-border bg-surface-page px-4 py-3.5 text-center shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50"
+            @click="handlePendingService(partner)"
+          >
+            <img
+              v-if="partner.logo_url"
+              :src="partner.logo_url"
+              :alt="partner.name"
+              loading="lazy"
+              class="h-6 max-w-full object-contain"
+            />
+            <template v-else>
+              <span class="text-sm font-extrabold text-brand-900 group-hover:text-brand-700">
+                {{ splitServiceLabel(partner.name).title }}
+              </span>
+              <span
+                v-if="splitServiceLabel(partner.name).subtitle"
+                class="text-xs font-medium leading-snug text-slate-500 group-hover:text-brand-700/80"
+              >
+                {{ splitServiceLabel(partner.name).subtitle }}
+              </span>
+            </template>
+          </button>
+        </template>
       </div>
     </div>
   </section>

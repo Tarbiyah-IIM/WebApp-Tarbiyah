@@ -74,6 +74,24 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('What Our Learners Are Saying')).toBeVisible();
     await expect(page.getByText('Frequently Asked Questions')).toBeVisible();
 
+    const layananSection = page.locator('#layanan-section');
+    await expect(layananSection.getByText('Layanan Kami', { exact: true })).toBeVisible();
+    await expect(layananSection.locator('a, button')).toHaveCount(5);
+    await expect(layananSection.getByRole('link', { name: /SIAKAD/i })).toHaveAttribute(
+      'href',
+      'https://iimsurakarta.siakadcloud.com/gate/login'
+    );
+    await expect(layananSection.getByRole('link', { name: /PDDIKTI/i })).toHaveAttribute(
+      'href',
+      'https://pddikti.kemdiktisaintek.go.id/detail-pt/QrBX3IX1gZ4iZ0vcL5jD04MAIVUIW1CYiBp9uu64SFTix7u8RRpcyBQOlHF0R3_Y1xWi4A=='
+    );
+    await expect(layananSection.getByRole('link', { name: /PMB/i })).toHaveAttribute(
+      'href',
+      'https://iimsurakarta.siakadcloud.com/spmbfront/home'
+    );
+    await expect(layananSection.getByRole('button', { name: /TRACER STUDY/i })).toBeVisible();
+    await expect(layananSection.getByRole('button', { name: /Jurnal Tarbiyah/i })).toBeVisible();
+
     await expect(page.locator('#courses-section article')).toHaveCount(3);
     await expect(page.locator('#courses-section [role="tab"]')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Load More Courses/i })).toHaveCount(0);
