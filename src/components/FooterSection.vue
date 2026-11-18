@@ -1,37 +1,41 @@
 <script setup>
+import { computed } from 'vue';
 import { MapPin, ExternalLink, Phone, Building2 } from 'lucide-vue-next';
+import { useI18n } from '../composables/useI18n.js';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
 
-const journalLinks = [
+const { t, tr } = useI18n();
+
+const journalLinks = computed(() => [
   {
-    label: "PAI (Al'ulum Jurnal Pendidikan Islam)",
+    label: t('footer.journalLinks.pai'),
     href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
   },
   {
-    label: 'PGMI (Journal of Research and Innovation in Madrasah Ibtidaiyah Education)',
+    label: t('footer.journalLinks.pgmi'),
     href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
   },
   {
-    label: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)",
+    label: t('footer.journalLinks.piaud'),
     href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
   }
-];
+]);
 
-const footerCtas = [
+const footerCtas = computed(() => [
   {
-    label: 'PMB Center',
+    label: t('footer.pmbCenter'),
     href: 'https://wa.link/agu1p5',
     classes: 'bg-amber-400 font-bold text-slate-900 hover:bg-amber-300'
   },
   {
-    label: 'Admin Fakultas',
+    label: t('footer.adminFaculty'),
     href: 'https://wa.link/qrwv15',
     classes: 'border border-white/30 bg-white/10 font-semibold text-white hover:bg-white/20'
   }
-];
+]);
 
 const campusBadges = ['IIM', 'Tarbiyah', 'SIAKAD', 'EdLink'];
 
@@ -46,12 +50,14 @@ const mapsEmbedUrl =
         <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
           <div class="lg:col-span-7 space-y-2">
             <h2 class="text-2xl font-extrabold text-white sm:text-3xl">
-              {{ settings.footer_cta_title || 'Your Future Start Here!' }}
+              {{ tr(settings.footer_cta_title || 'Your Future Start Here!') }}
             </h2>
             <p class="text-sm text-brand-100 sm:text-base">
               {{
-                settings.footer_cta_subtitle ||
-                'Join more than 2,000 students who are developing the skills to become the educators and professionals of the future.'
+                tr(
+                  settings.footer_cta_subtitle ||
+                    'Join more than 2,000 students who are developing the skills to become the educators and professionals of the future.'
+                )
               }}
             </p>
           </div>
@@ -83,34 +89,34 @@ const mapsEmbedUrl =
       <div class="mt-14 grid grid-cols-1 gap-10 border-b border-white/10 pb-12 sm:grid-cols-2 lg:grid-cols-4">
         <div class="space-y-4">
           <div class="flex flex-col leading-tight">
-            <span class="text-base font-extrabold text-white">Fakultas Tarbiyah</span>
-            <span class="text-xs font-semibold text-slate-300">Institut Islam Mambaul Ulum Surakarta</span>
+            <span class="text-base font-extrabold text-white">{{ t('brand.faculty') }}</span>
+            <span class="text-xs font-semibold text-slate-300">{{ t('brand.institute') }}</span>
           </div>
           <p class="text-sm text-slate-400 leading-relaxed">
-            Website resmi Fakultas Tarbiyah yang berguna untuk memberikan informasi kepada seluruh mahasiswa, terutama untuk para mahasiswa Fakultas Tarbiyah IIM Surakarta.
+            {{ t('footer.aboutText') }}
           </p>
         </div>
 
         <div class="space-y-3">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-white">Alamat Kantor</h3>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-white">{{ t('footer.officeTitle') }}</h3>
           <ul class="space-y-2.5 text-sm text-slate-400">
             <li class="flex items-start gap-2">
               <Building2 class="h-4 w-4 text-brand-400 shrink-0 mt-0.5" />
-              <span class="font-semibold text-slate-200">Gedung Kadtijo W.S - Kampus Pusat</span>
+              <span class="font-semibold text-slate-200">{{ t('footer.campusBuilding') }}</span>
             </li>
             <li class="flex items-start gap-2">
               <MapPin class="h-4 w-4 text-brand-400 shrink-0 mt-0.5" />
-              <span>Jl. Sadewa No.14, Serengan, Surakarta 57155, Jawa Tengah, Indonesia</span>
+              <span>{{ t('footer.addressText') }}</span>
             </li>
             <li class="flex items-center gap-2">
               <Phone class="h-4 w-4 text-brand-400 shrink-0" />
-              <span>Telp. : (0271) 633253</span>
+              <span>{{ t('footer.phoneText') }}</span>
             </li>
           </ul>
         </div>
 
         <div class="space-y-3">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-white">Jurnal</h3>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-white">{{ t('footer.journalTitle') }}</h3>
           <ul class="space-y-2.5 text-sm text-slate-400">
             <li v-for="journal in journalLinks" :key="journal.label">
               <a
@@ -127,10 +133,10 @@ const mapsEmbedUrl =
         </div>
 
         <div class="space-y-3">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-white">Lokasi Kampus</h3>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-white">{{ t('footer.campusMapTitle') }}</h3>
           <div class="overflow-hidden rounded-xl border border-white/20 bg-white shadow-sm">
             <iframe
-              title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"
+              :title="t('footer.mapIframeTitle')"
               :src="mapsEmbedUrl"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
@@ -142,7 +148,7 @@ const mapsEmbedUrl =
 
       <div class="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
         <p class="text-xs text-slate-400">
-          © {{ new Date().getFullYear() }} Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. All rights reserved.
+          © {{ new Date().getFullYear() }} {{ t('footer.rightsText') }}
         </p>
         <div class="flex flex-wrap items-center gap-2">
           <span

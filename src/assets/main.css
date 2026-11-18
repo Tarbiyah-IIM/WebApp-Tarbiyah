@@ -2,10 +2,24 @@
 @config "../../tailwind.config.js";
 
 @layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html[data-theme="night"] {
+    color-scheme: dark;
+  }
+
   body {
     font-family: "Plus Jakarta Sans", Inter, system-ui, -apple-system, sans-serif;
     background-color: #f8fafc;
     color: #0f172a;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  html[data-theme="night"] body {
+    background-color: #0b1120;
+    color: #f1f5f9;
   }
 
   button:not(:disabled),
@@ -35,4 +49,231 @@
 
 .animate-float-delayed {
   animation: floatSlow 6s ease-in-out 1.5s infinite;
+}
+
+html[data-theme="night"] .bg-surface-page {
+  background-color: #0b1120;
+}
+
+html[data-theme="night"] .bg-surface-muted,
+html[data-theme="night"] .bg-slate-100 {
+  background-color: #162033;
+}
+
+html[data-theme="night"] .bg-slate-200 {
+  background-color: #1e293b;
+}
+
+html[data-theme="night"] .bg-white {
+  background-color: #111827;
+}
+
+html[data-theme="night"] .bg-white\/95 {
+  background-color: rgba(17, 24, 39, 0.95);
+}
+
+html[data-theme="night"] .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="night"] .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="night"] .bg-brand-900 {
+  background-color: #060b16;
+}
+
+html[data-theme="night"] .bg-brand-50,
+html[data-theme="night"] .bg-brand-50\/50,
+html[data-theme="night"] .bg-brand-50\/60,
+html[data-theme="night"] .bg-brand-50\/70 {
+  background-color: rgba(37, 99, 235, 0.14);
+}
+
+html[data-theme="night"] .bg-brand-100 {
+  background-color: rgba(59, 130, 246, 0.22);
+}
+
+html[data-theme="night"] .bg-emerald-50,
+html[data-theme="night"] .bg-emerald-50\/60 {
+  background-color: rgba(16, 185, 129, 0.14);
+}
+
+html[data-theme="night"] .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.22);
+}
+
+html[data-theme="night"] .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.14);
+}
+
+html[data-theme="night"] .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.22);
+}
+
+html[data-theme="night"] .bg-rose-50,
+html[data-theme="night"] .bg-rose-50\/70 {
+  background-color: rgba(244, 63, 94, 0.14);
+}
+
+html[data-theme="night"] .bg-rose-100 {
+  background-color: rgba(244, 63, 94, 0.22);
+}
+
+html[data-theme="night"] .from-brand-50\/80 {
+  --tw-gradient-from: rgba(30, 58, 138, 0.22);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via, #0b1120), var(--tw-gradient-to, #0b1120);
+}
+
+html[data-theme="night"] .from-emerald-50 {
+  --tw-gradient-from: rgba(6, 78, 59, 0.28);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via, #111827), var(--tw-gradient-to, #111827);
+}
+
+html[data-theme="night"] .via-white {
+  --tw-gradient-via: #0b1120;
+}
+
+html[data-theme="night"] .to-white {
+  --tw-gradient-to: #111827;
+}
+
+html[data-theme="night"] .border-surface-border,
+html[data-theme="night"] .border-surface-border\/60,
+html[data-theme="night"] .border-surface-border\/80,
+html[data-theme="night"] .border-slate-100,
+html[data-theme="night"] .border-slate-200 {
+  border-color: #243247;
+}
+
+html[data-theme="night"] .divide-surface-border > :not([hidden]) ~ :not([hidden]) {
+  border-color: #243247;
+}
+
+html[data-theme="night"] .border-brand-100,
+html[data-theme="night"] .border-brand-200,
+html[data-theme="night"] .border-brand-300 {
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+html[data-theme="night"] .border-emerald-200,
+html[data-theme="night"] .border-emerald-300 {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+html[data-theme="night"] .border-amber-200 {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+html[data-theme="night"] .border-rose-200,
+html[data-theme="night"] .border-rose-300 {
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+html[data-theme="night"] .text-brand-900,
+html[data-theme="night"] .text-slate-900 {
+  color: #f8fafc;
+}
+
+html[data-theme="night"] .text-brand-800 {
+  color: #93c5fd;
+}
+
+html[data-theme="night"] .text-brand-700,
+html[data-theme="night"] .text-brand-700\/80 {
+  color: #93c5fd;
+}
+
+html[data-theme="night"] .text-brand-600 {
+  color: #60a5fa;
+}
+
+html[data-theme="night"] .bg-brand-600,
+html[data-theme="night"] a.bg-brand-600,
+html[data-theme="night"] button.bg-brand-600 {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+html[data-theme="night"] .bg-brand-600:hover,
+html[data-theme="night"] a.bg-brand-600:hover,
+html[data-theme="night"] button.bg-brand-600:hover {
+  background-color: #1d4ed8;
+}
+
+html[data-theme="night"] .bg-amber-400,
+html[data-theme="night"] .bg-amber-400 .text-brand-900,
+html[data-theme="night"] .bg-amber-400 .text-slate-900 {
+  color: #0f172a;
+}
+
+html[data-theme="night"] .text-slate-700 {
+  color: #e2e8f0;
+}
+
+html[data-theme="night"] .text-slate-600 {
+  color: #cbd5e1;
+}
+
+html[data-theme="night"] .text-slate-500 {
+  color: #94a3b8;
+}
+
+html[data-theme="night"] .text-slate-400 {
+  color: #94a3b8;
+}
+
+html[data-theme="night"] .text-emerald-900,
+html[data-theme="night"] .text-emerald-800,
+html[data-theme="night"] .text-emerald-700 {
+  color: #6ee7b7;
+}
+
+html[data-theme="night"] .text-amber-900,
+html[data-theme="night"] .text-amber-800,
+html[data-theme="night"] .text-amber-700 {
+  color: #fcd34d;
+}
+
+html[data-theme="night"] .text-rose-900,
+html[data-theme="night"] .text-rose-800,
+html[data-theme="night"] .text-rose-700 {
+  color: #fda4af;
+}
+
+html[data-theme="night"] .hover\:bg-brand-50:hover,
+html[data-theme="night"] .hover\:bg-slate-50:hover,
+html[data-theme="night"] .hover\:bg-surface-muted:hover {
+  background-color: rgba(51, 65, 85, 0.45);
+}
+
+html[data-theme="night"] .hover\:bg-rose-50:hover {
+  background-color: rgba(244, 63, 94, 0.18);
+}
+
+html[data-theme="night"] .shadow-card {
+  box-shadow: 0 10px 30px -12px rgba(2, 6, 23, 0.72), 0 0 0 1px rgba(148, 163, 184, 0.08);
+}
+
+html[data-theme="night"] .shadow-float {
+  box-shadow: 0 24px 54px -18px rgba(2, 6, 23, 0.85);
+}
+
+html[data-theme="night"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="night"] select,
+html[data-theme="night"] textarea {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+html[data-theme="night"] input::placeholder,
+html[data-theme="night"] textarea::placeholder {
+  color: #64748b;
+}
+
+html[data-theme="night"] :focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
 }

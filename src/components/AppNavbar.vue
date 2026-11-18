@@ -7,16 +7,22 @@ import {
   LogOut,
   LayoutDashboard,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Sun,
+  Moon
 } from 'lucide-vue-next';
 import ftarLogo from '../assets/ftar-logo.png';
 import { useAuthStore } from '../stores/auth.store.js';
+import { useUiStore } from '../stores/ui.store.js';
 import { useToast } from '../composables/useToast.js';
+import { useI18n } from '../composables/useI18n.js';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const ui = useUiStore();
 const toast = useToast();
+const { locale, setLocale, t } = useI18n();
 
 const navRef = ref(null);
 const mobileOpen = ref(false);
@@ -32,71 +38,71 @@ const dashboardRoute = computed(() => {
   return '/dashboard';
 });
 
-const navMenus = [
+const navMenus = computed(() => [
   {
     id: 'tentang-kami',
-    label: 'Tentang Kami',
+    label: t('nav.about'),
     to: '/#features'
   },
   {
     id: 'program-studi',
-    label: 'Program Studi',
+    label: t('nav.programs'),
     children: [
       {
-        label: 'Pendidikan Agama Islam',
+        label: t('nav.items.programs.pai'),
         href: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
       },
       {
-        label: 'Pendidikan Guru Madrasah Ibtidaiyah',
+        label: t('nav.items.programs.pgmi'),
         href: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232'
       },
       {
-        label: 'Pendidikan Islam Anak Usia Dini',
+        label: t('nav.items.programs.piaud'),
         href: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239'
       }
     ]
   },
   {
     id: 'akademik',
-    label: 'Akademik',
+    label: t('nav.academic'),
     children: [
       {
-        label: 'Surat Aktif Mahasiswa',
+        label: t('nav.items.academic.activeLetter'),
         href: 'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/'
       },
-      { label: 'Administrasi Persuratan' },
-      { label: 'Kalender Akademik' },
-      { label: 'Kurikulum' },
+      { label: t('nav.items.academic.correspondence') },
+      { label: t('nav.items.academic.calendar') },
+      { label: t('nav.items.academic.curriculum') },
       {
-        label: 'Ujian Komprehensif',
+        label: t('nav.items.academic.comprehensive'),
         href: 'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
       },
       {
-        label: 'Munaqasyah',
+        label: t('nav.items.academic.munaqasyah'),
         href: 'https://www.myskripsi.iimsurakarta.ac.id/myskripsi/dashboard/'
       }
     ]
   },
   {
     id: 'publikasi',
-    label: 'Publikasi',
+    label: t('nav.publications'),
     children: [
-      { label: 'Praktek Pengalaman Lapangan (PPL)' },
-      { label: 'Praktek Kerja Nyata (KKN)' },
-      { label: 'Jurnal' },
-      { label: 'Penelitian dan Pengabdian' }
+      { label: t('nav.items.publications.ppl') },
+      { label: t('nav.items.publications.kkn') },
+      { label: t('nav.items.publications.journal') },
+      { label: t('nav.items.publications.research') }
     ]
   },
   {
     id: 'rpl',
-    label: 'RPL',
+    label: t('nav.rpl'),
     children: [
-      { label: 'Pedoman RPL' },
-      { label: 'Peraturan Akademik' },
-      { label: 'SK Pengelola' }
+      { label: t('nav.items.rpl.guide') },
+      { label: t('nav.items.rpl.regulations') },
+      { label: t('nav.items.rpl.decree') }
     ]
   }
-];
+]);
 
 function toggleDesktopDropdown(id) {
   if (pinnedDropdown.value === id) {
@@ -139,7 +145,7 @@ function closeAllMenus() {
 
 function handlePendingItem(menuLabel, itemLabel) {
   closeAllMenus();
-  toast.info('Halaman atau dokumen "' + itemLabel + '" sedang disiapkan.', menuLabel);
+  toast.info(t('nav.pendingPrefix') + itemLabel + t('nav.pendingSuffix'), menuLabel);
 }
 
 function handleDocumentClick(event) {
@@ -184,19 +190,22 @@ async function handleLogout() {
     ref="navRef"
     class="sticky top-0 z-40 border-b border-surface-border/80 bg-white/95 backdrop-blur-md"
   >
-    <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8" aria-label="Main Navigation">
-      <router-link to="/" class="flex shrink-0 items-center gap-2.5 min-h-[44px]" @click="closeAllMenus">
+    <nav
+      class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8"
+      :aria-label="t('nav.mainAria')"
+    >
+      <router-link to="/" class="flex min-w-0 shrink-0 items-center gap-2.5 min-h-[44px]" @click="closeAllMenus">
         <img
           :src="ftarLogo"
-          alt="Logo Fakultas Tarbiyah"
-          class="h-11 w-auto shrink-0 object-contain"
+          :alt="t('nav.logoAlt')"
+          class="h-10 w-auto shrink-0 object-contain sm:h-11"
         />
         <span class="flex flex-col leading-tight">
           <span class="text-sm font-extrabold tracking-tight text-brand-900 sm:text-base">
-            Fakultas Tarbiyah
+            {{ t('brand.faculty') }}
           </span>
-          <span class="text-[11px] font-semibold text-slate-600 sm:text-xs">
-            Institut Islam Mambaul Ulum Surakarta
+          <span class="max-w-[180px] truncate text-[11px] font-semibold text-slate-600 sm:max-w-none sm:text-xs">
+            {{ t('brand.institute') }}
           </span>
         </span>
       </router-link>
@@ -264,14 +273,55 @@ async function handleLogout() {
         </template>
       </div>
 
-      <div class="hidden shrink-0 items-center gap-3 lg:flex">
+      <div class="hidden shrink-0 items-center gap-2.5 lg:flex">
+        <div
+          class="inline-flex items-center rounded-xl border border-surface-border bg-surface-muted p-0.5"
+          role="group"
+          :aria-label="t('lang.switchLabel')"
+        >
+          <button
+            type="button"
+            data-testid="lang-switch-id"
+            :aria-pressed="locale === 'id'"
+            class="min-h-[36px] rounded-lg px-2.5 text-xs font-bold transition"
+            :class="locale === 'id' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
+            @click="setLocale('id')"
+          >
+            ID
+          </button>
+          <button
+            type="button"
+            data-testid="lang-switch-en"
+            :aria-pressed="locale === 'en'"
+            class="min-h-[36px] rounded-lg px-2.5 text-xs font-bold transition"
+            :class="locale === 'en' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
+            @click="setLocale('en')"
+          >
+            EN
+          </button>
+        </div>
+
+        <button
+          type="button"
+          data-testid="theme-toggle"
+          :aria-pressed="ui.isNight"
+          :aria-label="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
+          :title="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
+          class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-surface-border bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+          @click="ui.toggleTheme"
+        >
+          <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" />
+          <Sun v-else class="h-4 w-4 text-amber-500" />
+          <span>{{ ui.isNight ? t('theme.night') : t('theme.light') }}</span>
+        </button>
+
         <template v-if="auth.isAuthenticated">
           <router-link
             :to="dashboardRoute"
             class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-100 transition"
           >
             <LayoutDashboard class="h-4 w-4" />
-            <span>{{ auth.user.role.toUpperCase() }} Panel</span>
+            <span>{{ auth.user.role.toUpperCase() }} {{ t('nav.panelSuffix') }}</span>
           </router-link>
           <button
             type="button"
@@ -279,7 +329,7 @@ async function handleLogout() {
             @click="handleLogout"
           >
             <LogOut class="h-4 w-4" />
-            Logout
+            {{ t('nav.logout') }}
           </button>
         </template>
         <template v-else>
@@ -287,17 +337,28 @@ async function handleLogout() {
             to="/login"
             class="inline-flex min-h-[44px] items-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition"
           >
-            Login
+            {{ t('nav.login') }}
           </router-link>
         </template>
       </div>
 
-      <div class="flex shrink-0 items-center gap-2 lg:hidden">
+      <div class="flex shrink-0 items-center gap-1.5 lg:hidden">
+        <button
+          type="button"
+          data-testid="theme-toggle-mobile"
+          :aria-pressed="ui.isNight"
+          :aria-label="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
+          class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-xl border border-surface-border text-slate-700"
+          @click="ui.toggleTheme"
+        >
+          <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" />
+          <Sun v-else class="h-4 w-4 text-amber-500" />
+        </button>
         <button
           type="button"
           class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-surface-border text-slate-700"
           :aria-expanded="mobileOpen"
-          aria-label="Toggle Menu"
+          :aria-label="t('nav.toggleMenu')"
           @click="mobileOpen = !mobileOpen"
         >
           <X v-if="mobileOpen" class="h-6 w-6" />
@@ -362,6 +423,45 @@ async function handleLogout() {
         </template>
 
         <div class="mt-2 border-t border-surface-border pt-3 flex flex-col gap-2">
+          <div class="flex items-center justify-between gap-2 pb-1">
+            <div
+              class="inline-flex items-center rounded-xl border border-surface-border bg-surface-muted p-0.5"
+              role="group"
+              :aria-label="t('lang.switchLabel')"
+            >
+              <button
+                type="button"
+                data-testid="lang-switch-id-mobile"
+                :aria-pressed="locale === 'id'"
+                class="min-h-[38px] rounded-lg px-3 text-xs font-bold transition"
+                :class="locale === 'id' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600'"
+                @click="setLocale('id')"
+              >
+                ID
+              </button>
+              <button
+                type="button"
+                data-testid="lang-switch-en-mobile"
+                :aria-pressed="locale === 'en'"
+                class="min-h-[38px] rounded-lg px-3 text-xs font-bold transition"
+                :class="locale === 'en' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600'"
+                @click="setLocale('en')"
+              >
+                EN
+              </button>
+            </div>
+            <button
+              type="button"
+              :aria-pressed="ui.isNight"
+              :aria-label="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
+              class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-surface-border px-3 py-2 text-xs font-bold text-slate-700"
+              @click="ui.toggleTheme"
+            >
+              <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" />
+              <Sun v-else class="h-4 w-4 text-amber-500" />
+              <span>{{ ui.isNight ? t('theme.night') : t('theme.light') }}</span>
+            </button>
+          </div>
           <template v-if="auth.isAuthenticated">
             <router-link
               :to="dashboardRoute"
@@ -369,7 +469,7 @@ async function handleLogout() {
               @click="closeAllMenus"
             >
               <LayoutDashboard class="h-4 w-4" />
-              {{ auth.user.role.toUpperCase() }} Dashboard
+              {{ auth.user.role.toUpperCase() }} {{ t('nav.dashboardSuffix') }}
             </router-link>
             <button
               type="button"
@@ -377,7 +477,7 @@ async function handleLogout() {
               @click="handleLogout"
             >
               <LogOut class="h-4 w-4" />
-              Logout
+              {{ t('nav.logout') }}
             </button>
           </template>
           <router-link
@@ -386,7 +486,7 @@ async function handleLogout() {
             class="flex min-h-[44px] items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white"
             @click="closeAllMenus"
           >
-            Login
+            {{ t('nav.login') }}
           </router-link>
         </div>
       </div>

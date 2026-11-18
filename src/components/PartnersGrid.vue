@@ -1,12 +1,14 @@
 <script setup>
 import { ExternalLink } from 'lucide-vue-next';
 import { useToast } from '../composables/useToast.js';
+import { useI18n } from '../composables/useI18n.js';
 
 defineProps({
   partners: { type: Array, default: () => [] }
 });
 
 const toast = useToast();
+const { t, tr } = useI18n();
 
 function splitServiceLabel(rawName) {
   const parts = String(rawName || '').split('|');
@@ -17,7 +19,7 @@ function splitServiceLabel(rawName) {
 
 function handlePendingService(partner) {
   const { title } = splitServiceLabel(partner.name);
-  toast.info('Tautan layanan "' + title + '" sedang disiapkan.', 'Layanan Kami');
+  toast.info(t('services.pendingPrefix') + tr(title) + t('services.pendingSuffix'), t('services.badge'));
 }
 </script>
 
@@ -25,7 +27,7 @@ function handlePendingService(partner) {
   <section id="layanan-section" class="border-y border-surface-border bg-white py-14">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <p class="text-center text-xs font-bold uppercase tracking-widest text-slate-500">
-        Layanan Kami
+        {{ t('services.badge') }}
       </p>
       <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <template v-for="partner in partners" :key="partner.id">
@@ -45,14 +47,14 @@ function handlePendingService(partner) {
             />
             <template v-else>
               <span class="inline-flex items-center gap-1.5 text-sm font-extrabold text-brand-900 group-hover:text-brand-700">
-                <span>{{ splitServiceLabel(partner.name).title }}</span>
+                <span>{{ tr(splitServiceLabel(partner.name).title) }}</span>
                 <ExternalLink class="h-3.5 w-3.5 shrink-0 text-slate-400 group-hover:text-brand-600" />
               </span>
               <span
                 v-if="splitServiceLabel(partner.name).subtitle"
                 class="text-xs font-medium leading-snug text-slate-500 group-hover:text-brand-700/80"
               >
-                {{ splitServiceLabel(partner.name).subtitle }}
+                {{ tr(splitServiceLabel(partner.name).subtitle) }}
               </span>
             </template>
           </a>
@@ -72,13 +74,13 @@ function handlePendingService(partner) {
             />
             <template v-else>
               <span class="text-sm font-extrabold text-brand-900 group-hover:text-brand-700">
-                {{ splitServiceLabel(partner.name).title }}
+                {{ tr(splitServiceLabel(partner.name).title) }}
               </span>
               <span
                 v-if="splitServiceLabel(partner.name).subtitle"
                 class="text-xs font-medium leading-snug text-slate-500 group-hover:text-brand-700/80"
               >
-                {{ splitServiceLabel(partner.name).subtitle }}
+                {{ tr(splitServiceLabel(partner.name).subtitle) }}
               </span>
             </template>
           </button>

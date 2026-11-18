@@ -1,41 +1,10 @@
 <script setup>
+import { computed } from 'vue';
 import { ArrowRight, GraduationCap } from 'lucide-vue-next';
+import { useI18n } from '../composables/useI18n.js';
 
-const studyPrograms = [
-  {
-    id: 'pai',
-    code: 'S1 · PAI',
-    badge: 'Terakreditasi LAMDIK',
-    title: 'Program Studi Pendidikan Agama Islam',
-    description:
-      'Prodi ini menyelenggarakan pembelajaran yang profesional, responsif, dan berwawasan global hingga mampu menciptakan lulusan yang unggul.',
-    image:
-      'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80',
-    pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
-  },
-  {
-    id: 'pgmi',
-    code: 'S1 · PGMI',
-    badge: 'Terakreditasi LAMDIK',
-    title: 'Pendidikan Guru Madrasah Ibtidaiyah',
-    description:
-      'Menyiapkan sarjana yang mempunyai kemampuan akademis profesional, berkarakter, serta kecakapan sosial dan manajerial dalam pengembangan Madrasah Ibtidaiyah.',
-    image:
-      'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80',
-    pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232'
-  },
-  {
-    id: 'piaud',
-    code: 'S1 · PIAUD',
-    badge: 'Terakreditasi LAMDIK',
-    title: 'Pendidikan Islam Anak Usia Dini',
-    description:
-      'Membekali mahasiswa dengan ilmu pendidikan, kreativitas, dan nilai-nilai keislaman untuk menjadi pendidik profesional, inovatif, dan inspiratif sejak usia dini.',
-    image:
-      'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80',
-    pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239'
-  }
-];
+const { t } = useI18n();
+const studyPrograms = computed(() => t('courses.cards'));
 </script>
 
 <template>
@@ -43,13 +12,13 @@ const studyPrograms = [
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-2xl text-center">
         <span class="rounded-full bg-brand-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-brand-700">
-          Akademik
+          {{ t('courses.badge') }}
         </span>
         <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl">
-          Program Studi Unggulan
+          {{ t('courses.heading') }}
         </h2>
         <p class="mt-3 text-base text-slate-600">
-          Untuk informasi lengkap tentang penerimaan mahasiswa baru Program Studi, klik “Info PMB” di bawah ini:
+          {{ t('courses.subtitle') }}
         </p>
       </div>
 
@@ -94,7 +63,7 @@ const studyPrograms = [
                 rel="noopener noreferrer"
                 class="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition"
               >
-                Info PMB
+                {{ t('courses.pmbBtn') }}
                 <ArrowRight class="h-4 w-4" />
               </a>
             </div>

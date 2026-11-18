@@ -1,9 +1,12 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useI18n } from '../composables/useI18n.js';
 
 const props = defineProps({
   stats: { type: Array, default: () => [] }
 });
+
+const { tr } = useI18n();
 
 const containerRef = ref(null);
 const animatedValues = ref({});
@@ -91,7 +94,7 @@ onBeforeUnmount(() => {
         <p class="text-3xl font-extrabold text-brand-700 sm:text-4xl">
           {{ animatedValues[stat.id] || `${stat.value_num}${stat.suffix || ''}` }}
         </p>
-        <p class="mt-1 text-sm font-medium text-slate-600">{{ stat.label }}</p>
+        <p class="mt-1 text-sm font-medium text-slate-600">{{ tr(stat.label) }}</p>
       </div>
     </div>
   </section>

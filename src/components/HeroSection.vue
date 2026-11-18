@@ -1,25 +1,23 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import heroTarbiyahImage from '../assets/hero-tarbiyah.png';
 import ModalDialog from './ModalDialog.vue';
 import { useToast } from '../composables/useToast.js';
+import { useI18n } from '../composables/useI18n.js';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
 
 const toast = useToast();
+const { t, tr } = useI18n();
 const profilModalOpen = ref(false);
 
-const missionItems = [
-  'Menyelenggarakan layanan pendidikan yang profesional dan berkualitas.',
-  'Menyelenggarakan pengkajian, penelitian, dan pengabdian masyarakat dalam bidang Pendidikan Dasar dan Agama Islam.',
-  'Memperluas dan memperkuat jaringan kerjasama dalam bidang pendidikan yang berwawasan global serta menguasai ilmu pengetahuan dan teknologi.'
-];
+const missionItems = computed(() => t('hero.missions'));
 
 function handleBeasiswa() {
-  toast.info('Informasi program beasiswa sedang disiapkan.', 'Beasiswa');
+  toast.info(t('hero.scholarshipComingSoon'), t('hero.scholarshipTitle'));
 }
 </script>
 
@@ -28,13 +26,15 @@ function handleBeasiswa() {
     <div class="mx-auto grid max-w-7xl grid-cols-1 items-end gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:gap-6 lg:px-8">
       <div class="lg:col-span-6 pb-4 lg:pb-16 space-y-6">
         <h1 class="text-4xl font-extrabold tracking-tight text-brand-900 sm:text-5xl lg:text-[52px] lg:leading-[1.12]">
-          {{ settings.hero_title || 'Selamat Datang di Fakultas Tarbiyah' }}
+          {{ tr(settings.hero_title || 'Selamat Datang di Fakultas Tarbiyah') }}
         </h1>
 
         <p class="max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
           {{
-            settings.hero_subtitle ||
-            'Empowering the next generation of educators through academic excellence, innovative teaching, and strong Islamic values. We prepare future teachers and education leaders with the knowledge, skills, creativity, and global perspectives to inspire generations, transform education, and make a meaningful impact on society.'
+            tr(
+              settings.hero_subtitle ||
+                'Empowering the next generation of educators through academic excellence, innovative teaching, and strong Islamic values. We prepare future teachers and education leaders with the knowledge, skills, creativity, and global perspectives to inspire generations, transform education, and make a meaningful impact on society.'
+            )
           }}
         </p>
 
@@ -44,7 +44,7 @@ function handleBeasiswa() {
             class="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-brand-600 px-7 py-3 text-base font-semibold text-white shadow-float hover:bg-brand-700 transition"
             @click="profilModalOpen = true"
           >
-            Profil
+            {{ t('hero.profileBtn') }}
             <ArrowRight class="h-4 w-4" />
           </button>
           <button
@@ -52,14 +52,14 @@ function handleBeasiswa() {
             class="inline-flex min-h-[48px] items-center rounded-xl border border-surface-border bg-white px-6 py-3 text-base font-semibold text-brand-900 hover:bg-surface-muted transition"
             @click="handleBeasiswa"
           >
-            Beasiswa
+            {{ t('hero.scholarshipBtn') }}
           </button>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 pt-2 text-sm font-medium text-slate-600">
           <span class="inline-flex items-center gap-2">
             <CheckCircle2 class="h-4 w-4 shrink-0 text-emerald-600" />
-            <span>{{ settings.hero_tagline || 'Become Future Educators with Global Impact' }}</span>
+            <span>{{ tr(settings.hero_tagline || 'Become Future Educators with Global Impact') }}</span>
           </span>
         </div>
       </div>
@@ -67,7 +67,7 @@ function handleBeasiswa() {
       <div class="lg:col-span-6 flex justify-center lg:justify-end self-end">
         <img
           :src="heroTarbiyahImage"
-          alt="Mahasiswa dan Lulusan Fakultas Tarbiyah"
+          :alt="t('hero.imageAlt')"
           class="w-full max-w-2xl h-auto max-h-[540px] object-contain object-bottom select-none"
         />
       </div>
@@ -75,23 +75,23 @@ function handleBeasiswa() {
 
     <ModalDialog
       :open="profilModalOpen"
-      title="Profil Fakultas Tarbiyah"
+      :title="t('hero.modalTitle')"
       header-variant="macos"
       @close="profilModalOpen = false"
     >
       <div class="space-y-6">
         <div class="rounded-2xl border border-brand-100 bg-brand-50/70 p-5">
           <span class="inline-block rounded-full bg-brand-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-            Visi
+            {{ t('hero.visionBadge') }}
           </span>
           <p class="mt-3 text-sm leading-relaxed text-brand-900 sm:text-base font-medium">
-            Menjadi Fakultas yang unggul dalam menyiapkan tenaga pendidik, berwawasan global, dan menerapkan Ilmu Pendidikan Islam Rahmatan Lil’alamin pada tahun 2035.
+            {{ t('hero.visionText') }}
           </p>
         </div>
 
         <div class="rounded-2xl border border-surface-border bg-surface-page p-5">
           <span class="inline-block rounded-full bg-amber-400 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-900">
-            Misi
+            {{ t('hero.missionBadge') }}
           </span>
           <ol class="mt-3 space-y-2.5 list-decimal pl-5 text-sm leading-relaxed text-slate-700 sm:text-base">
             <li v-for="item in missionItems" :key="item">

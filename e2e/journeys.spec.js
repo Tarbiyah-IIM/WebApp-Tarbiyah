@@ -192,6 +192,39 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(pmbLinks.nth(1)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232');
     await expect(pmbLinks.nth(2)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239');
 
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'id');
+
+    await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await expect(page.getByTestId('theme-toggle')).toContainText('Night');
+
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
+
+    await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await expect(page.getByTestId('theme-toggle')).toContainText('Light');
+
+    await page.getByTestId('lang-switch-en').click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(mainNav.getByText('Faculty of Tarbiyah', { exact: true })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: 'About Us' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome to the Faculty of Tarbiyah');
+    await expect(page.getByText('Featured Study Programs')).toBeVisible();
+    await expect(page.getByText('Faculty News')).toBeVisible();
+    await expect(page.getByText('Frequently asked academic and administrative questions include')).toBeVisible();
+    await expect(footerSection.getByText('Office Address')).toBeVisible();
+
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome to the Faculty of Tarbiyah');
+
+    await page.getByTestId('lang-switch-id').click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'id');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Selamat Datang di Fakultas Tarbiyah');
+
     await page.goto('/courses');
     await page.getByLabel('Search courses').fill('zzznonexistentcourse999');
     await page.getByRole('button', { name: 'Filter' }).click();

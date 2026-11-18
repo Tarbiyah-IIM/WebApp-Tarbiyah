@@ -2,10 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import { Calendar, ChevronRight } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.jpg';
+import { useI18n } from '../composables/useI18n.js';
 
 const props = defineProps({
   testimonials: { type: Array, default: () => [] }
 });
+
+const { t, tr } = useI18n();
 
 const PAGE_SIZE = 6;
 const currentPage = ref(1);
@@ -54,10 +57,10 @@ function goToPage(page) {
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-2xl text-center">
         <span class="rounded-full bg-amber-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-amber-700">
-          Kegiatan Terbaru
+          {{ t('news.badge') }}
         </span>
         <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl">
-          Berita Fakultas
+          {{ t('news.heading') }}
         </h2>
       </div>
 
@@ -70,7 +73,7 @@ function goToPage(page) {
           <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
             <img
               :src="item.avatar_url || gedungIimFallback"
-              :alt="item.name"
+              :alt="tr(item.name)"
               loading="lazy"
               class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
@@ -79,27 +82,27 @@ function goToPage(page) {
           <div class="flex flex-1 flex-col p-6">
             <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700">
               <Calendar class="h-3.5 w-3.5 shrink-0" />
-              <span>{{ item.job_title }}</span>
+              <span>{{ tr(item.job_title) }}</span>
             </div>
 
             <h3 class="mt-2.5 text-base font-bold leading-snug text-brand-900">
-              {{ item.name }}
+              {{ tr(item.name) }}
             </h3>
 
             <p class="mt-2 text-sm leading-relaxed text-slate-600">
-              {{ item.quote }}
+              {{ tr(item.quote) }}
             </p>
           </div>
         </article>
       </div>
 
       <p v-else class="mt-12 text-center text-sm text-slate-500">
-        Belum ada berita fakultas yang dipublikasikan.
+        {{ t('news.empty') }}
       </p>
 
       <nav
         v-if="totalPages > 1"
-        aria-label="Navigasi Halaman Berita"
+        :aria-label="t('news.navAria')"
         class="mt-10 flex flex-wrap items-center justify-center gap-2"
       >
         <template v-if="showLeadingOne">
@@ -143,7 +146,7 @@ function goToPage(page) {
           class="inline-flex min-h-[40px] items-center gap-1 rounded-xl border border-surface-border bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-45"
           @click="goToPage(currentPage + 1)"
         >
-          <span>Next</span>
+          <span>{{ t('news.nextLabel') }}</span>
           <ChevronRight class="h-4 w-4" />
         </button>
       </nav>
