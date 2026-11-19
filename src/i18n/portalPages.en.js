@@ -145,6 +145,32 @@ export const portalPagesEn = {
       categoryKey: 'academicCategory',
       title: 'Comprehensive Examination',
       badge: 'Academic Evaluation',
+      hideSidebarTop: true,
+      hideContactCard: true,
+      customOtherTitle: 'Oral Exam Documents',
+      customOtherLinks: [
+        {
+          label: 'Graduation Clearance Letter (SKL)',
+          badge: 'View',
+          popup: true,
+          modalUrl: 'https://drive.google.com/embeddedfolderview?id=13_dF8zydSGEh-21eJK16OgkKpDvwcW36#list',
+          externalUrl: 'https://drive.google.com/drive/folders/13_dF8zydSGEh-21eJK16OgkKpDvwcW36?usp=sharing'
+        },
+        {
+          label: 'MySkripsi Portal Access Guide',
+          badge: 'View',
+          popup: true,
+          modalUrl: 'https://drive.google.com/file/d/1wwc73lS43GiK-CFxXNS9PFANYLyOlK3A/preview',
+          externalUrl: 'https://drive.google.com/file/d/1wwc73lS43GiK-CFxXNS9PFANYLyOlK3A/view?usp=sharing'
+        },
+        {
+          label: 'Comprehensive Exam Matrix & Study Guide',
+          badge: 'View',
+          popup: true,
+          modalUrl: 'https://drive.google.com/file/d/1YnuiT6SpPbanfejjqEwZITB6bwY0evCu/preview',
+          externalUrl: 'https://drive.google.com/file/d/1YnuiT6SpPbanfejjqEwZITB6bwY0evCu/view?usp=sharing'
+        }
+      ],
       summary:
         'Core competency assessment for final-year Faculty of Tarbiyah students (PAI, PGMI, and PIAUD) as a mandatory prerequisite before Thesis Defense (Munaqasyah), integrated with the IIM Surakarta MyLisan portal.',
       highlightsTitle: 'Examination Scope & Topics',
@@ -161,8 +187,8 @@ export const portalPagesEn = {
         'Complete the oral comprehensive examination to obtain eligibility clearance for Thesis Defense (Munaqasyah).'
       ],
       primaryCta: {
-        label: 'Open Tarbiyah MyLisan Portal',
-        href: 'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+        label: 'Register',
+        href: 'https://forms.gle/ZZWzX2kp2QbEdC9C8'
       }
     },
     ppl: {

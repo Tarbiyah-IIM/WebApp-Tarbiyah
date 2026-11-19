@@ -188,10 +188,45 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     ).toBeVisible();
     await page.goto('/akademik/ujian-komprehensif');
     await expect(page.getByRole('heading', { level: 1, name: 'Ujian Komprehensif' })).toBeVisible();
-    await expect(page.locator('main a', { hasText: 'Buka Portal MyLisan Tarbiyah' }).first()).toHaveAttribute(
+    await expect(page.locator('main a', { hasText: 'Registrasi' }).first()).toHaveAttribute(
       'href',
-      'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+      'https://forms.gle/ZZWzX2kp2QbEdC9C8'
     );
+    await expect(page.locator('main aside').getByText('Pusat Layanan Tarbiyah')).toHaveCount(0);
+    await expect(page.locator('main aside').getByText('Kembali ke Beranda')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Dokumen Terkait Ujian Lisan' })).toBeVisible();
+    await expect(page.locator('main aside').getByText('Jurnal Fakultas Tarbiyah')).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Surat Keterangan Lulus/ }).click();
+    const sklDialog = page.getByRole('dialog', { name: 'Surat Keterangan Lulus' });
+    await expect(sklDialog).toBeVisible();
+    await expect(sklDialog.locator('iframe')).toHaveAttribute(
+      'src',
+      'https://drive.google.com/embeddedfolderview?id=13_dF8zydSGEh-21eJK16OgkKpDvwcW36#list'
+    );
+    await page.keyboard.press('Escape');
+    await expect(sklDialog).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Panduan Akses laman MySkripsi/ }).click();
+    const mySkripsiDialog = page.getByRole('dialog', { name: 'Panduan Akses laman MySkripsi' });
+    await expect(mySkripsiDialog).toBeVisible();
+    await expect(mySkripsiDialog.locator('iframe')).toHaveAttribute(
+      'src',
+      'https://drive.google.com/file/d/1wwc73lS43GiK-CFxXNS9PFANYLyOlK3A/preview'
+    );
+    await page.keyboard.press('Escape');
+    await expect(mySkripsiDialog).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Matriks\/Panduan\/Kisi-Kisi Ujian Komprehensif/ }).click();
+    const matriksDialog = page.getByRole('dialog', { name: 'Matriks/Panduan/Kisi-Kisi Ujian Komprehensif' });
+    await expect(matriksDialog).toBeVisible();
+    await expect(matriksDialog.locator('iframe')).toHaveAttribute(
+      'src',
+      'https://drive.google.com/file/d/1YnuiT6SpPbanfejjqEwZITB6bwY0evCu/preview'
+    );
+    await page.keyboard.press('Escape');
+    await expect(matriksDialog).toHaveCount(0);
+
     await page.getByTestId('lang-switch-en').click();
     await expect(page.getByRole('heading', { level: 1, name: 'Comprehensive Examination' })).toBeVisible();
     await page.getByTestId('lang-switch-id').click();

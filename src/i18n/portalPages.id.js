@@ -145,6 +145,32 @@ export const portalPagesId = {
       categoryKey: 'academicCategory',
       title: 'Ujian Komprehensif',
       badge: 'Evaluasi Akademik',
+      hideSidebarTop: true,
+      hideContactCard: true,
+      customOtherTitle: 'Dokumen Terkait Ujian Lisan',
+      customOtherLinks: [
+        {
+          label: 'Surat Keterangan Lulus',
+          badge: 'Lihat',
+          popup: true,
+          modalUrl: 'https://drive.google.com/embeddedfolderview?id=13_dF8zydSGEh-21eJK16OgkKpDvwcW36#list',
+          externalUrl: 'https://drive.google.com/drive/folders/13_dF8zydSGEh-21eJK16OgkKpDvwcW36?usp=sharing'
+        },
+        {
+          label: 'Panduan Akses laman MySkripsi',
+          badge: 'Lihat',
+          popup: true,
+          modalUrl: 'https://drive.google.com/file/d/1wwc73lS43GiK-CFxXNS9PFANYLyOlK3A/preview',
+          externalUrl: 'https://drive.google.com/file/d/1wwc73lS43GiK-CFxXNS9PFANYLyOlK3A/view?usp=sharing'
+        },
+        {
+          label: 'Matriks/Panduan/Kisi-Kisi Ujian Komprehensif',
+          badge: 'Lihat',
+          popup: true,
+          modalUrl: 'https://drive.google.com/file/d/1YnuiT6SpPbanfejjqEwZITB6bwY0evCu/preview',
+          externalUrl: 'https://drive.google.com/file/d/1YnuiT6SpPbanfejjqEwZITB6bwY0evCu/view?usp=sharing'
+        }
+      ],
       summary:
         'Evaluasi penguasaan keilmuan inti bagi mahasiswa tingkat akhir Fakultas Tarbiyah (PAI, PGMI, dan PIAUD) sebagai syarat akademik sebelum melaksanakan Munaqasyah, terintegrasi dengan portal MyLisan IIM Surakarta.',
       highlightsTitle: 'Ruang Lingkup & Materi Ujian',
@@ -161,8 +187,8 @@ export const portalPagesId = {
         'Ikuti ujian lisan komprehensif sesuai jadwal untuk memperoleh surat keterangan lulus sebagai syarat Munaqasyah.'
       ],
       primaryCta: {
-        label: 'Buka Portal MyLisan Tarbiyah',
-        href: 'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+        label: 'Registrasi',
+        href: 'https://forms.gle/ZZWzX2kp2QbEdC9C8'
       }
     },
     ppl: {

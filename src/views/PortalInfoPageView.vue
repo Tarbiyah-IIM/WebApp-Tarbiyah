@@ -201,7 +201,7 @@ const relatedPages = computed(() =>
         </button>
       </section>
 
-      <section v-else-if="pageData" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-3">
+      <section v-else-if="pageData && !pageData.hideSidebarTop" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-3">
         <a
           v-if="pageData.primaryCta"
           :href="pageData.primaryCta.href"

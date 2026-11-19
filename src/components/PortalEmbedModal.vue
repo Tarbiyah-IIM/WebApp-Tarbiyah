@@ -29,7 +29,7 @@ watch(
       <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200 bg-brand-50/70 px-3.5 py-2.5 text-xs text-slate-600">
         <span>{{ t('portalPages.common.embedNotice') }}</span>
         <a
-          :href="item.modalUrl"
+          :href="item.externalUrl || item.modalUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 font-bold text-white hover:bg-brand-700 transition"
