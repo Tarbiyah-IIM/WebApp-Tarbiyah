@@ -1,3 +1,5 @@
+import { scholarshipsEn } from './scholarships.js';
+
 export default {
   brand: {
     faculty: 'Faculty of Tarbiyah',
@@ -58,7 +60,7 @@ export default {
     profileBtn: 'Profile',
     scholarshipBtn: 'Scholarships',
     scholarshipTitle: 'Scholarships',
-    scholarshipComingSoon: 'Scholarship program information is currently being prepared.',
+    scholarships: scholarshipsEn,
     imageAlt: 'Students and Graduates of Faculty of Tarbiyah',
     modalTitle: 'Faculty of Tarbiyah Profile',
     visionBadge: 'Vision',

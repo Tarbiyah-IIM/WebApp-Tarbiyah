@@ -69,6 +69,24 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await profilDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(profilDialog).toHaveCount(0);
 
+    await page.getByRole('button', { name: 'Beasiswa', exact: true }).click();
+    const beasiswaDialog = page.getByRole('dialog', { name: 'Program Beasiswa' });
+    await expect(beasiswaDialog).toBeVisible();
+    await expect(beasiswaDialog.getByText('Peringkat 1 – 3')).toBeVisible();
+    await expect(beasiswaDialog.getByText('SPP/UKT selama 2 semester')).toBeVisible();
+    await beasiswaDialog.getByRole('button', { name: /Beasiswa Prestasi Non-akademik/ }).click();
+    await expect(beasiswaDialog.getByText('Nasional/Provinsi (Kuota 5)')).toBeVisible();
+    await beasiswaDialog.getByRole('button', { name: /Beasiswa Tahfidz/ }).click();
+    await expect(beasiswaDialog.getByText('Bebas Biaya SPP/UKT 8 Semester (30 Juz)')).toBeVisible();
+    await beasiswaDialog.getByRole('button', { name: /Beasiswa KIP \(Yatim & Dhuafa\)/ }).click();
+    await expect(beasiswaDialog.getByText('Semua (Kuota Kebijakan Pemerintah)')).toBeVisible();
+    await beasiswaDialog.getByRole('button', { name: /Beasiswa Aktivis/ }).click();
+    await expect(beasiswaDialog.getByText('Mahasiswa Baru (Kuota 10)')).toBeVisible();
+    await beasiswaDialog.getByRole('button', { name: /Beasiswa Alumni/ }).click();
+    await expect(beasiswaDialog.getByText('Sekolah Pascasarjana')).toBeVisible();
+    await beasiswaDialog.getByRole('button', { name: 'Close modal' }).click();
+    await expect(beasiswaDialog).toHaveCount(0);
+
     await expect(page.getByText('Become Future Educators with Global Impact')).toBeVisible();
     await expect(page.locator('#courses-section').getByText('Akademik', { exact: true })).toBeVisible();
     await expect(page.getByText('Program Studi Unggulan')).toBeVisible();

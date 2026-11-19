@@ -1,3 +1,5 @@
+import { scholarshipsId } from './scholarships.js';
+
 export default {
   brand: {
     faculty: 'Fakultas Tarbiyah',
@@ -58,7 +60,7 @@ export default {
     profileBtn: 'Profil',
     scholarshipBtn: 'Beasiswa',
     scholarshipTitle: 'Beasiswa',
-    scholarshipComingSoon: 'Informasi program beasiswa sedang disiapkan.',
+    scholarships: scholarshipsId,
     imageAlt: 'Mahasiswa dan Lulusan Fakultas Tarbiyah',
     modalTitle: 'Profil Fakultas Tarbiyah',
     visionBadge: 'Visi',

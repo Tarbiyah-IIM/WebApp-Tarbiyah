@@ -3,22 +3,18 @@ import { computed, ref } from 'vue';
 import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import heroTarbiyahImage from '../assets/hero-tarbiyah.png';
 import ModalDialog from './ModalDialog.vue';
-import { useToast } from '../composables/useToast.js';
+import ScholarshipModal from './ScholarshipModal.vue';
 import { useI18n } from '../composables/useI18n.js';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
 
-const toast = useToast();
 const { t, tr } = useI18n();
 const profilModalOpen = ref(false);
+const scholarshipModalOpen = ref(false);
 
 const missionItems = computed(() => t('hero.missions'));
-
-function handleBeasiswa() {
-  toast.info(t('hero.scholarshipComingSoon'), t('hero.scholarshipTitle'));
-}
 </script>
 
 <template>
@@ -50,7 +46,7 @@ function handleBeasiswa() {
           <button
             type="button"
             class="inline-flex min-h-[48px] items-center rounded-xl border border-surface-border bg-white px-6 py-3 text-base font-semibold text-brand-900 hover:bg-surface-muted transition"
-            @click="handleBeasiswa"
+            @click="scholarshipModalOpen = true"
           >
             {{ t('hero.scholarshipBtn') }}
           </button>
@@ -101,5 +97,7 @@ function handleBeasiswa() {
         </div>
       </div>
     </ModalDialog>
+
+    <ScholarshipModal :open="scholarshipModalOpen" @close="scholarshipModalOpen = false" />
   </section>
 </template>
