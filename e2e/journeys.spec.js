@@ -36,7 +36,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     );
     await expect(mainNav.getByRole('link', { name: 'Ujian Komprehensif' })).toHaveAttribute(
       'href',
-      'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+      '/akademik/ujian-komprehensif'
     );
     await expect(mainNav.getByRole('link', { name: 'Munaqasyah' })).toHaveAttribute(
       'href',
@@ -186,6 +186,15 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
         'Dokumen surat resmi diterbitkan dalam bentuk cetak berstempel dan sudah di Tanda Tangani oleh Dosen Mata Kuliah & Wakil Dekan I.'
       )
     ).toBeVisible();
+    await page.goto('/akademik/ujian-komprehensif');
+    await expect(page.getByRole('heading', { level: 1, name: 'Ujian Komprehensif' })).toBeVisible();
+    await expect(page.locator('main a', { hasText: 'Buka Portal MyLisan Tarbiyah' }).first()).toHaveAttribute(
+      'href',
+      'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+    );
+    await page.getByTestId('lang-switch-en').click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Comprehensive Examination' })).toBeVisible();
+    await page.getByTestId('lang-switch-id').click();
     await page.goto('/publikasi/ppl');
     await expect(page.getByRole('heading', { level: 1, name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();
     await expect(page.getByText('Pendaftaran (Akses Awal)')).toBeVisible();

@@ -141,6 +141,30 @@ export const portalPagesEn = {
         href: 'https://drive.google.com/open?authuser=0&id=1MayDKlAWQH0-i58i-1CenBr2Zg00ofyFB3DiBLL_95s'
       }
     },
+    'ujian-komprehensif': {
+      categoryKey: 'academicCategory',
+      title: 'Comprehensive Examination',
+      badge: 'Academic Evaluation',
+      summary:
+        'Core competency assessment for final-year Faculty of Tarbiyah students (PAI, PGMI, and PIAUD) as a mandatory prerequisite before Thesis Defense (Munaqasyah), integrated with the IIM Surakarta MyLisan portal.',
+      highlightsTitle: 'Examination Scope & Topics',
+      highlights: [
+        { title: 'Islamic Studies & Tarbiyah Foundations', desc: 'Mastery of Quran & Hadith, Akidah Akhlak, Fiqh, and Rahmatan Lil’alamin Islamic educational principles.' },
+        { title: 'Pedagogy & Instructional Methodology', desc: 'Lesson design, learning assessment, classroom management, and innovative educational media.' },
+        { title: 'Program-Specific Competencies', desc: 'Specialized subject mastery aligned with each student’s study program: PAI, PGMI, or PIAUD.' },
+        { title: 'Academic Eligibility & Readiness', desc: 'Completion of prerequisite courses, minimum credit fulfillment, and active enrollment status in SIAKAD.' }
+      ],
+      steps: [
+        'Confirm all required courses are passed, credit requirements are met, and active status is listed in SIAKAD.',
+        'Sign in to the official Faculty of Tarbiyah MyLisan portal to register and upload required documents.',
+        'Monitor examination schedule, assigned room, and appointed examiners announced by the faculty.',
+        'Complete the oral comprehensive examination to obtain eligibility clearance for Thesis Defense (Munaqasyah).'
+      ],
+      primaryCta: {
+        label: 'Open Tarbiyah MyLisan Portal',
+        href: 'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+      }
+    },
     ppl: {
       categoryKey: 'publicationCategory',
       title: 'Teaching Practice Internship (PPL)',

@@ -40,6 +40,7 @@ function handlePendingLink(item) {
 
 const routeMap = {
   'administrasi-persuratan': '/akademik/administrasi-persuratan',
+  'ujian-komprehensif': '/akademik/ujian-komprehensif',
   ppl: '/publikasi/ppl',
   pkn: '/publikasi/pkn',
   jurnal: '/publikasi/jurnal'

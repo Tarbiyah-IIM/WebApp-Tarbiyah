@@ -141,6 +141,30 @@ export const portalPagesId = {
         href: 'https://drive.google.com/open?authuser=0&id=1MayDKlAWQH0-i58i-1CenBr2Zg00ofyFB3DiBLL_95s'
       }
     },
+    'ujian-komprehensif': {
+      categoryKey: 'academicCategory',
+      title: 'Ujian Komprehensif',
+      badge: 'Evaluasi Akademik',
+      summary:
+        'Evaluasi penguasaan keilmuan inti bagi mahasiswa tingkat akhir Fakultas Tarbiyah (PAI, PGMI, dan PIAUD) sebagai syarat akademik sebelum melaksanakan Munaqasyah, terintegrasi dengan portal MyLisan IIM Surakarta.',
+      highlightsTitle: 'Ruang Lingkup & Materi Ujian',
+      highlights: [
+        { title: 'Wawasan Keislaman & Tarbiyah', desc: 'Penguasaan dasar Al-Quran Hadis, Akidah Akhlak, Fiqih, dan Ilmu Pendidikan Islam Rahmatan Lil’alamin.' },
+        { title: 'Pedagogik & Metodologi Pembelajaran', desc: 'Perencanaan perangkat ajar, asesmen pembelajaran, manajemen kelas, dan inovasi media edukasi.' },
+        { title: 'Kompetensi Khusus Program Studi', desc: 'Pendalaman materi keilmuan sesuai bidang konsentrasi masing-masing prodi: PAI, PGMI, atau PIAUD.' },
+        { title: 'Persyaratan & Kesiapan Akademik', desc: 'Lulus mata kuliah prasyarat, memenuhi ambang SKS minimal, serta berstatus mahasiswa aktif di SIAKAD.' }
+      ],
+      steps: [
+        'Pastikan seluruh mata kuliah wajib telah lulus, capaian SKS mencukupi, dan status aktif tercatat di SIAKAD.',
+        'Masuk ke portal resmi MyLisan Fakultas Tarbiyah untuk melakukan pendaftaran serta unggah berkas persyaratan.',
+        'Cek pengumuman jadwal pelaksanaan, ruang ujian, serta dosen penguji yang ditetapkan oleh fakultas.',
+        'Ikuti ujian lisan komprehensif sesuai jadwal untuk memperoleh surat keterangan lulus sebagai syarat Munaqasyah.'
+      ],
+      primaryCta: {
+        label: 'Buka Portal MyLisan Tarbiyah',
+        href: 'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+      }
+    },
     ppl: {
       categoryKey: 'publicationCategory',
       title: 'Praktek Pengalaman Lapangan (PPL)',

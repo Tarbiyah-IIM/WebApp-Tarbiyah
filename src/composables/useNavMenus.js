@@ -51,7 +51,7 @@ export function useNavMenus(t) {
         { label: t('nav.items.academic.curriculum') },
         {
           label: t('nav.items.academic.comprehensive'),
-          href: 'https://www.myskripsi.iimsurakarta.ac.id/mylisan/dashboard/ul-f-tarbiyah/'
+          to: '/akademik/ujian-komprehensif'
         },
         {
           label: t('nav.items.academic.munaqasyah'),

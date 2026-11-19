@@ -19,6 +19,12 @@ const routes = [
     props: { pageKey: 'administrasi-persuratan' }
   },
   {
+    path: '/akademik/ujian-komprehensif',
+    name: 'academic-comprehensive',
+    component: () => import('../views/PortalInfoPageView.vue'),
+    props: { pageKey: 'ujian-komprehensif' }
+  },
+  {
     path: '/publikasi/ppl',
     name: 'publication-ppl',
     component: () => import('../views/PortalInfoPageView.vue'),
