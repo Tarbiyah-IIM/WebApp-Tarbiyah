@@ -11,9 +11,12 @@ defineProps({
   title: { type: String, required: true },
   missing: { type: Boolean, default: false },
   hideSidebar: { type: Boolean, default: false },
+  hideContactCard: { type: Boolean, default: false },
   otherTitle: { type: String, default: '' },
   otherLinks: { type: Array, default: () => [] }
 });
+
+defineEmits(['pending-link']);
 
 const landingStore = useLandingStore();
 const { t } = useI18n();
@@ -108,7 +111,7 @@ onUnmounted(() => {
           <aside v-if="!hideSidebar" class="space-y-6 lg:col-span-4">
             <slot name="sidebar-top" />
 
-            <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
+            <section v-if="!hideContactCard" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
               <h2 class="text-base font-extrabold text-brand-900">{{ t('portalPages.common.contactHeading') }}</h2>
               <div class="rounded-xl border border-surface-border bg-surface-page px-4 py-3">
                 <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -141,15 +144,27 @@ onUnmounted(() => {
             <section v-if="otherLinks.length" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-3">
               <h2 class="text-base font-extrabold text-brand-900">{{ otherTitle }}</h2>
               <div class="space-y-2">
-                <router-link
-                  v-for="item in otherLinks"
-                  :key="item.to"
-                  :to="item.to"
-                  class="flex min-h-[44px] items-center justify-between rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-sm font-semibold text-brand-900 transition hover:border-brand-300 hover:bg-brand-50"
-                >
-                  <span>{{ item.label }}</span>
-                  <ChevronRight class="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
-                </router-link>
+                <template v-for="item in otherLinks" :key="item.to || item.label">
+                  <router-link
+                    v-if="item.to"
+                    :to="item.to"
+                    class="flex min-h-[44px] items-center justify-between rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-sm font-semibold text-brand-900 transition hover:border-brand-300 hover:bg-brand-50"
+                  >
+                    <span>{{ item.label }}</span>
+                    <ChevronRight class="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+                  </router-link>
+                  <button
+                    v-else
+                    type="button"
+                    class="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-left text-sm font-semibold text-brand-900 transition hover:border-brand-300 hover:bg-brand-50"
+                    @click="$emit('pending-link', item)"
+                  >
+                    <span>{{ item.label }}</span>
+                    <span class="rounded-full bg-surface-muted px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
+                      {{ item.badge || t('portalPages.common.comingSoonBadge') }}
+                    </span>
+                  </button>
+                </template>
               </div>
             </section>
           </aside>

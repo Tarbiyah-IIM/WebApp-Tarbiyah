@@ -19,6 +19,9 @@ export const portalPagesEn = {
     waPmbLabel: 'Admissions Consultation',
     backHomeBtn: 'Back to Home',
     retryBtn: 'Reload Sync',
+    comingSoonBadge: 'Link coming soon',
+    pendingNoticePrefix: 'Link for "',
+    pendingNoticeSuffix: '" will be available soon.',
     notFoundTitle: 'Page not found',
     notFoundDesc: 'The requested study program or service page is unavailable.',
     offlineNotice: 'You are currently offline. Core guide content remains available; live CMS sync values may be cached.'
@@ -137,14 +140,56 @@ export const portalPagesEn = {
       categoryKey: 'publicationCategory',
       title: 'Teaching Practice Internship (PPL)',
       badge: 'Field Practice',
+      hideContactCard: true,
+      sidebarAction: {
+        title: 'Registration (Early Access)',
+        buttonLabel: 'Closed',
+        badge: 'Link coming soon'
+      },
+      customOtherTitle: 'Administration',
+      customOtherLinks: [
+        { label: 'Work Permit Letter (Surat Ijin Kerja)', badge: 'Link coming soon' },
+        { label: 'PPL Permit Letter (Surat Ijin PPL)', badge: 'Link coming soon' }
+      ],
       summary:
         'A mandatory field teaching practicum enabling Tarbiyah students to refine pedagogical, personal, social, and professional competencies directly in partner schools.',
-      highlightsTitle: 'Core Components of PPL',
+      highlightsTitle: 'Download PPL Report Supporting Documents (Forms)',
       highlights: [
-        { title: 'Pre-Service Briefing & Microteaching', desc: 'Strengthening lesson plans, foundational teaching skills, and professional educator ethics on campus.' },
-        { title: 'Partner School Observation', desc: 'Understanding school culture, curriculum workflows, and student profiles alongside mentor teachers.' },
-        { title: 'Supervised Classroom Teaching', desc: 'Delivering live classroom instruction under the supervision of a Field Supervising Lecturer (DPL).' },
-        { title: 'Final Evaluation & Portfolio', desc: 'Assessment of teaching artifacts, practical teaching exam, and submission of the final PPL report.' }
+        {
+          title: 'School Observation Form',
+          desc: 'Click to download the partner school observation sheet.',
+          href: 'https://drive.google.com/uc?export=download&id=1xeq4m-ocSmBaqsYDXPQG0X00BtHUJvSa'
+        },
+        {
+          title: 'Student Daily Journal Form',
+          desc: 'Click to download the daily activity journal template during PPL.',
+          href: 'https://drive.google.com/uc?export=download&id=1oxm5Et4KTyXe6wUkskF-MRS2meVDWfRa'
+        },
+        {
+          title: 'Mentor Teacher Classroom Observation Form',
+          desc: 'Click to download the classroom teaching observation sheet.',
+          href: 'https://drive.google.com/uc?export=download&id=1FThthx6Unb6mH1_gHyhY9mhIGR_juuit'
+        },
+        {
+          title: 'Teaching Practice Assessment Form N3',
+          desc: 'Click to download the guided teaching assessment rubric (N3).',
+          href: 'https://drive.google.com/uc?export=download&id=1n0Ju1xzW_Qr6HUEtIrcCGjwchVYJM9cu'
+        },
+        {
+          title: 'Final Teaching Exam Assessment Form N4',
+          desc: 'Click to download the practical teaching exam rubric (N4).',
+          href: 'https://drive.google.com/uc?export=download&id=1dY6O_gtnFmDsFdXWzjkWgatTuDtyJBiV'
+        },
+        {
+          title: 'PP Report Form',
+          desc: 'Click to download the official final report formatting template.',
+          href: 'https://drive.google.com/uc?export=download&id=1g-z4PkwEtoNm_yJ3OUoxQmv7RZSBMsrW'
+        },
+        {
+          title: 'DPL Supervision Form',
+          desc: 'Click to download the Field Supervising Lecturer consultation card.',
+          href: 'https://drive.google.com/uc?export=download&id=1jDeI8ABs3nj1At35BpUQqjrARkjX08HG'
+        }
       ],
       steps: [
         'Ensure completion of prerequisite microteaching courses and minimum credit thresholds.',

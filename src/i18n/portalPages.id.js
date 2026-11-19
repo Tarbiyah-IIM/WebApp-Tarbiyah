@@ -19,6 +19,9 @@ export const portalPagesId = {
     waPmbLabel: 'Konsultasi PMB Center',
     backHomeBtn: 'Kembali ke Beranda',
     retryBtn: 'Muat Ulang Sinkronisasi',
+    comingSoonBadge: 'Link menyusul',
+    pendingNoticePrefix: 'Tautan untuk "',
+    pendingNoticeSuffix: '" akan segera tersedia.',
     notFoundTitle: 'Halaman tidak ditemukan',
     notFoundDesc: 'Data program studi atau halaman layanan yang diminta tidak tersedia.',
     offlineNotice: 'Anda sedang offline. Konten panduan inti tetap dapat dibaca; beberapa data sinkronisasi CMS mungkin belum diperbarui.'
@@ -137,14 +140,56 @@ export const portalPagesId = {
       categoryKey: 'publicationCategory',
       title: 'Praktek Pengalaman Lapangan (PPL)',
       badge: 'Praktikum Lapangan',
+      hideContactCard: true,
+      sidebarAction: {
+        title: 'Pendaftaran (Akses Awal)',
+        buttonLabel: 'Closed',
+        badge: 'Link menyusul'
+      },
+      customOtherTitle: 'Administrasi',
+      customOtherLinks: [
+        { label: 'Surat Ijin Kerja', badge: 'Link menyusul' },
+        { label: 'Surat Ijin PPL', badge: 'Link menyusul' }
+      ],
       summary:
         'Program wajib bagi mahasiswa Fakultas Tarbiyah untuk mengasah kompetensi pedagogik, kepribadian, sosial, dan profesional langsung di sekolah/madrasah mitra.',
-      highlightsTitle: 'Komponen Utama Program PPL',
+      highlightsTitle: 'Unduh Dokumen Pelengkap Laporan (Form) PPL',
       highlights: [
-        { title: 'Pembekalan & Microteaching', desc: 'Pemantapan RPP/Modul Ajar, keterampilan mengajar dasar, dan etika profesi keguruan di kampus.' },
-        { title: 'Observasi Sekolah Mitra', desc: 'Pemetaan kultur sekolah, administrasi kurikulum, serta karakter peserta didik bersama guru pamong.' },
-        { title: 'Praktik Mengajar Terbimbing', desc: 'Pelaksanaan pembelajaran langsung di kelas dengan supervisi Dosen Pembimbing Lapangan (DPL).' },
-        { title: 'Evaluasi & Pelaporan Akhir', desc: 'Penilaian portofolio perangkat ajar, ujian praktik mengajar, dan penyerahan laporan resmi PPL.' }
+        {
+          title: 'Form Observasi Sekolah',
+          desc: 'Klik untuk mengunduh format lembar observasi kondisi & kultur sekolah mitra.',
+          href: 'https://drive.google.com/uc?export=download&id=1xeq4m-ocSmBaqsYDXPQG0X00BtHUJvSa'
+        },
+        {
+          title: 'Form Jurnal Harian Mahasiswa',
+          desc: 'Klik untuk mengunduh format catatan aktivitas harian mahasiswa selama PPL.',
+          href: 'https://drive.google.com/uc?export=download&id=1oxm5Et4KTyXe6wUkskF-MRS2meVDWfRa'
+        },
+        {
+          title: 'Form Observasi Kelas Guru Mengajar',
+          desc: 'Klik untuk mengunduh lembar observasi proses pembelajaran guru pamong.',
+          href: 'https://drive.google.com/uc?export=download&id=1FThthx6Unb6mH1_gHyhY9mhIGR_juuit'
+        },
+        {
+          title: 'Form Penilaian Latihan Mengajar N3',
+          desc: 'Klik untuk mengunduh instrumen penilaian latihan mengajar terbimbing (N3).',
+          href: 'https://drive.google.com/uc?export=download&id=1n0Ju1xzW_Qr6HUEtIrcCGjwchVYJM9cu'
+        },
+        {
+          title: 'Form Penilaian Ujian Praktek Mengajar N4',
+          desc: 'Klik untuk mengunduh lembar penilaian ujian praktik mengajar akhir (N4).',
+          href: 'https://drive.google.com/uc?export=download&id=1dY6O_gtnFmDsFdXWzjkWgatTuDtyJBiV'
+        },
+        {
+          title: 'Form Laporan PP',
+          desc: 'Klik untuk mengunduh template sistematika penulisan laporan akhir.',
+          href: 'https://drive.google.com/uc?export=download&id=1g-z4PkwEtoNm_yJ3OUoxQmv7RZSBMsrW'
+        },
+        {
+          title: 'Form Bimbingan DPL',
+          desc: 'Klik untuk mengunduh kartu kendali bimbingan Dosen Pembimbing Lapangan.',
+          href: 'https://drive.google.com/uc?export=download&id=1jDeI8ABs3nj1At35BpUQqjrARkjX08HG'
+        }
       ],
       steps: [
         'Mahasiswa memastikan lulus mata kuliah prasyarat microteaching serta memenuhi batas minimal SKS.',

@@ -188,6 +188,42 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     ).toBeVisible();
     await page.goto('/publikasi/ppl');
     await expect(page.getByRole('heading', { level: 1, name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();
+    await expect(page.getByText('Pendaftaran (Akses Awal)')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Closed' })).toBeVisible();
+    await expect(page.getByText('Pusat Layanan Tarbiyah')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Administrasi' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Surat Ijin Kerja/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Surat Ijin PPL/ })).toBeVisible();
+    await expect(page.locator('main aside').getByText('Jurnal Fakultas Tarbiyah')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Unduh Dokumen Pelengkap Laporan (Form) PPL' })).toBeVisible();
+    await expect(page.locator('main a', { hasText: 'Form Observasi Sekolah' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/uc?export=download&id=1xeq4m-ocSmBaqsYDXPQG0X00BtHUJvSa'
+    );
+    await expect(page.locator('main a', { hasText: 'Form Jurnal Harian Mahasiswa' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/uc?export=download&id=1oxm5Et4KTyXe6wUkskF-MRS2meVDWfRa'
+    );
+    await expect(page.locator('main a', { hasText: 'Form Observasi Kelas Guru Mengajar' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/uc?export=download&id=1FThthx6Unb6mH1_gHyhY9mhIGR_juuit'
+    );
+    await expect(page.locator('main a', { hasText: 'Form Penilaian Latihan Mengajar N3' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/uc?export=download&id=1n0Ju1xzW_Qr6HUEtIrcCGjwchVYJM9cu'
+    );
+    await expect(page.locator('main a', { hasText: 'Form Penilaian Ujian Praktek Mengajar N4' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/uc?export=download&id=1dY6O_gtnFmDsFdXWzjkWgatTuDtyJBiV'
+    );
+    await expect(page.locator('main a', { hasText: 'Form Laporan PP' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/uc?export=download&id=1g-z4PkwEtoNm_yJ3OUoxQmv7RZSBMsrW'
+    );
+    await expect(page.locator('main a', { hasText: 'Form Bimbingan DPL' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/uc?export=download&id=1jDeI8ABs3nj1At35BpUQqjrARkjX08HG'
+    );
     await page.goto('/publikasi/pkn');
     await expect(page.getByRole('heading', { level: 1, name: 'Praktek Kerja Nyata (PKN)' })).toBeVisible();
     await page.getByTestId('lang-switch-en').click();

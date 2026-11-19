@@ -1,14 +1,16 @@
 <script setup>
 import { computed } from 'vue';
-import { ArrowLeft, CheckCircle2, Download, ExternalLink, FileText } from 'lucide-vue-next';
+import { ArrowLeft, CheckCircle2, Download, ExternalLink, FileText, Lock } from 'lucide-vue-next';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import { useI18n } from '../composables/useI18n.js';
+import { useToast } from '../composables/useToast.js';
 
 const props = defineProps({
   pageKey: { type: String, required: true }
 });
 
 const { t } = useI18n();
+const toast = useToast();
 
 const infoPages = computed(() => t('portalPages.infoPages') || {});
 const pageData = computed(() => infoPages.value[props.pageKey] || null);
@@ -18,6 +20,11 @@ const categoryLabel = computed(() =>
 const highlightsGridClass = computed(() =>
   pageData.value?.highlights?.length === 1 ? 'sm:grid-cols-1' : 'sm:grid-cols-2'
 );
+
+function handlePendingLink(item) {
+  const label = item?.label || item?.buttonLabel || '';
+  toast.info(t('portalPages.common.pendingNoticePrefix') + label + t('portalPages.common.pendingNoticeSuffix'));
+}
 
 const routeMap = {
   'administrasi-persuratan': '/akademik/administrasi-persuratan',
@@ -42,8 +49,10 @@ const relatedPages = computed(() =>
     :title="pageData?.title || t('portalPages.common.notFoundTitle')"
     :missing="!pageData"
     :hide-sidebar="Boolean(pageData?.hideSidebar)"
-    :other-title="t('portalPages.common.otherPagesHeading')"
-    :other-links="relatedPages"
+    :hide-contact-card="Boolean(pageData?.hideContactCard)"
+    :other-title="pageData?.customOtherTitle || t('portalPages.common.otherPagesHeading')"
+    :other-links="pageData?.customOtherLinks || relatedPages"
+    @pending-link="handlePendingLink"
   >
     <template v-if="pageData">
       <section class="rounded-3xl border border-surface-border bg-gradient-to-br from-brand-50/80 via-white to-white p-6 sm:p-8 shadow-card space-y-4">
@@ -111,17 +120,34 @@ const relatedPages = computed(() =>
           {{ pageData.highlightsTitle || t('portalPages.common.highlightsHeading') }}
         </h2>
         <div class="grid grid-cols-1 gap-4" :class="highlightsGridClass">
-          <article
-            v-for="item in pageData.highlights"
-            :key="item.title"
-            class="rounded-xl border border-surface-border bg-surface-page p-4 space-y-1.5"
-          >
-            <div class="flex items-start gap-2">
-              <CheckCircle2 class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-              <h3 class="text-sm font-bold text-brand-900">{{ item.title }}</h3>
-            </div>
-            <p class="pl-6 text-xs leading-relaxed text-slate-600">{{ item.desc }}</p>
-          </article>
+          <template v-for="item in pageData.highlights" :key="item.title">
+            <a
+              v-if="item.href"
+              :href="item.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group flex items-start justify-between gap-3 rounded-xl border border-surface-border bg-surface-page p-4 transition hover:border-brand-300 hover:bg-brand-50"
+            >
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-start gap-2">
+                  <CheckCircle2 class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  <h3 class="text-sm font-bold text-brand-900 group-hover:text-brand-700">{{ item.title }}</h3>
+                </div>
+                <p class="pl-6 text-xs leading-relaxed text-slate-600">{{ item.desc }}</p>
+              </div>
+              <Download class="mt-0.5 h-4 w-4 shrink-0 text-brand-600 transition group-hover:translate-y-0.5" aria-hidden="true" />
+            </a>
+            <article
+              v-else
+              class="rounded-xl border border-surface-border bg-surface-page p-4 space-y-1.5"
+            >
+              <div class="flex items-start gap-2">
+                <CheckCircle2 class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <h3 class="text-sm font-bold text-brand-900">{{ item.title }}</h3>
+              </div>
+              <p class="pl-6 text-xs leading-relaxed text-slate-600">{{ item.desc }}</p>
+            </article>
+          </template>
         </div>
       </section>
 
@@ -145,7 +171,24 @@ const relatedPages = computed(() =>
     </template>
 
     <template #sidebar-top>
-      <section v-if="pageData" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-3">
+      <section v-if="pageData?.sidebarAction" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-base font-extrabold text-brand-900">{{ pageData.sidebarAction.title }}</h2>
+          <span class="rounded-full bg-surface-muted px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
+            {{ pageData.sidebarAction.badge }}
+          </span>
+        </div>
+        <button
+          type="button"
+          class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 text-sm font-bold text-rose-700 transition hover:bg-rose-100"
+          @click="handlePendingLink(pageData.sidebarAction)"
+        >
+          <Lock class="h-4 w-4" />
+          <span>{{ pageData.sidebarAction.buttonLabel }}</span>
+        </button>
+      </section>
+
+      <section v-else-if="pageData" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-3">
         <a
           v-if="pageData.primaryCta"
           :href="pageData.primaryCta.href"
