@@ -148,7 +148,16 @@ const relatedPages = computed(() =>
                 </div>
                 <p class="pl-6 text-xs leading-relaxed text-slate-600">{{ item.desc }}</p>
               </div>
-              <Download class="mt-0.5 h-4 w-4 shrink-0 text-brand-600 transition group-hover:translate-y-0.5" aria-hidden="true" />
+              <ExternalLink
+                v-if="item.icon === 'external'"
+                class="mt-0.5 h-4 w-4 shrink-0 text-brand-600 transition group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+              <Download
+                v-else
+                class="mt-0.5 h-4 w-4 shrink-0 text-brand-600 transition group-hover:translate-y-0.5"
+                aria-hidden="true"
+              />
             </a>
             <article
               v-else

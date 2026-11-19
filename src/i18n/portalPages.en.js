@@ -279,14 +279,35 @@ export const portalPagesEn = {
       categoryKey: 'publicationCategory',
       title: 'Faculty of Tarbiyah Journals',
       badge: 'Scholarly Publishing',
+      hideSidebar: true,
       summary:
         'Scholarly publishing hub for faculty lecturers, students, and Islamic education researchers at the Faculty of Tarbiyah, Mambaul Ulum Islamic Institute of Surakarta.',
-      highlightsTitle: 'Journal Tracks & Research Scope',
+      highlightsTitle: 'Published Journals & Research Scope',
       highlights: [
-        { title: 'Islamic Religious Education (PAI) Journal', desc: 'Research on Islamic curriculum innovation, instructional strategies, and educational thought.' },
-        { title: 'Primary Madrasah Education (PGMI) Journal', desc: 'Studies in elementary pedagogy, literacy-numeracy, and integrative thematic teaching media.' },
-        { title: 'Early Childhood Education (PIAUD) Journal', desc: 'Articles on golden-age child development, play-based learning, and educational toys.' },
-        { title: 'Manuscript & OJS Workflow Support', desc: 'Formatting templates, similarity screening, and peer-review submission guidance.' }
+        {
+          title: 'Al’ulum Jurnal Pendidikan Islam',
+          desc: 'Islamic Religious Education (PAI) Journal',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum',
+          icon: 'external'
+        },
+        {
+          title: 'Journal of Research and Innovation in Madrasah Ibtidaiyah Education',
+          desc: 'Primary Madrasah Education (PGMI) Journal',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/rimie',
+          icon: 'external'
+        },
+        {
+          title: "Education Journal of Mamba'ul 'Ulum for Early Childhood Development",
+          desc: 'Early Childhood Education (PIAUD) Journal',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/emerald',
+          icon: 'external'
+        },
+        {
+          title: "Mamba'ul 'Ulum",
+          desc: 'Institute Journal',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/mu',
+          icon: 'external'
+        }
       ],
       steps: [
         'Prepare your research or community-service manuscript following the OJS IIM journal template.',

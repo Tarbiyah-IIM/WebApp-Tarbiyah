@@ -279,14 +279,35 @@ export const portalPagesId = {
       categoryKey: 'publicationCategory',
       title: 'Jurnal Fakultas Tarbiyah',
       badge: 'Publikasi Ilmiah',
+      hideSidebar: true,
       summary:
         'Wadah publikasi riset ilmiah dosen, mahasiswa, dan praktisi pendidikan Islam di lingkungan Fakultas Tarbiyah Institut Islam Mambaul Ulum Surakarta.',
-      highlightsTitle: 'Rumpun Terbitan & Fokus Kajian',
+      highlightsTitle: 'Jurnal Terbitan & Fokus Kajian',
       highlights: [
-        { title: 'Jurnal Pendidikan Agama Islam (PAI)', desc: 'Kajian inovasi kurikulum PAI, metodologi pembelajaran keislaman, dan pemikiran pendidikan Islam.' },
-        { title: 'Jurnal Pendidikan Guru MI (PGMI)', desc: 'Artikel penelitian pendidikan dasar, literasi-numerasi MI/SD, dan pengembangan media ajar tematik.' },
-        { title: 'Jurnal Pendidikan Islam Anak Usia Dini (PIAUD)', desc: 'Riset perkembangan anak usia emas, psikologi belajar anak, serta kreativitas permainan edukatif.' },
-        { title: 'Pendampingan Naskah & OJS Terintegrasi', desc: 'Panduan penulisan sesuai template berkala ilmiah, pengecekan plagiarisme, dan proses peer-review.' }
+        {
+          title: 'Al’ulum Jurnal Pendidikan Islam',
+          desc: 'Jurnal Pendidikan Agama Islam (PAI)',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum',
+          icon: 'external'
+        },
+        {
+          title: 'Journal of Research and Innovation in Madrasah Ibtidaiyah Education',
+          desc: 'Jurnal Pendidikan Guru MI (PGMI)',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/rimie',
+          icon: 'external'
+        },
+        {
+          title: "Education Journal of Mamba'ul 'Ulum for Early Childhood Development",
+          desc: 'Jurnal Pendidikan Islam Anak Usia Dini (PIAUD)',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/emerald',
+          icon: 'external'
+        },
+        {
+          title: "Mamba'ul 'Ulum",
+          desc: 'Jurnal Institut',
+          href: 'https://jurnal.iimsurakarta.ac.id/index.php/mu',
+          icon: 'external'
+        }
       ],
       steps: [
         'Siapkan naskah hasil penelitian atau pengabdian sesuai gaya selingkung template jurnal OJS IIM.',

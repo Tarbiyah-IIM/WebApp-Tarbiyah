@@ -306,6 +306,27 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.getByTestId('lang-switch-id').click();
     await page.goto('/publikasi/jurnal');
     await expect(page.getByRole('heading', { level: 1, name: 'Jurnal Fakultas Tarbiyah' })).toBeVisible();
+    await expect(page.locator('main aside')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Jurnal Terbitan & Fokus Kajian' })).toBeVisible();
+    const journalCards = page.locator('main section', { hasText: 'Jurnal Terbitan & Fokus Kajian' });
+    await expect(journalCards.locator('a', { hasText: 'Al’ulum Jurnal Pendidikan Islam' })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+    );
+    await expect(journalCards.getByText('Jurnal Pendidikan Agama Islam (PAI)')).toBeVisible();
+    await expect(
+      journalCards.locator('a', { hasText: 'Journal of Research and Innovation in Madrasah Ibtidaiyah Education' })
+    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/rimie');
+    await expect(journalCards.getByText('Jurnal Pendidikan Guru MI (PGMI)')).toBeVisible();
+    await expect(
+      journalCards.locator('a', { hasText: "Education Journal of Mamba'ul 'Ulum for Early Childhood Development" })
+    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/emerald');
+    await expect(journalCards.getByText('Jurnal Pendidikan Islam Anak Usia Dini (PIAUD)')).toBeVisible();
+    await expect(journalCards.locator('a', { hasText: 'Jurnal Institut' })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/mu'
+    );
+    await expect(journalCards.locator('a', { hasText: 'Jurnal Institut' })).toContainText("Mamba'ul 'Ulum");
 
     await page.goto('/courses');
     await expect(page).toHaveURL(/\/$/);
