@@ -84,24 +84,53 @@ export const portalPagesEn = {
       categoryKey: 'academicCategory',
       title: 'Academic Correspondence Administration',
       badge: 'Academic Services',
-      summary:
-        'Centralized student academic letter service for Faculty of Tarbiyah students, coordinated seamlessly with the Academic and General Administration Bureau (BAAU) of IIM Surakarta.',
+      hideSidebar: true,
+      summaryBlocks: [
+        {
+          text: 'Please note that Observation or Research Request Letter submissions are facilitated online. Kindly download the form according to your needs (group / individual).'
+        },
+        {
+          bold: true,
+          text: 'ENSURE ALL ENTERED DATA IS ACCURATE AND DOUBLE-CHECK YOUR DETAILS BEFORE OFFICIAL STAMP AND SIGNATURE ARE APPLIED'
+        },
+        {
+          segments: [
+            { text: 'If you have any questions or issues completing the form, please contact ' },
+            { label: 'Academic Affairs', href: 'https://wa.link/qrwv15' },
+            { text: '.' }
+          ]
+        },
+        {
+          segments: [
+            {
+              text: 'After completing the form, please request a wet stamp and signature from Academic Staff, or if a softfile version is required, send it back to the '
+            },
+            { label: 'Academic Affairs', href: 'https://wa.link/qrwv15' },
+            { text: ' contact for signature and wet stamp in PDF / Word format.' }
+          ]
+        },
+        {
+          text: 'To download the observation and research request form, click the “Download Request Form” button.'
+        }
+      ],
       highlightsTitle: 'Supported Academic Letters',
       highlights: [
-        { title: 'Active Student Enrollment Certificate', desc: 'Used for scholarships, insurance, parental allowance, or official external verification.' },
-        { title: 'Research & School Observation Permit', desc: 'Official faculty introduction letter for coursework observation, PPL, or thesis data collection.' },
-        { title: 'Fieldwork / PKN Assignment Letter', desc: 'Official placement coordination with partner schools, madrasahs, and community institutions.' },
-        { title: 'Document Legalization & Graduation Letter', desc: 'Academic transcript verification and graduation letters for final-year students and alumni.' }
+        { title: 'Observation & Research Permit Letter', desc: 'Official introduction letter to schools/madrasahs for coursework, PPL, or thesis research.' }
       ],
       steps: [
         'Prepare your active student ID (NIM), full name, letter purpose, and destination institution.',
-        'Submit Active Enrollment Letters via the BAAU portal, or contact Faculty Admin for research permits.',
-        'Administrative staff verify active semester registration (KRS) in SIAKAD.',
-        'Receive your signed printed letter or ready-to-download digital correspondence document.'
+        'Ensure the Letter Number matches the latest sequence.',
+        'Academic Affairs staff verify data completeness and authenticity format of the Request Letter.',
+        'The official letter is issued in stamped printed form and signed by the Course Lecturer and Vice Dean I.'
       ],
       primaryCta: {
-        label: 'Open BAAU Letter Portal',
-        href: 'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/'
+        label: 'Download Request Form',
+        href: 'https://drive.google.com/drive/folders/1D7KqdUPHy4nH5W1gxo2PWJyFImmKLwLI?usp=sharing',
+        icon: 'download'
+      },
+      secondaryCta: {
+        label: 'Get Letter Number',
+        href: 'https://drive.google.com/open?authuser=0&id=1MayDKlAWQH0-i58i-1CenBr2Zg00ofyFB3DiBLL_95s'
       }
     },
     ppl: {

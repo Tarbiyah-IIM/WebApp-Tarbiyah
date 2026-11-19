@@ -167,6 +167,25 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
 
     await page.goto('/akademik/administrasi-persuratan');
     await expect(page.getByRole('heading', { level: 1, name: 'Administrasi Persuratan' })).toBeVisible();
+    await expect(page.getByText('PASTIKAN DATA YANG ANDA ISI SUDAH BENAR, CEK KEMBALI DATA YANG ANDA ISI SEBELUM TERBUBUHI STEMPEL DAN TANDA TANGAN')).toBeVisible();
+    await expect(page.locator('main a', { hasText: 'Unduh Surat Permohonan' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/drive/folders/1D7KqdUPHy4nH5W1gxo2PWJyFImmKLwLI?usp=sharing'
+    );
+    await expect(page.locator('main a', { hasText: 'Ambil Nomor Surat' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/open?authuser=0&id=1MayDKlAWQH0-i58i-1CenBr2Zg00ofyFB3DiBLL_95s'
+    );
+    await expect(page.locator('main aside')).toHaveCount(0);
+    await expect(page.getByText('Surat Izin Observasi & Penelitian')).toBeVisible();
+    await expect(page.getByText('Surat Keterangan Aktif Kuliah')).toHaveCount(0);
+    await expect(page.getByText('Pastikan Nomor Surat sesuai dengan yang terbaru')).toBeVisible();
+    await expect(page.getByText('Staf Pengajaran memverifikasi kelengkapan data dan format keaslian Surat Permohonan.')).toBeVisible();
+    await expect(
+      page.getByText(
+        'Dokumen surat resmi diterbitkan dalam bentuk cetak berstempel dan sudah di Tanda Tangani oleh Dosen Mata Kuliah & Wakil Dekan I.'
+      )
+    ).toBeVisible();
     await page.goto('/publikasi/ppl');
     await expect(page.getByRole('heading', { level: 1, name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();
     await page.goto('/publikasi/pkn');

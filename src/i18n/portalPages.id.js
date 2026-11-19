@@ -84,24 +84,53 @@ export const portalPagesId = {
       categoryKey: 'academicCategory',
       title: 'Administrasi Persuratan',
       badge: 'Layanan Akademik',
-      summary:
-        'Pusat layanan pengajuan surat akademik mahasiswa Fakultas Tarbiyah secara tertib dan terintegrasi dengan Biro Administrasi Akademik dan Umum (BAAU) IIM Surakarta.',
+      hideSidebar: true,
+      summaryBlocks: [
+        {
+          text: 'Kami sampaikan bahwa pengajuan Surat Permohonan Penelitian atau Observasi difasilitasi secara Daring. Harap Saudara/i mendownload form sesuai kebutuhan (kelompok / individu).'
+        },
+        {
+          bold: true,
+          text: 'PASTIKAN DATA YANG ANDA ISI SUDAH BENAR, CEK KEMBALI DATA YANG ANDA ISI SEBELUM TERBUBUHI STEMPEL DAN TANDA TANGAN'
+        },
+        {
+          segments: [
+            { text: 'Jika ada kendala dan pertanyaan mengenai pengisian form tersebut silahkan hubungi ' },
+            { label: 'Akademik', href: 'https://wa.link/qrwv15' },
+            { text: '.' }
+          ]
+        },
+        {
+          segments: [
+            {
+              text: 'Setelah pengisian form selesai, silahkan mintakan tanda tangan dan cap basah ke Staff Akademik atau jika membutuhkan dalam bentuk softfile bisa dikirimkan kembali ke nomor '
+            },
+            { label: 'Akademik', href: 'https://wa.link/qrwv15' },
+            { text: ' untuk ttd dan cap basah dalam bentuk PDF / Word.' }
+          ]
+        },
+        {
+          text: 'Untuk mendownload form permohonan observasi dan penelitian silahkan klik tombol “Unduh Surat Permohonan”'
+        }
+      ],
       highlightsTitle: 'Jenis Surat Akademik yang Dilayani',
       highlights: [
-        { title: 'Surat Keterangan Aktif Kuliah', desc: 'Untuk keperluan tunjangan orang tua, BPJS, beasiswa, atau administrasi instansi resmi.' },
-        { title: 'Surat Izin Observasi & Penelitian', desc: 'Pengantar resmi ke sekolah/madrasah untuk tugas mata kuliah, PPL, maupun skripsi.' },
-        { title: 'Surat Pengantar Magang / PKN', desc: 'Koordinasi penempatan mahasiswa ke instansi pendidikan dan mitra masyarakat.' },
-        { title: 'Legalisir & Surat Keterangan Lulus', desc: 'Verifikasi dokumen akademik mahasiswa semester akhir dan alumni Fakultas Tarbiyah.' }
+        { title: 'Surat Izin Observasi & Penelitian', desc: 'Pengantar resmi ke sekolah/madrasah untuk tugas mata kuliah, PPL, maupun skripsi.' }
       ],
       steps: [
         'Siapkan NIM aktif, data diri, tujuan surat, dan nama instansi penerima secara lengkap.',
-        'Untuk Surat Aktif Mahasiswa dapat langsung diajukan melalui portal resmi BAAU; untuk izin riset/prodi hubungi Admin Fakultas.',
-        'Tim administrasi memverifikasi status keaktifan KRS dan kelengkapan data pada sistem SIAKAD.',
-        'Dokumen surat resmi diterbitkan dalam bentuk cetak berstempel atau dokumen digital siap unduh.'
+        'Pastikan Nomor Surat sesuai dengan yang terbaru',
+        'Staf Pengajaran memverifikasi kelengkapan data dan format keaslian Surat Permohonan.',
+        'Dokumen surat resmi diterbitkan dalam bentuk cetak berstempel dan sudah di Tanda Tangani oleh Dosen Mata Kuliah & Wakil Dekan I.'
       ],
       primaryCta: {
-        label: 'Buka Portal Surat BAAU',
-        href: 'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/'
+        label: 'Unduh Surat Permohonan',
+        href: 'https://drive.google.com/drive/folders/1D7KqdUPHy4nH5W1gxo2PWJyFImmKLwLI?usp=sharing',
+        icon: 'download'
+      },
+      secondaryCta: {
+        label: 'Ambil Nomor Surat',
+        href: 'https://drive.google.com/open?authuser=0&id=1MayDKlAWQH0-i58i-1CenBr2Zg00ofyFB3DiBLL_95s'
       }
     },
     ppl: {

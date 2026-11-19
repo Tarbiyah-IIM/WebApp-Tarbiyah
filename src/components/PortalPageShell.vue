@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { ChevronRight, Home, WifiOff } from 'lucide-vue-next';
+import { ArrowLeft, ChevronRight, Home, WifiOff } from 'lucide-vue-next';
 import FooterSection from './FooterSection.vue';
 import StateFeedback from './StateFeedback.vue';
 import { useLandingStore } from '../stores/landing.store.js';
@@ -10,6 +10,7 @@ defineProps({
   category: { type: String, required: true },
   title: { type: String, required: true },
   missing: { type: Boolean, default: false },
+  hideSidebar: { type: Boolean, default: false },
   otherTitle: { type: String, default: '' },
   otherLinks: { type: Array, default: () => [] }
 });
@@ -90,11 +91,21 @@ onUnmounted(() => {
         </template>
 
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          <div class="space-y-6 lg:col-span-8">
+          <div class="space-y-6" :class="hideSidebar ? 'lg:col-span-12' : 'lg:col-span-8'">
             <slot />
+
+            <div v-if="hideSidebar" class="pt-1">
+              <router-link
+                to="/"
+                class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-surface-border bg-white px-5 text-sm font-semibold text-slate-700 shadow-card hover:bg-brand-50 transition"
+              >
+                <ArrowLeft class="h-4 w-4" />
+                <span>{{ t('portalPages.common.backHomeBtn') }}</span>
+              </router-link>
+            </div>
           </div>
 
-          <aside class="space-y-6 lg:col-span-4">
+          <aside v-if="!hideSidebar" class="space-y-6 lg:col-span-4">
             <slot name="sidebar-top" />
 
             <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">

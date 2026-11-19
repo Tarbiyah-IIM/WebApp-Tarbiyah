@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { ArrowLeft, CheckCircle2, ExternalLink, FileText } from 'lucide-vue-next';
+import { ArrowLeft, CheckCircle2, Download, ExternalLink, FileText } from 'lucide-vue-next';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import { useI18n } from '../composables/useI18n.js';
 
@@ -14,6 +14,9 @@ const infoPages = computed(() => t('portalPages.infoPages') || {});
 const pageData = computed(() => infoPages.value[props.pageKey] || null);
 const categoryLabel = computed(() =>
   pageData.value ? t(`portalPages.common.${pageData.value.categoryKey}`) : t('portalPages.common.academicCategory')
+);
+const highlightsGridClass = computed(() =>
+  pageData.value?.highlights?.length === 1 ? 'sm:grid-cols-1' : 'sm:grid-cols-2'
 );
 
 const routeMap = {
@@ -38,6 +41,7 @@ const relatedPages = computed(() =>
     :category="categoryLabel"
     :title="pageData?.title || t('portalPages.common.notFoundTitle')"
     :missing="!pageData"
+    :hide-sidebar="Boolean(pageData?.hideSidebar)"
     :other-title="t('portalPages.common.otherPagesHeading')"
     :other-links="relatedPages"
   >
@@ -50,17 +54,53 @@ const relatedPages = computed(() =>
         <h1 class="text-2xl font-extrabold tracking-tight text-brand-900 sm:text-3xl">
           {{ pageData.title }}
         </h1>
-        <p class="text-sm leading-relaxed text-slate-600 sm:text-base">
+
+        <div v-if="pageData.summaryBlocks?.length" class="space-y-3 text-sm leading-relaxed text-slate-600 sm:text-base">
+          <template v-for="(block, idx) in pageData.summaryBlocks" :key="idx">
+            <p v-if="block.bold" class="font-extrabold text-brand-900">
+              {{ block.text }}
+            </p>
+            <p v-else-if="block.segments">
+              <template v-for="(seg, segIdx) in block.segments" :key="segIdx">
+                <a
+                  v-if="seg.href"
+                  :href="seg.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold text-brand-600 underline hover:text-brand-700"
+                >
+                  {{ seg.label }}
+                </a>
+                <span v-else>{{ seg.text }}</span>
+              </template>
+            </p>
+            <p v-else>{{ block.text }}</p>
+          </template>
+        </div>
+        <p v-else class="text-sm leading-relaxed text-slate-600 sm:text-base">
           {{ pageData.summary }}
         </p>
-        <div v-if="pageData.primaryCta" class="pt-1">
+
+        <div v-if="pageData.primaryCta || pageData.secondaryCta" class="flex flex-wrap items-center gap-3 pt-1">
           <a
+            v-if="pageData.primaryCta"
             :href="pageData.primaryCta.href"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-brand-600 px-5 text-sm font-bold text-white hover:bg-brand-700 transition"
           >
+            <Download v-if="pageData.primaryCta.icon === 'download'" class="h-4 w-4" />
             <span>{{ pageData.primaryCta.label }}</span>
+            <ExternalLink v-if="pageData.primaryCta.icon !== 'download'" class="h-4 w-4" />
+          </a>
+          <a
+            v-if="pageData.secondaryCta"
+            :href="pageData.secondaryCta.href"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-5 text-sm font-bold text-brand-700 hover:bg-brand-100 transition"
+          >
+            <span>{{ pageData.secondaryCta.label }}</span>
             <ExternalLink class="h-4 w-4" />
           </a>
         </div>
@@ -70,7 +110,7 @@ const relatedPages = computed(() =>
         <h2 class="text-lg font-extrabold text-brand-900">
           {{ pageData.highlightsTitle || t('portalPages.common.highlightsHeading') }}
         </h2>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4" :class="highlightsGridClass">
           <article
             v-for="item in pageData.highlights"
             :key="item.title"
