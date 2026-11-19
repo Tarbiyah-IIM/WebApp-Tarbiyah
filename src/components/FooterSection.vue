@@ -16,11 +16,11 @@ const journalLinks = computed(() => [
   },
   {
     label: t('footer.journalLinks.pgmi'),
-    href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+    href: 'https://jurnal.iimsurakarta.ac.id/index.php/rimie'
   },
   {
     label: t('footer.journalLinks.piaud'),
-    href: 'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+    href: 'https://jurnal.iimsurakarta.ac.id/index.php/emerald'
   }
 ]);
 

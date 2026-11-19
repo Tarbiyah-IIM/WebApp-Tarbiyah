@@ -104,6 +104,18 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     const footerSection = page.locator('#footer-cta');
     await expect(footerSection.getByRole('link', { name: 'PMB Center' })).toHaveAttribute('href', 'https://wa.link/agu1p5');
     await expect(footerSection.getByRole('link', { name: 'Admin Fakultas' })).toHaveAttribute('href', 'https://wa.link/qrwv15');
+    await expect(footerSection.getByRole('link', { name: /PAI \(Al'ulum/ })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/alulum'
+    );
+    await expect(footerSection.getByRole('link', { name: /PGMI \(Journal of Research/ })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/rimie'
+    );
+    await expect(footerSection.getByRole('link', { name: /PIAUD \(Education Journal/ })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/emerald'
+    );
     await expect(
       footerSection.locator('iframe[title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"]')
     ).toBeVisible();
