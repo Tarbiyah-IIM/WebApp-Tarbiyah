@@ -206,15 +206,13 @@ export default {
   search: {
     openLabel: 'Buka pencarian global',
     modalTitle: 'Pencarian Cepat Tarbiyah',
-    placeholder: 'Cari program studi, berita, layanan, atau FAQ...',
+    placeholder: 'Cari berita fakultas atau FAQ...',
     inputLabel: 'Kata kunci pencarian',
     clearBtn: 'Bersihkan',
-    programsSection: 'Program Studi Unggulan',
-    servicesSection: 'Layanan Kampus',
     newsSection: 'Berita Fakultas',
     faqSection: 'Pertanyaan Umum (FAQ)',
     emptyTitle: 'Tidak ada hasil yang cocok pada halaman beranda.',
-    emptyHint: 'Coba kata kunci lain seperti PAI, PGMI, PIAUD, SIAKAD, atau PMB.'
+    emptyHint: 'Coba kata kunci lain sesuai judul berita atau FAQ.'
   },
   feedback: {
     noDataTitle: 'Data tidak ditemukan',

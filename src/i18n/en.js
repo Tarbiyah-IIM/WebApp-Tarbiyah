@@ -206,15 +206,13 @@ export default {
   search: {
     openLabel: 'Open global search',
     modalTitle: 'Quick Search — Tarbiyah',
-    placeholder: 'Search study programs, news, services, or FAQ...',
+    placeholder: 'Search faculty news or FAQ...',
     inputLabel: 'Search keyword',
     clearBtn: 'Clear',
-    programsSection: 'Featured Study Programs',
-    servicesSection: 'Campus Services',
     newsSection: 'Faculty News',
     faqSection: 'Frequently Asked Questions',
     emptyTitle: 'No matching results found on the home page.',
-    emptyHint: 'Try keywords like PAI, PGMI, PIAUD, SIAKAD, or Admissions.'
+    emptyHint: 'Try another keyword matching news titles or FAQs.'
   },
   feedback: {
     noDataTitle: 'No data found',

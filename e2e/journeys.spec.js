@@ -142,7 +142,14 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     expect(searchDialogBox.height).toBeGreaterThanOrEqual(500);
     const searchInputBox = await searchDialog.getByTestId('global-search-input').boundingBox();
     expect(searchInputBox.y).toBeGreaterThan(0);
+    await expect(searchDialog.getByText('Program Studi Unggulan')).toHaveCount(0);
+    await expect(searchDialog.getByText('Layanan Kampus')).toHaveCount(0);
+    await expect(searchDialog.getByRole('button', { name: 'Program Studi' })).toHaveCount(0);
+    await expect(searchDialog.getByRole('button', { name: 'Berita Fakultas' })).toHaveCount(0);
+    await expect(searchDialog.getByRole('button', { name: 'FAQ' })).toHaveCount(0);
     await expect(searchDialog.getByTestId('search-catalog-submit')).toHaveCount(0);
+    await searchDialog.getByTestId('global-search-input').fill('Tarbiyah');
+    await expect(searchDialog.getByText('Berita Fakultas')).toBeVisible();
     await searchDialog.getByTestId('global-search-input').fill('zzznonexistentquery999');
     await expect(searchDialog.getByText('Tidak ada hasil yang cocok pada halaman beranda.')).toBeVisible();
     await page.keyboard.press('Escape');
