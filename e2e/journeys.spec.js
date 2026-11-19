@@ -410,6 +410,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(mobileSheet.getByRole('link', { name: 'Ujian Komprehensif' })).toHaveAttribute('href', '/akademik/ujian-komprehensif');
 
     await moreBtn.click();
+    await expect(mobileSheet.getByRole('heading', { name: 'Menu', exact: true })).toBeVisible();
     await expect(mobileSheet.getByText('Tentang Kami')).toHaveCount(0);
     await expect(mobileSheet.getByRole('link', { name: 'Jurnal' })).toHaveCount(0);
     await mobileSheet.getByRole('button', { name: 'Publikasi' }).click();

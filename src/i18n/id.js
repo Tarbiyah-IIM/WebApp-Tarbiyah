@@ -24,7 +24,7 @@ export default {
       prodi: 'Prodi',
       academic: 'Akademik',
       more: 'More',
-      moreTitle: 'Publikasi & RPL',
+      moreTitle: 'Menu',
       closeSheet: 'Tutup menu'
     },
     pendingPrefix: 'Halaman atau dokumen "',

@@ -24,7 +24,7 @@ export default {
       prodi: 'Programs',
       academic: 'Academic',
       more: 'More',
-      moreTitle: 'Publications & RPL',
+      moreTitle: 'Menu',
       closeSheet: 'Close menu'
     },
     pendingPrefix: 'The page or document "',
