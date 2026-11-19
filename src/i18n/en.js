@@ -16,6 +16,15 @@ export default {
     login: 'Log In',
     logout: 'Log Out',
     toggleMenu: 'Toggle Menu',
+    bottomNav: {
+      ariaLabel: 'Bottom Navigation',
+      home: 'Home',
+      prodi: 'Programs',
+      academic: 'Academic',
+      more: 'More',
+      moreTitle: 'Publications & RPL',
+      closeSheet: 'Close menu'
+    },
     pendingPrefix: 'The page or document "',
     pendingSuffix: '" is currently being prepared.',
     items: {

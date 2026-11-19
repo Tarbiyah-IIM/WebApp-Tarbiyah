@@ -68,6 +68,10 @@ html[data-theme="night"] .bg-white {
   background-color: #111827;
 }
 
+html[data-theme="night"] .ring-white {
+  --tw-ring-color: #111827;
+}
+
 html[data-theme="night"] .bg-white\/95 {
   background-color: rgba(17, 24, 39, 0.95);
 }

@@ -2,8 +2,6 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  Menu,
-  X,
   LogOut,
   LayoutDashboard,
   ChevronDown,
@@ -13,7 +11,7 @@ import {
   Search
 } from 'lucide-vue-next';
 import ftarLogo from '../assets/ftar-logo.png';
-import NavbarMobileDrawer from './NavbarMobileDrawer.vue';
+import MobileBottomNav from './MobileBottomNav.vue';
 import SearchModal from './SearchModal.vue';
 import { useAuthStore } from '../stores/auth.store.js';
 import { useUiStore } from '../stores/ui.store.js';
@@ -29,14 +27,14 @@ const toast = useToast();
 const { locale, setLocale, t } = useI18n();
 const {
   navMenus,
-  mobileOpen,
-  mobileExpanded,
+  mobileSheet,
   activeDropdown,
   toggleDesktopDropdown,
   openDesktopDropdown,
   handleDesktopMouseLeave,
   closeDesktopDropdown,
-  toggleMobileSubmenu,
+  toggleMobileSheet,
+  closeMobileSheet,
   closeAllMenus
 } = useNavMenus(t);
 
@@ -61,7 +59,7 @@ function handleDocumentClick(event) {
 function handleDocumentKeydown(event) {
   if (event.key === 'Escape') {
     closeDesktopDropdown();
-    mobileOpen.value = false;
+    closeMobileSheet();
   }
 }
 
@@ -295,6 +293,32 @@ async function handleLogout() {
       </div>
 
       <div class="flex shrink-0 items-center gap-1.5 lg:hidden">
+        <div
+          class="inline-flex items-center rounded-xl border border-surface-border bg-surface-muted p-0.5"
+          role="group"
+          :aria-label="t('lang.switchLabel')"
+        >
+          <button
+            type="button"
+            data-testid="lang-switch-id-mobile"
+            :aria-pressed="locale === 'id'"
+            class="min-h-[34px] rounded-lg px-2 text-xs font-bold transition"
+            :class="locale === 'id' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600'"
+            @click="setLocale('id')"
+          >
+            ID
+          </button>
+          <button
+            type="button"
+            data-testid="lang-switch-en-mobile"
+            :aria-pressed="locale === 'en'"
+            class="min-h-[34px] rounded-lg px-2 text-xs font-bold transition"
+            :class="locale === 'en' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600'"
+            @click="setLocale('en')"
+          >
+            EN
+          </button>
+        </div>
         <button
           type="button"
           data-testid="theme-toggle-mobile"
@@ -306,36 +330,16 @@ async function handleLogout() {
           <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" />
           <Sun v-else class="h-4 w-4 text-amber-500" />
         </button>
-        <button
-          type="button"
-          data-testid="search-toggle-mobile"
-          :aria-label="t('search.openLabel')"
-          :title="t('search.openLabel')"
-          class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-xl border border-surface-border text-slate-700"
-          @click="openSearchModal"
-        >
-          <Search class="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-surface-border text-slate-700"
-          :aria-expanded="mobileOpen"
-          :aria-label="t('nav.toggleMenu')"
-          @click="mobileOpen = !mobileOpen"
-        >
-          <X v-if="mobileOpen" class="h-6 w-6" />
-          <Menu v-else class="h-6 w-6" />
-        </button>
       </div>
     </nav>
 
-    <NavbarMobileDrawer
-      :open="mobileOpen"
+    <MobileBottomNav
       :nav-menus="navMenus"
-      :mobile-expanded="mobileExpanded"
+      :active-sheet="mobileSheet"
       :dashboard-route="dashboardRoute"
-      @toggle-submenu="toggleMobileSubmenu"
-      @close-all="closeAllMenus"
+      @toggle-sheet="toggleMobileSheet"
+      @close-sheet="closeMobileSheet"
+      @open-search="openSearchModal"
       @pending-item="handlePendingItem"
       @logout="handleLogout"
     />

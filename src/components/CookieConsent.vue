@@ -23,7 +23,7 @@ function accept(choice) {
     v-if="visible"
     role="region"
     :aria-label="t('cookie.ariaLabel')"
-    class="fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-4xl rounded-2xl border border-surface-border bg-white p-4 shadow-float sm:flex sm:items-center sm:justify-between sm:gap-6"
+    class="fixed bottom-24 left-4 right-4 z-40 mx-auto max-w-4xl rounded-2xl border border-surface-border bg-white p-4 shadow-float sm:flex sm:items-center sm:justify-between sm:gap-6 lg:bottom-4"
   >
     <div class="flex items-start gap-3">
       <ShieldCheck class="h-5 w-5 shrink-0 text-brand-600 mt-0.5" />

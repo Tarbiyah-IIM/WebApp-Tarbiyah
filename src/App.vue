@@ -15,7 +15,7 @@ onMounted(() => {
 <template>
   <div class="min-h-screen flex flex-col bg-surface-page text-brand-900">
     <AppNavbar />
-    <main class="flex-1">
+    <main class="flex-1 pb-24 lg:pb-0">
       <router-view />
     </main>
     <ToastContainer />

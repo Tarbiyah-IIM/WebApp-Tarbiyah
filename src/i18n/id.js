@@ -16,6 +16,15 @@ export default {
     login: 'Login',
     logout: 'Logout',
     toggleMenu: 'Toggle Menu',
+    bottomNav: {
+      ariaLabel: 'Navigasi Bawah',
+      home: 'Home',
+      prodi: 'Prodi',
+      academic: 'Akademik',
+      more: 'More',
+      moreTitle: 'Publikasi & RPL',
+      closeSheet: 'Tutup menu'
+    },
     pendingPrefix: 'Halaman atau dokumen "',
     pendingSuffix: '" sedang disiapkan.',
     items: {

@@ -4,10 +4,9 @@ import { computed, ref } from 'vue';
  * Provides localized navigation menus and dropdown/drawer open state for the top navbar.
  */
 export function useNavMenus(t) {
-  const mobileOpen = ref(false);
   const hoveredDropdown = ref(null);
   const pinnedDropdown = ref(null);
-  const mobileExpanded = ref(null);
+  const mobileSheet = ref(null);
 
   const activeDropdown = computed(() => pinnedDropdown.value || hoveredDropdown.value);
 
@@ -120,26 +119,29 @@ export function useNavMenus(t) {
     hoveredDropdown.value = null;
   }
 
-  function toggleMobileSubmenu(id) {
-    mobileExpanded.value = mobileExpanded.value === id ? null : id;
+  function toggleMobileSheet(sheetId) {
+    mobileSheet.value = mobileSheet.value === sheetId ? null : sheetId;
+  }
+
+  function closeMobileSheet() {
+    mobileSheet.value = null;
   }
 
   function closeAllMenus() {
     closeDesktopDropdown();
-    mobileOpen.value = false;
-    mobileExpanded.value = null;
+    closeMobileSheet();
   }
 
   return {
     navMenus,
-    mobileOpen,
-    mobileExpanded,
+    mobileSheet,
     activeDropdown,
     toggleDesktopDropdown,
     openDesktopDropdown,
     handleDesktopMouseLeave,
     closeDesktopDropdown,
-    toggleMobileSubmenu,
+    toggleMobileSheet,
+    closeMobileSheet,
     closeAllMenus
   };
 }

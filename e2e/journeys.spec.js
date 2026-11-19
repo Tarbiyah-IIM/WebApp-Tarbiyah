@@ -362,6 +362,55 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.goto('/mentor');
     await expect(page).toHaveURL(/\/$/);
 
+    await page.setViewportSize({ width: 390, height: 844 });
+    const bottomNav = page.getByTestId('mobile-bottom-nav');
+    await expect(bottomNav).toBeVisible();
+    await expect(bottomNav.getByTestId('bottom-nav-home')).toBeVisible();
+    const prodiBtn = bottomNav.getByTestId('bottom-nav-prodi');
+    const searchFab = bottomNav.getByTestId('mobile-bottom-search');
+    const academicBtn = bottomNav.getByTestId('bottom-nav-akademik');
+    const moreBtn = bottomNav.getByTestId('bottom-nav-more');
+    await expect(prodiBtn).toBeVisible();
+    await expect(searchFab).toBeVisible();
+    await expect(academicBtn).toBeVisible();
+    await expect(moreBtn).toBeVisible();
+
+    const [prodiBox, searchBox, academicBox] = await Promise.all([
+      prodiBtn.boundingBox(),
+      searchFab.boundingBox(),
+      academicBtn.boundingBox()
+    ]);
+    expect(prodiBox.x).toBeLessThan(searchBox.x);
+    expect(searchBox.x).toBeLessThan(academicBox.x);
+
+    await prodiBtn.click();
+    const mobileSheet = page.getByTestId('mobile-bottom-sheet');
+    await expect(mobileSheet).toBeVisible();
+    await expect(mobileSheet.getByRole('link', { name: 'Pendidikan Agama Islam' })).toHaveAttribute('href', '/program-studi/pai');
+
+    await academicBtn.click();
+    await expect(mobileSheet.getByRole('link', { name: 'Ujian Komprehensif' })).toHaveAttribute('href', '/akademik/ujian-komprehensif');
+
+    await moreBtn.click();
+    await expect(mobileSheet.getByText('Publikasi', { exact: true })).toBeVisible();
+    await expect(mobileSheet.getByText('RPL', { exact: true })).toBeVisible();
+    await expect(mobileSheet.getByRole('link', { name: 'Jurnal' })).toHaveAttribute('href', '/publikasi/jurnal');
+    await expect(mobileSheet.getByRole('link', { name: 'Pedoman RPL' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/drive/folders/1knidvsDcia_CmXB4wfi81Xrr9RPImn7l?usp=sharing'
+    );
+    await page.keyboard.press('Escape');
+    await expect(mobileSheet).toHaveCount(0);
+
+    await searchFab.click();
+    const mobileSearchDialog = page.getByRole('dialog', { name: 'Pencarian Cepat Tarbiyah' });
+    await expect(mobileSearchDialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(mobileSearchDialog).toHaveCount(0);
+
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await expect(bottomNav).toBeHidden();
+
     await mainNav.getByTestId('navbar-logo').click();
     await mainNav.getByTestId('navbar-logo').click();
     await mainNav.getByTestId('navbar-logo').click();
