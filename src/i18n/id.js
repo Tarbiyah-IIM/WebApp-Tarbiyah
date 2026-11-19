@@ -34,7 +34,7 @@ export default {
       },
       publications: {
         ppl: 'Praktek Pengalaman Lapangan (PPL)',
-        kkn: 'Praktek Kerja Nyata (KKN)',
+        kkn: 'Praktek Kerja Nyata (PKN)',
         journal: 'Jurnal',
         research: 'Penelitian dan Pengabdian'
       },

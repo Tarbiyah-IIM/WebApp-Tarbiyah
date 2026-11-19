@@ -21,23 +21,18 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(mainNav.getByTestId('search-toggle')).toBeVisible();
 
     await mainNav.getByRole('button', { name: 'Program Studi' }).click();
-    await expect(mainNav.getByRole('link', { name: 'Pendidikan Agama Islam' })).toHaveAttribute(
-      'href',
-      'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
-    );
-    await expect(mainNav.getByRole('link', { name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toHaveAttribute(
-      'href',
-      'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232'
-    );
-    await expect(mainNav.getByRole('link', { name: 'Pendidikan Islam Anak Usia Dini' })).toHaveAttribute(
-      'href',
-      'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239'
-    );
+    await expect(mainNav.getByRole('link', { name: 'Pendidikan Agama Islam' })).toHaveAttribute('href', '/program-studi/pai');
+    await expect(mainNav.getByRole('link', { name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toHaveAttribute('href', '/program-studi/pgmi');
+    await expect(mainNav.getByRole('link', { name: 'Pendidikan Islam Anak Usia Dini' })).toHaveAttribute('href', '/program-studi/piaud');
 
     await mainNav.getByRole('button', { name: 'Akademik' }).click();
     await expect(mainNav.getByRole('link', { name: 'Surat Aktif Mahasiswa' })).toHaveAttribute(
       'href',
       'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/'
+    );
+    await expect(mainNav.getByRole('link', { name: 'Administrasi Persuratan' })).toHaveAttribute(
+      'href',
+      '/akademik/administrasi-persuratan'
     );
     await expect(mainNav.getByRole('link', { name: 'Ujian Komprehensif' })).toHaveAttribute(
       'href',
@@ -49,7 +44,9 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     );
 
     await mainNav.getByRole('button', { name: 'Publikasi' }).click();
-    await expect(mainNav.getByRole('button', { name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: 'Praktek Pengalaman Lapangan (PPL)' })).toHaveAttribute('href', '/publikasi/ppl');
+    await expect(mainNav.getByRole('link', { name: 'Praktek Kerja Nyata (PKN)' })).toHaveAttribute('href', '/publikasi/pkn');
+    await expect(mainNav.getByRole('link', { name: 'Jurnal' })).toHaveAttribute('href', '/publikasi/jurnal');
     await expect(mainNav.getByRole('button', { name: 'Penelitian dan Pengabdian' })).toBeVisible();
 
     await mainNav.getByRole('button', { name: 'RPL' }).click();
@@ -154,6 +151,31 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(searchDialog.getByText('Tidak ada hasil yang cocok pada halaman beranda.')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(searchDialog).toHaveCount(0);
+
+    await page.goto('/program-studi/pai');
+    await expect(page.getByRole('heading', { level: 1, name: 'Program Studi Pendidikan Agama Islam' })).toBeVisible();
+    await expect(page.locator('main a', { hasText: 'Info PMB' })).toHaveAttribute(
+      'href',
+      'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
+    );
+    await page.goto('/program-studi/pgmi');
+    await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toBeVisible();
+    await page.goto('/program-studi/piaud');
+    await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Islam Anak Usia Dini' })).toBeVisible();
+    await page.goto('/program-studi/unknown-slug');
+    await expect(page.getByRole('heading', { name: 'Halaman tidak ditemukan' })).toBeVisible();
+
+    await page.goto('/akademik/administrasi-persuratan');
+    await expect(page.getByRole('heading', { level: 1, name: 'Administrasi Persuratan' })).toBeVisible();
+    await page.goto('/publikasi/ppl');
+    await expect(page.getByRole('heading', { level: 1, name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();
+    await page.goto('/publikasi/pkn');
+    await expect(page.getByRole('heading', { level: 1, name: 'Praktek Kerja Nyata (PKN)' })).toBeVisible();
+    await page.getByTestId('lang-switch-en').click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Community Fieldwork (PKN)' })).toBeVisible();
+    await page.getByTestId('lang-switch-id').click();
+    await page.goto('/publikasi/jurnal');
+    await expect(page.getByRole('heading', { level: 1, name: 'Jurnal Fakultas Tarbiyah' })).toBeVisible();
 
     await page.goto('/courses');
     await expect(page).toHaveURL(/\/$/);

@@ -23,15 +23,15 @@ export function useNavMenus(t) {
       children: [
         {
           label: t('nav.items.programs.pai'),
-          href: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
+          to: '/program-studi/pai'
         },
         {
           label: t('nav.items.programs.pgmi'),
-          href: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232'
+          to: '/program-studi/pgmi'
         },
         {
           label: t('nav.items.programs.piaud'),
-          href: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239'
+          to: '/program-studi/piaud'
         }
       ]
     },
@@ -43,7 +43,10 @@ export function useNavMenus(t) {
           label: t('nav.items.academic.activeLetter'),
           href: 'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/'
         },
-        { label: t('nav.items.academic.correspondence') },
+        {
+          label: t('nav.items.academic.correspondence'),
+          to: '/akademik/administrasi-persuratan'
+        },
         { label: t('nav.items.academic.calendar') },
         { label: t('nav.items.academic.curriculum') },
         {
@@ -60,9 +63,18 @@ export function useNavMenus(t) {
       id: 'publikasi',
       label: t('nav.publications'),
       children: [
-        { label: t('nav.items.publications.ppl') },
-        { label: t('nav.items.publications.kkn') },
-        { label: t('nav.items.publications.journal') },
+        {
+          label: t('nav.items.publications.ppl'),
+          to: '/publikasi/ppl'
+        },
+        {
+          label: t('nav.items.publications.kkn'),
+          to: '/publikasi/pkn'
+        },
+        {
+          label: t('nav.items.publications.journal'),
+          to: '/publikasi/jurnal'
+        },
         { label: t('nav.items.publications.research') }
       ]
     },

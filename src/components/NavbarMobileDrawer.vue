@@ -73,6 +73,14 @@ const { locale, setLocale, t } = useI18n();
                 <span>{{ child.label }}</span>
                 <ExternalLink class="h-3.5 w-3.5 shrink-0 text-slate-400" />
               </a>
+              <router-link
+                v-else-if="child.to"
+                :to="child.to"
+                class="flex min-h-[44px] items-center rounded-xl px-3 text-sm font-medium text-slate-600 hover:bg-brand-50 hover:text-brand-700"
+                @click="emit('close-all')"
+              >
+                <span>{{ child.label }}</span>
+              </router-link>
               <button
                 v-else
                 type="button"

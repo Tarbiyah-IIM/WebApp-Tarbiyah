@@ -198,6 +198,14 @@ async function handleLogout() {
                     <span>{{ child.label }}</span>
                     <ExternalLink class="h-3.5 w-3.5 shrink-0 text-slate-400" />
                   </a>
+                  <router-link
+                    v-else-if="child.to"
+                    :to="child.to"
+                    class="flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+                    @click="closeDesktopDropdown"
+                  >
+                    <span>{{ child.label }}</span>
+                  </router-link>
                   <button
                     v-else
                     type="button"

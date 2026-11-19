@@ -34,7 +34,7 @@ export default {
       },
       publications: {
         ppl: 'Teaching Practicum (PPL)',
-        kkn: 'Community Service Program (KKN)',
+        kkn: 'Community Fieldwork (PKN)',
         journal: 'Journals',
         research: 'Research & Community Service'
       },
