@@ -20,6 +20,11 @@ export const portalPagesId = {
     backHomeBtn: 'Kembali ke Beranda',
     retryBtn: 'Muat Ulang Sinkronisasi',
     comingSoonBadge: 'Link menyusul',
+    openInNewTabBtn: 'Buka di Tab Baru',
+    closeBtn: 'Tutup',
+    embedNotice: 'Jika formulir tidak tampil di pratinjau karena pembatasan Google/browser, klik "Buka di Tab Baru".',
+    loadingPreview: 'Memuat pratinjau formulir...',
+    comingSoonDesc: 'Tautan formulir untuk layanan ini sedang dipersiapkan (Coming Soon).',
     pendingNoticePrefix: 'Tautan untuk "',
     pendingNoticeSuffix: '" akan segera tersedia.',
     notFoundTitle: 'Halaman tidak ditemukan',
@@ -148,8 +153,14 @@ export const portalPagesId = {
       },
       customOtherTitle: 'Administrasi',
       customOtherLinks: [
-        { label: 'Surat Ijin Kerja', badge: 'Link menyusul' },
-        { label: 'Surat Ijin PPL', badge: 'Link menyusul' }
+        {
+          label: 'Surat Ijin Kerja',
+          badge: 'Buka Formulir',
+          popup: true,
+          modalUrl:
+            'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
+        },
+        { label: 'Surat Ijin PPL', badge: 'Coming Soon', popup: true }
       ],
       summary:
         'Program wajib bagi mahasiswa Fakultas Tarbiyah untuk mengasah kompetensi pedagogik, kepribadian, sosial, dan profesional langsung di sekolah/madrasah mitra.',

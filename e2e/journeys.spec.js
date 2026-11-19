@@ -194,6 +194,26 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.getByRole('heading', { name: 'Administrasi' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Surat Ijin Kerja/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Surat Ijin PPL/ })).toBeVisible();
+    await page.getByRole('button', { name: /Surat Ijin Kerja/ }).click();
+    const kerjaDialog = page.getByRole('dialog', { name: 'Surat Ijin Kerja' });
+    await expect(kerjaDialog).toBeVisible();
+    await expect(kerjaDialog.locator('iframe')).toHaveAttribute(
+      'src',
+      'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
+    );
+    await expect(kerjaDialog.getByRole('link', { name: 'Buka di Tab Baru' })).toHaveAttribute(
+      'href',
+      'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
+    );
+    await page.keyboard.press('Escape');
+    await expect(kerjaDialog).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Surat Ijin PPL/ }).click();
+    const pplPermitDialog = page.getByRole('dialog', { name: 'Surat Ijin PPL' });
+    await expect(pplPermitDialog).toBeVisible();
+    await expect(pplPermitDialog.getByText('Coming Soon', { exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(pplPermitDialog).toHaveCount(0);
     await expect(page.locator('main aside').getByText('Jurnal Fakultas Tarbiyah')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Unduh Dokumen Pelengkap Laporan (Form) PPL' })).toBeVisible();
     await expect(page.locator('main a', { hasText: 'Form Observasi Sekolah' })).toHaveAttribute(

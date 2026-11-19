@@ -20,6 +20,11 @@ export const portalPagesEn = {
     backHomeBtn: 'Back to Home',
     retryBtn: 'Reload Sync',
     comingSoonBadge: 'Link coming soon',
+    openInNewTabBtn: 'Open in New Tab',
+    closeBtn: 'Close',
+    embedNotice: 'If the form preview does not appear due to Google/browser framing policy, click "Open in New Tab".',
+    loadingPreview: 'Loading form preview...',
+    comingSoonDesc: 'The submission form link for this item is currently being prepared (Coming Soon).',
     pendingNoticePrefix: 'Link for "',
     pendingNoticeSuffix: '" will be available soon.',
     notFoundTitle: 'Page not found',
@@ -148,8 +153,14 @@ export const portalPagesEn = {
       },
       customOtherTitle: 'Administration',
       customOtherLinks: [
-        { label: 'Work Permit Letter (Surat Ijin Kerja)', badge: 'Link coming soon' },
-        { label: 'PPL Permit Letter (Surat Ijin PPL)', badge: 'Link coming soon' }
+        {
+          label: 'Work Permit Letter (Surat Ijin Kerja)',
+          badge: 'Open Form',
+          popup: true,
+          modalUrl:
+            'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
+        },
+        { label: 'PPL Permit Letter (Surat Ijin PPL)', badge: 'Coming Soon', popup: true }
       ],
       summary:
         'A mandatory field teaching practicum enabling Tarbiyah students to refine pedagogical, personal, social, and professional competencies directly in partner schools.',

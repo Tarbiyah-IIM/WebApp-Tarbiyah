@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { ArrowLeft, CheckCircle2, Download, ExternalLink, FileText, Lock } from 'lucide-vue-next';
+import PortalEmbedModal from '../components/PortalEmbedModal.vue';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import { useI18n } from '../composables/useI18n.js';
 import { useToast } from '../composables/useToast.js';
@@ -11,6 +12,7 @@ const props = defineProps({
 
 const { t } = useI18n();
 const toast = useToast();
+const activePopupItem = ref(null);
 
 const infoPages = computed(() => t('portalPages.infoPages') || {});
 const pageData = computed(() => infoPages.value[props.pageKey] || null);
@@ -22,6 +24,10 @@ const highlightsGridClass = computed(() =>
 );
 
 function handlePendingLink(item) {
+  if (item?.popup || item?.modalUrl) {
+    activePopupItem.value = item;
+    return;
+  }
   const label = item?.label || item?.buttonLabel || '';
   toast.info(t('portalPages.common.pendingNoticePrefix') + label + t('portalPages.common.pendingNoticeSuffix'));
 }
@@ -209,4 +215,5 @@ const relatedPages = computed(() =>
       </section>
     </template>
   </PortalPageShell>
+  <PortalEmbedModal :open="Boolean(activePopupItem)" :item="activePopupItem" @close="activePopupItem = null" />
 </template>
