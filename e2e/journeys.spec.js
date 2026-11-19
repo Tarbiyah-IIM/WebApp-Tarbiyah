@@ -138,6 +138,10 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.getByTestId('search-toggle').click();
     const searchDialog = page.getByRole('dialog', { name: 'Pencarian Cepat Tarbiyah' });
     await expect(searchDialog).toBeVisible();
+    const searchDialogBox = await searchDialog.boundingBox();
+    expect(searchDialogBox.height).toBeGreaterThanOrEqual(500);
+    const searchInputBox = await searchDialog.getByTestId('global-search-input').boundingBox();
+    expect(searchInputBox.y).toBeGreaterThan(0);
     await expect(searchDialog.getByTestId('search-catalog-submit')).toHaveCount(0);
     await searchDialog.getByTestId('global-search-input').fill('zzznonexistentquery999');
     await expect(searchDialog.getByText('Tidak ada hasil yang cocok pada halaman beranda.')).toBeVisible();
