@@ -75,11 +75,10 @@ export default {
         id: 'pai',
         code: 'S1 · PAI',
         badge: 'Terakreditasi LAMDIK',
-        title: 'Program Studi Pendidikan Agama Islam',
+        title: 'Pendidikan Agama Islam',
         description:
           'Prodi ini menyelenggarakan pembelajaran yang profesional, responsif, dan berwawasan global hingga mampu menciptakan lulusan yang unggul.',
-        image:
-          'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80',
+        icon: 'book-open',
         pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
       },
       {
@@ -89,8 +88,7 @@ export default {
         title: 'Pendidikan Guru Madrasah Ibtidaiyah',
         description:
           'Menyiapkan sarjana yang mempunyai kemampuan akademis profesional, berkarakter, serta kecakapan sosial dan manajerial dalam pengembangan Madrasah Ibtidaiyah.',
-        image:
-          'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80',
+        icon: 'school',
         pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232'
       },
       {
@@ -100,8 +98,7 @@ export default {
         title: 'Pendidikan Islam Anak Usia Dini',
         description:
           'Membekali mahasiswa dengan ilmu pendidikan, kreativitas, dan nilai-nilai keislaman untuk menjadi pendidik profesional, inovatif, dan inspiratif sejak usia dini.',
-        image:
-          'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80',
+        icon: 'sparkles',
         pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239'
       }
     ]

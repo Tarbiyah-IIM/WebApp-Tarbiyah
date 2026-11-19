@@ -74,10 +74,14 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.getByText('Program Studi Unggulan')).toBeVisible();
     await expect(page.getByText('Tarbiyah dalam Angka')).toBeVisible();
     await expect(page.getByText('Lembaga Akreditasi Mandiri Kependidikan')).toBeVisible();
+    await expect(page.getByText('Dosen', { exact: true })).toBeVisible();
+    await expect(page.getByText('Learners', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Mahasiswa Aktif', { exact: true })).toBeVisible();
     await expect(page.getByText('Total Alumni')).toBeVisible();
     await expect(page.getByText('Doktor (S3)')).toBeVisible();
     await expect(page.getByText('Graduation Rate')).toBeVisible();
+    await expect(page.getByText('Academic System', { exact: true })).toBeVisible();
+    await expect(page.getByText('academic system', { exact: true })).toHaveCount(0);
     await expect(page.getByText('47+')).toBeVisible();
     await expect(page.getByText('Alasan Kuliah')).toBeVisible();
     await expect(page.getByText('Kenapa Harus Kuliah di Fakultas Tarbiyah?')).toBeVisible();
@@ -88,13 +92,12 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       'href',
       'https://iimsurakarta.siakadcloud.com/gate/login'
     );
-    await expect(servicesSection.getByRole('button', { name: /Jurnal Tarbiyah/ })).toBeVisible();
+    await expect(servicesSection.getByRole('link', { name: /Jurnal Tarbiyah/ })).toHaveAttribute('href', '/publikasi/jurnal');
 
     const newsSection = page.locator('#testimonials');
-    await expect(newsSection.getByText('Berita Fakultas')).toBeVisible();
-    await expect(newsSection.locator('article')).toHaveCount(6);
-    await newsSection.getByRole('button', { name: '2', exact: true }).click();
-    await expect(newsSection.locator('article')).toHaveCount(6);
+    await expect(newsSection.getByRole('heading', { name: 'Berita Fakultas' })).toBeVisible();
+    await expect(newsSection.locator('article')).toHaveCount(0);
+    await expect(newsSection.getByText('Belum ada berita fakultas yang dipublikasikan.')).toBeVisible();
 
     await expect(page.getByText('Berbagai macam pertanyaan yang sering ditanyakan antara lain')).toBeVisible();
     const firstFaqBtn = page.getByRole('button', { name: 'Nilai pada KHS tidak muncul, bagaimana solusinya?' });
@@ -121,6 +124,9 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     ).toBeVisible();
 
     await expect(page.locator('#courses-section article')).toHaveCount(3);
+    await expect(page.locator('#courses-section img')).toHaveCount(0);
+    await expect(page.locator('#courses-section h3', { hasText: /^Pendidikan Agama Islam$/ })).toBeVisible();
+    await expect(page.locator('#courses-section h3', { hasText: 'Program Studi Pendidikan Agama Islam' })).toHaveCount(0);
     const pmbLinks = page.locator('#courses-section a', { hasText: 'Info PMB' });
     await expect(pmbLinks).toHaveCount(3);
 
@@ -140,7 +146,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(mainNav.getByText('Faculty of Tarbiyah', { exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome to the Faculty of Tarbiyah');
     await expect(page.getByText('Featured Study Programs')).toBeVisible();
-    await expect(page.getByText('Faculty News')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Faculty News' })).toBeVisible();
     await expect(footerSection.getByText('Office Address')).toBeVisible();
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -160,15 +166,16 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(searchDialog.getByRole('button', { name: 'Berita Fakultas' })).toHaveCount(0);
     await expect(searchDialog.getByRole('button', { name: 'FAQ' })).toHaveCount(0);
     await expect(searchDialog.getByTestId('search-catalog-submit')).toHaveCount(0);
-    await searchDialog.getByTestId('global-search-input').fill('Tarbiyah');
-    await expect(searchDialog.getByText('Berita Fakultas')).toBeVisible();
+    await searchDialog.getByTestId('global-search-input').fill('KHS');
+    await expect(searchDialog.getByText('FAQ')).toBeVisible();
     await searchDialog.getByTestId('global-search-input').fill('zzznonexistentquery999');
     await expect(searchDialog.getByText('Tidak ada hasil yang cocok pada halaman beranda.')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(searchDialog).toHaveCount(0);
 
     await page.goto('/program-studi/pai');
-    await expect(page.getByRole('heading', { level: 1, name: 'Program Studi Pendidikan Agama Islam' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Agama Islam' })).toBeVisible();
+    await expect(page.locator('main section img')).toHaveCount(0);
     await expect(page.locator('main a', { hasText: 'Info PMB' })).toHaveAttribute(
       'href',
       'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'

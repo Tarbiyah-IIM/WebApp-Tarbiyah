@@ -78,8 +78,7 @@ export default {
         title: 'Islamic Religious Education',
         description:
           'Delivering professional, responsive, and globally oriented instruction to cultivate outstanding Islamic education graduates.',
-        image:
-          'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80',
+        icon: 'book-open',
         pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
       },
       {
@@ -89,8 +88,7 @@ export default {
         title: 'Madrasah Ibtidaiyah Teacher Education',
         description:
           'Preparing professional, principled graduates with strong social and managerial skills to advance Islamic primary education.',
-        image:
-          'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80',
+        icon: 'school',
         pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232'
       },
       {
@@ -100,8 +98,7 @@ export default {
         title: 'Islamic Early Childhood Education',
         description:
           'Equipping students with pedagogy, creativity, and Islamic values to become inspiring early childhood educators.',
-        image:
-          'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80',
+        icon: 'sparkles',
         pmbUrl: 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239'
       }
     ]

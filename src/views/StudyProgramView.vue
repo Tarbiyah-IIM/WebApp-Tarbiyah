@@ -1,17 +1,24 @@
 <script setup>
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { Award, Briefcase, CheckCircle2, ExternalLink, GraduationCap, ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft, Award, BookOpen, Briefcase, CheckCircle2, ExternalLink, GraduationCap, School, Sparkles } from 'lucide-vue-next';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import { useI18n } from '../composables/useI18n.js';
 
 const route = useRoute();
 const { t } = useI18n();
 
+const programIcons = {
+  'book-open': BookOpen,
+  school: School,
+  sparkles: Sparkles
+};
+
 const slug = computed(() => String(route.params.slug || '').toLowerCase());
 const allCards = computed(() => t('courses.cards') || []);
 const prodiCard = computed(() => allCards.value.find((card) => card.id === slug.value) || null);
 const prodiDetail = computed(() => (t('portalPages.programs') || {})[slug.value] || null);
+const prodiIcon = computed(() => programIcons[prodiCard.value?.icon] || GraduationCap);
 const isMissing = computed(() => !prodiCard.value || !prodiDetail.value);
 
 const otherPrograms = computed(() =>
@@ -34,13 +41,11 @@ const otherPrograms = computed(() =>
   >
     <template v-if="!isMissing">
       <section class="overflow-hidden rounded-3xl border border-surface-border bg-white shadow-card">
-        <div class="relative aspect-[21/9] w-full bg-slate-100">
-          <img
-            :src="prodiCard.image"
-            :alt="prodiCard.title"
-            class="h-full w-full object-cover"
-          />
-          <span class="absolute top-4 left-4 rounded-full bg-amber-400 px-3.5 py-1 text-xs font-bold text-slate-900 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-surface-border bg-gradient-to-br from-brand-50/80 via-white to-white px-6 py-6 sm:px-8">
+          <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-brand-200 bg-brand-100 text-brand-700 shadow-sm">
+            <component :is="prodiIcon" class="h-8 w-8" aria-hidden="true" />
+          </div>
+          <span class="rounded-full bg-amber-400 px-3.5 py-1 text-xs font-bold text-slate-900 shadow-sm">
             {{ prodiCard.badge }}
           </span>
         </div>

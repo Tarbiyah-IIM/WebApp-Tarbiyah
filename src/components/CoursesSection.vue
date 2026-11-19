@@ -1,23 +1,33 @@
 <script setup>
 import { computed } from 'vue';
-import { ArrowRight, GraduationCap } from 'lucide-vue-next';
+import { ArrowRight, BookOpen, GraduationCap, School, Sparkles } from 'lucide-vue-next';
 import { useI18n } from '../composables/useI18n.js';
 
 const { t } = useI18n();
 const studyPrograms = computed(() => t('courses.cards'));
+
+const programIcons = {
+  'book-open': BookOpen,
+  school: School,
+  sparkles: Sparkles
+};
+
+function resolveProgramIcon(iconKey) {
+  return programIcons[iconKey] || GraduationCap;
+}
 </script>
 
 <template>
   <section id="courses-section" class="py-16 sm:py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl text-center">
+      <div class="mx-auto max-w-5xl text-center">
         <span class="rounded-full bg-brand-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-brand-700">
           {{ t('courses.badge') }}
         </span>
         <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl">
           {{ t('courses.heading') }}
         </h2>
-        <p class="mt-3 text-base text-slate-600">
+        <p class="mt-3 text-base text-slate-600 lg:whitespace-nowrap">
           {{ t('courses.subtitle') }}
         </p>
       </div>
@@ -28,16 +38,13 @@ const studyPrograms = computed(() => t('courses.cards'));
           :key="prodi.id"
           class="group flex flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-float"
         >
-          <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
-            <img
-              :src="prodi.image"
-              :alt="prodi.title"
-              loading="lazy"
-              class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-            />
+          <div class="relative flex flex-col items-center justify-center gap-4 border-b border-surface-border bg-gradient-to-br from-brand-50/80 via-white to-white px-6 py-8">
             <span class="absolute top-3 left-3 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-slate-900 shadow-sm">
               {{ prodi.badge }}
             </span>
+            <div class="mt-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-brand-200 bg-brand-100 text-brand-700 shadow-sm transition duration-200 group-hover:scale-105">
+              <component :is="resolveProgramIcon(prodi.icon)" class="h-8 w-8" aria-hidden="true" />
+            </div>
           </div>
 
           <div class="flex flex-1 flex-col p-6">

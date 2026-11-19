@@ -188,7 +188,7 @@ onMounted(loadCms);
         <h2 class="text-lg font-extrabold text-brand-900">{{ t('adminDashboard.cmsPanel.partnersHeading') }}</h2>
         <form class="flex gap-2" @submit.prevent="savePartner">
           <input v-model="partnerForm.name" type="text" required :placeholder="t('adminDashboard.cmsPanel.partnerNamePlaceholder')" class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
-          <input v-model="partnerForm.url" type="url" :placeholder="t('adminDashboard.cmsPanel.partnerUrlPlaceholder')" class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
+          <input v-model="partnerForm.url" type="text" :placeholder="t('adminDashboard.cmsPanel.partnerUrlPlaceholder')" class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
           <button type="submit" class="rounded-xl bg-brand-600 px-4 text-xs font-bold text-white">{{ t('adminDashboard.cmsPanel.saveBtn') }}</button>
         </form>
         <div class="space-y-2 max-h-56 overflow-y-auto">
