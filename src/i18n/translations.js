@@ -1,7 +1,8 @@
 import id from './id.js';
 import en from './en.js';
 import { dynamicEn } from './dynamicEn.js';
-import { portalPagesId, portalPagesEn } from './portalPages.js';
+import { portalPagesId } from './portalPages.id.js';
+import { portalPagesEn } from './portalPages.en.js';
 
 export { dynamicEn };
 
