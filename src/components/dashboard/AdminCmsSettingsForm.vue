@@ -32,10 +32,6 @@ const { t } = useI18n();
         <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.heroSubtitleLabel') }}</label>
         <textarea v-model="settings.hero_subtitle" rows="2" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
       </div>
-      <div class="sm:col-span-2">
-        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.contactEmailLabel') }}</label>
-        <input v-model="settings.contact_email" type="email" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
-      </div>
     </div>
   </form>
 </template>

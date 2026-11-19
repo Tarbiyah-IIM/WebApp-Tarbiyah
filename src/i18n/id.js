@@ -257,7 +257,6 @@ export default {
       heroTaglineLabel: 'Tagline Hero',
       heroTitleLabel: 'Judul Hero',
       heroSubtitleLabel: 'Subjudul Hero',
-      contactEmailLabel: 'Email Kontak',
       footerCtaTitleLabel: 'Judul CTA Footer',
       statsHeading: 'Statistik (Hero & Tarbiyah dalam Angka)',
       statHeroOpt: 'Strip Hero',

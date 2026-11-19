@@ -257,7 +257,6 @@ export default {
       heroTaglineLabel: 'Hero Tagline',
       heroTitleLabel: 'Hero Title',
       heroSubtitleLabel: 'Hero Subtitle',
-      contactEmailLabel: 'Contact Email',
       footerCtaTitleLabel: 'Footer CTA Title',
       statsHeading: 'Statistics (Hero & Journey)',
       statHeroOpt: 'Hero Strip',

@@ -589,7 +589,6 @@ INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
 ('premium_price', '160'),
 ('premium_currency', 'USD'),
 ('premium_label', 'Premium Access All Courses'),
-('contact_email', 'hello@meekoo.edu'),
 ('contact_phone', '+1 (415) 890-4321'),
 ('contact_address', '548 Market St, San Francisco, CA 94104'),
 ('footer_cta_title', 'Your Future Start Here!'),

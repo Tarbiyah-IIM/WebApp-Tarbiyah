@@ -374,6 +374,12 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.getByRole('button', { name: 'CMS Halaman Utama' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Pengguna & Peran' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Katalog & Persetujuan' })).toHaveCount(0);
+    await expect(page.getByText('Email Kontak')).toHaveCount(0);
+
+    const landingRes = await page.request.get('/api/v1/landing');
+    expect(landingRes.ok()).toBeTruthy();
+    const landingPayload = await landingRes.json();
+    expect(landingPayload.settings.contact_email).toBeUndefined();
 
     await page.getByTestId('lang-switch-en').click();
     await expect(page.getByRole('heading', { name: 'Faculty of Tarbiyah Portal Management' })).toBeVisible();
