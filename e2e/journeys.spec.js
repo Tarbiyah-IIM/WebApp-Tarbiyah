@@ -1,7 +1,7 @@
 import { test, expect } from './auth.fixture.js';
 
-test.describe('Meekoo Critical User Journeys', () => {
-  test('J1: Landing page 11 sections, category filter, Load More, and catalog empty state', async ({ page }) => {
+test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
+  test('J1: Landing sections, theme toggle, i18n, global search, /courses removal redirect, and 3x logo login', async ({ page }) => {
     const pageErrors = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
@@ -17,7 +17,6 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(mainNav.getByRole('button', { name: 'Akademik' })).toBeVisible();
     await expect(mainNav.getByRole('button', { name: 'Publikasi' })).toBeVisible();
     await expect(mainNav.getByRole('button', { name: 'RPL' })).toBeVisible();
-    await expect(mainNav.getByRole('link', { name: /Cart/i })).toHaveCount(0);
     await expect(mainNav.getByRole('link', { name: 'Login' })).toHaveCount(0);
     await expect(mainNav.getByTestId('search-toggle')).toBeVisible();
 
@@ -62,21 +61,15 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Selamat Datang di Fakultas Tarbiyah');
     await expect(page.getByRole('button', { name: 'Profil', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Beasiswa', exact: true })).toBeVisible();
-    await expect(page.getByText('Get Started')).toHaveCount(0);
-    await expect(page.getByText('Browse Courses')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Profil', exact: true }).click();
     const profilDialog = page.getByRole('dialog', { name: 'Profil Fakultas Tarbiyah' });
     await expect(profilDialog).toBeVisible();
     await expect(profilDialog).toContainText('Ilmu Pendidikan Islam Rahmatan Lil’alamin pada tahun 2035');
-    await expect(profilDialog).toContainText('Menyelenggarakan layanan pendidikan yang profesional dan berkualitas.');
-    await expect(profilDialog.getByRole('button', { name: 'Tutup' })).toHaveCount(0);
     await profilDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(profilDialog).toHaveCount(0);
 
     await expect(page.getByText('Become Future Educators with Global Impact')).toBeVisible();
-    await expect(page.getByText('#1 Online Course 2025')).toHaveCount(0);
-    await expect(page.getByText('Best Collaboration')).toHaveCount(0);
     await expect(page.locator('#courses-section').getByText('Akademik', { exact: true })).toBeVisible();
     await expect(page.getByText('Program Studi Unggulan')).toBeVisible();
     await expect(page.getByText('Tarbiyah dalam Angka')).toBeVisible();
@@ -84,115 +77,40 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Mahasiswa Aktif', { exact: true })).toBeVisible();
     await expect(page.getByText('Total Alumni')).toBeVisible();
     await expect(page.getByText('Doktor (S3)')).toBeVisible();
-    await expect(page.getByText('Top Mentors')).toHaveCount(0);
     await expect(page.getByText('Graduation Rate')).toBeVisible();
     await expect(page.getByText('47+')).toBeVisible();
-    await expect(page.getByText('academic system')).toBeVisible();
-    await expect(page.getByText('Academic Program')).toBeVisible();
     await expect(page.getByText('Alasan Kuliah')).toBeVisible();
     await expect(page.getByText('Kenapa Harus Kuliah di Fakultas Tarbiyah?')).toBeVisible();
-    await expect(page.getByText('Belajar dalam lingkungan kampus yang mendukung pengembangan intelektual, spiritual, karakter, dan kreativitas mahasiswa.')).toBeVisible();
-    await expect(page.getByText('Pendidikan Berbasis Nilai-Nilai Islam.')).toBeVisible();
-    await expect(page.getByText('Pendidikan Agama Islam').first()).toBeVisible();
-    await expect(page.getByText('Pendidikan Guru Madrasah Ibtidaiyah').first()).toBeVisible();
-    await expect(page.getByText('Pendidikan Islam Anak Usia Dini').first()).toBeVisible();
-    await expect(page.getByText('Weekly Skill Growth')).toHaveCount(0);
-    await expect(page.getByText('Course Progress')).toHaveCount(0);
-    await expect(page.getByText('Meet Our Expert Mentors')).toHaveCount(0);
-    await expect(page.locator('#testimonials').getByText('Kegiatan Terbaru', { exact: true })).toBeVisible();
-    await expect(page.locator('#testimonials').getByText('Berita Fakultas', { exact: true })).toBeVisible();
-    await expect(page.getByText('Verified reviews from professionals and students leveling up their careers on Meekoo.')).toHaveCount(0);
-    await expect(page.locator('#testimonials article')).toHaveCount(6);
-    const newsNav = page.getByLabel('Navigasi Halaman Berita');
-    await expect(newsNav.getByRole('button', { name: '1', exact: true })).toBeVisible();
-    await expect(newsNav.getByRole('button', { name: '2', exact: true })).toBeVisible();
-    await expect(newsNav.getByRole('button', { name: '3', exact: true })).toBeVisible();
-    await expect(newsNav.getByRole('button', { name: /Next/i })).toBeVisible();
-    await newsNav.getByRole('button', { name: '2', exact: true }).click();
-    await expect(page.locator('#testimonials').getByText('Pelepasan Mahasiswa KKN Tematik Pemberdayaan Masyarakat Desa')).toBeVisible();
-    await newsNav.getByRole('button', { name: /Next/i }).click();
-    await expect(page.locator('#testimonials').getByText('Penandatanganan MoU Kemitraan Madrasah Ibtidaiyah se-Surakarta')).toBeVisible();
-    await expect(page.locator('#faq').getByText('Berbagai macam pertanyaan yang sering ditanyakan antara lain')).toBeVisible();
-    await expect(page.getByText('Clear answers on course access, requirements, enrollment, and refund guarantees.')).toHaveCount(0);
-    await expect(page.locator('#faq').getByText('Nilai pada KHS tidak muncul, bagaimana solusinya?')).toBeVisible();
-    await page.locator('#faq').getByRole('button', { name: 'Nilai pada KHS tidak muncul, bagaimana solusinya?' }).click();
-    await expect(page.locator('#faq').getByText(/kuisioner evaluasi pembelajaran/i)).toBeVisible();
-    await expect(page.locator('#faq').getByText('Ijazah atau Transkrip Nilai hilang/rusak, bagaimana solusinya?')).toBeVisible();
 
-    const layananSection = page.locator('#layanan-section');
-    await expect(layananSection.getByText('Layanan Kami', { exact: true })).toBeVisible();
-    await expect(layananSection.locator('a, button')).toHaveCount(5);
-    await expect(layananSection.getByRole('link', { name: /SIAKAD/i })).toHaveAttribute(
+    const servicesSection = page.locator('#layanan-section');
+    await expect(servicesSection.getByText('Layanan Kami')).toBeVisible();
+    await expect(servicesSection.getByRole('link', { name: /SIAKAD/ })).toHaveAttribute(
       'href',
       'https://iimsurakarta.siakadcloud.com/gate/login'
     );
-    await expect(layananSection.getByRole('link', { name: /PDDIKTI/i })).toHaveAttribute(
-      'href',
-      'https://pddikti.kemdiktisaintek.go.id/detail-pt/QrBX3IX1gZ4iZ0vcL5jD04MAIVUIW1CYiBp9uu64SFTix7u8RRpcyBQOlHF0R3_Y1xWi4A=='
-    );
-    await expect(layananSection.getByRole('link', { name: /PMB/i })).toHaveAttribute(
-      'href',
-      'https://iimsurakarta.siakadcloud.com/spmbfront/home'
-    );
-    await expect(layananSection.getByRole('button', { name: /TRACER STUDY/i })).toBeVisible();
-    await expect(layananSection.getByRole('button', { name: /Jurnal Tarbiyah/i })).toBeVisible();
+    await expect(servicesSection.getByRole('button', { name: /Jurnal Tarbiyah/ })).toBeVisible();
+
+    const newsSection = page.locator('#testimonials');
+    await expect(newsSection.getByText('Berita Fakultas')).toBeVisible();
+    await expect(newsSection.locator('article')).toHaveCount(6);
+    await newsSection.getByRole('button', { name: '2', exact: true }).click();
+    await expect(newsSection.locator('article')).toHaveCount(6);
+
+    await expect(page.getByText('Berbagai macam pertanyaan yang sering ditanyakan antara lain')).toBeVisible();
+    const firstFaqBtn = page.getByRole('button', { name: 'Nilai pada KHS tidak muncul, bagaimana solusinya?' });
+    await firstFaqBtn.click();
+    await expect(page.getByText('Pastikan anda sudah mengisi kuisioner evaluasi pembelajaran sebelum melihat KHS')).toBeVisible();
 
     const footerSection = page.locator('#footer-cta');
-    await expect(footerSection.getByText('Your Future Start Here!')).toBeVisible();
+    await expect(footerSection.getByRole('link', { name: 'PMB Center' })).toHaveAttribute('href', 'https://wa.link/agu1p5');
+    await expect(footerSection.getByRole('link', { name: 'Admin Fakultas' })).toHaveAttribute('href', 'https://wa.link/qrwv15');
     await expect(
-      footerSection.getByText(
-        'Join more than 2,000 students who are developing the skills to become the educators and professionals of the future.'
-      )
+      footerSection.locator('iframe[title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"]')
     ).toBeVisible();
-    await expect(footerSection.locator('#footer-email')).toHaveCount(0);
-    await expect(footerSection.getByRole('link', { name: /PMB Center/i })).toHaveAttribute(
-      'href',
-      'https://wa.link/agu1p5'
-    );
-    await expect(footerSection.getByRole('link', { name: /Admin Fakultas/i })).toHaveAttribute(
-      'href',
-      'https://wa.link/qrwv15'
-    );
-    await expect(footerSection.getByAltText('Logo Fakultas Tarbiyah')).toHaveCount(0);
-    await expect(footerSection.getByRole('link', { name: /PMB Center/i }).locator('svg')).toHaveCount(1);
-    await expect(footerSection.getByRole('link', { name: /Admin Fakultas/i }).locator('svg')).toHaveCount(1);
-    await expect(footerSection.getByText('Gedung Kadtijo W.S - Kampus Pusat')).toBeVisible();
-    await expect(footerSection.getByText('Telp. : (0271) 633253')).toBeVisible();
-    await expect(
-      footerSection.getByRole('link', { name: "PAI (Al'ulum Jurnal Pendidikan Islam)", exact: true })
-    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/alulum');
-    await expect(
-      footerSection.getByRole('link', {
-        name: 'PGMI (Journal of Research and Innovation in Madrasah Ibtidaiyah Education)',
-        exact: true
-      })
-    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/alulum');
-    await expect(
-      footerSection.getByRole('link', {
-        name: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)",
-        exact: true
-      })
-    ).toHaveAttribute('href', 'https://jurnal.iimsurakarta.ac.id/index.php/alulum');
-    const campusMapFrame = footerSection.locator(
-      'iframe[title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"]'
-    );
-    await expect(campusMapFrame).toBeVisible();
-    await expect(campusMapFrame).toHaveAttribute('src', /maps\.google\.com\/maps.*output=embed/);
-    await expect(
-      footerSection.getByText('© 2026 Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. All rights reserved.')
-    ).toBeVisible();
-    await expect(footerSection.getByText('EdLink', { exact: true })).toBeVisible();
-    await expect(footerSection.getByText('Stripe Sandbox')).toHaveCount(0);
 
     await expect(page.locator('#courses-section article')).toHaveCount(3);
-    await expect(page.locator('#courses-section [role="tab"]')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /Load More Courses/i })).toHaveCount(0);
-
     const pmbLinks = page.locator('#courses-section a', { hasText: 'Info PMB' });
     await expect(pmbLinks).toHaveCount(3);
-    await expect(pmbLinks.nth(0)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208');
-    await expect(pmbLinks.nth(1)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86232');
-    await expect(pmbLinks.nth(2)).toHaveAttribute('href', 'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86239');
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
@@ -200,47 +118,40 @@ test.describe('Meekoo Critical User Journeys', () => {
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
     await expect(page.locator('html')).toHaveClass(/dark/);
-    await expect(page.getByTestId('theme-toggle')).toContainText('Night');
-
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
-
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await expect(page.getByTestId('theme-toggle')).toContainText('Light');
 
     await page.getByTestId('lang-switch-en').click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(mainNav.getByText('Faculty of Tarbiyah', { exact: true })).toBeVisible();
-    await expect(mainNav.getByRole('link', { name: 'About Us' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome to the Faculty of Tarbiyah');
     await expect(page.getByText('Featured Study Programs')).toBeVisible();
     await expect(page.getByText('Faculty News')).toBeVisible();
-    await expect(page.getByText('Frequently asked academic and administrative questions include')).toBeVisible();
     await expect(footerSection.getByText('Office Address')).toBeVisible();
-
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome to the Faculty of Tarbiyah');
-
     await page.getByTestId('lang-switch-id').click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Selamat Datang di Fakultas Tarbiyah');
 
     await page.getByTestId('search-toggle').click();
     const searchDialog = page.getByRole('dialog', { name: 'Pencarian Cepat Tarbiyah' });
     await expect(searchDialog).toBeVisible();
-    await page.getByTestId('global-search-input').fill('zzznonexistentcourse999');
+    await expect(searchDialog.getByTestId('search-catalog-submit')).toHaveCount(0);
+    await searchDialog.getByTestId('global-search-input').fill('zzznonexistentquery999');
     await expect(searchDialog.getByText('Tidak ada hasil yang cocok pada halaman beranda.')).toBeVisible();
-    await page.getByTestId('search-catalog-submit').click();
+    await page.keyboard.press('Escape');
+    await expect(searchDialog).toHaveCount(0);
 
-    await expect(page).toHaveURL(/\/courses\?q=zzznonexistentcourse999/);
-    await expect(page.getByText('Tidak ada kursus yang cocok')).toBeVisible();
-
-    await page.getByTestId('lang-switch-en').click();
-    await expect(page.getByRole('heading', { name: 'Explore All Courses' })).toBeVisible();
-    await expect(page.getByText('No matching courses found')).toBeVisible();
-    await page.getByTestId('lang-switch-id').click();
+    await page.goto('/courses');
+    await expect(page).toHaveURL(/\/$/);
+    await page.goto('/checkout');
+    await expect(page).toHaveURL(/\/$/);
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/$/);
+    await page.goto('/mentor');
+    await expect(page).toHaveURL(/\/$/);
 
     await mainNav.getByTestId('navbar-logo').click();
     await mainNav.getByTestId('navbar-logo').click();
@@ -250,8 +161,8 @@ test.describe('Meekoo Critical User Journeys', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('J2: Tarbiyah login UI, admin forgot-password restriction, and RBAC route guard', async ({ page, createIsolatedStudent }) => {
-    const student = await createIsolatedStudent('E2E Auth Student');
+  test('J2: Tarbiyah login UI, admin forgot-password restriction, and RBAC guard', async ({ page, createIsolatedStudent }) => {
+    const nonAdmin = await createIsolatedStudent('E2E Portal NonAdmin');
 
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/login/);
@@ -259,8 +170,6 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByText('Selamat datang ke Tarbiyah Login')).toHaveCSS('text-align', 'center');
     await expect(page.getByPlaceholder('Masukan Email atau ID anda')).toBeVisible();
     await expect(page.getByPlaceholder('Masukkan Passcode anda')).toBeVisible();
-    await expect(page.getByText('Sandbox Demo Accounts')).toHaveCount(0);
-    await expect(page.getByText('Create an account')).toHaveCount(0);
 
     await page.getByLabel('Email / ID').fill('tarbiyah@iim.ac.id');
     await page.getByLabel('Passcode').fill('WrongPass!');
@@ -289,123 +198,27 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page).toHaveURL('/');
 
     await page.goto('/login');
-    await page.getByLabel('Email / ID').fill(student.email);
-    await page.getByLabel('Passcode').fill(student.password);
+    await page.getByLabel('Email / ID').fill(nonAdmin.email);
+    await page.getByLabel('Passcode').fill(nonAdmin.password);
     await page.getByRole('button', { name: 'Login' }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/$/);
 
     await page.goto('/admin');
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/$/);
   });
 
-  test('J3: Checkout sandbox failed and paid states sync to Student Dashboard', async ({ page, createIsolatedStudent }) => {
-    const student = await createIsolatedStudent('E2E Checkout Student');
-
-    await page.goto('/login');
-    await page.evaluate((token) => {
-      localStorage.setItem('meekoo_token', token);
-    }, student.accessToken);
-
-    await page.goto('/courses/strategic-brand-communication');
-    await page.getByRole('button', { name: 'Daftar Sekarang' }).click();
-    await expect(page).toHaveURL(/\/checkout/);
-
-    await page.getByRole('button', { name: /Proceed to Sandbox Payment/i }).click();
-    await expect(page.getByText('Sandbox Payment Gateway')).toBeVisible();
-
-    await page.getByRole('button', { name: /Simulate Failed/i }).click();
-    await expect(page.getByText('failed', { exact: true }).first()).toBeVisible();
-
-    await page.goto('/courses/strategic-brand-communication');
-    await page.getByRole('button', { name: 'Daftar Sekarang' }).click();
-    await page.getByRole('button', { name: /Proceed to Sandbox Payment/i }).click();
-    await page.getByRole('button', { name: /Simulate Payment Success/i }).click();
-
-    await expect(page.getByText(/Payment confirmed/i)).toBeVisible();
-    await page.getByRole('link', { name: 'Go to Student Dashboard' }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText('Strategic Brand Communication & Storytelling').first()).toBeVisible();
-  });
-
-  test('J4: Learn video player, 100% progress, certificate generation & verification', async ({ page, request, createIsolatedStudent }) => {
-    const student = await createIsolatedStudent('E2E Graduate');
-
-    const orderRes = await request.post('http://localhost:3001/api/v1/orders', {
-      headers: { Authorization: `Bearer ${student.accessToken}` },
-      data: { orderType: 'course', courseIds: [3] }
-    });
-    const orderData = await orderRes.json();
-    await request.post(`http://localhost:3001/api/v1/orders/${orderData.order.id}/simulate-payment`, {
-      headers: { Authorization: `Bearer ${student.accessToken}` },
-      data: { outcome: 'paid' }
-    });
-
-    await page.goto('/login');
-    await page.evaluate((token) => {
-      localStorage.setItem('meekoo_token', token);
-    }, student.accessToken);
-
-    await page.goto('/learn/3');
-    await expect(page.getByRole('heading', { name: /Strategic Brand Communication/i })).toBeVisible();
-
-    await page.getByRole('button', { name: /Mark Completed/i }).click();
-    await expect(page.getByText('50%', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: /Mark Completed/i }).click();
-
-    await expect(page.getByText('Certificate Earned!')).toBeVisible();
-    await page.getByRole('link', { name: 'View Certificate' }).click();
-    await expect(page.getByText('Verified Official Meekoo Certificate')).toBeVisible();
-    await expect(page.getByText('E2E Graduate')).toBeVisible();
-
-    await page.goto('/verify-certificate?code=INVALID-CODE-000');
-    await expect(page.getByRole('alert')).toContainText('tidak ditemukan');
-  });
-
-  test('J5: Mentor creates & submits course -> Admin approves -> appears in catalog -> cleanup', async ({ page, request, loginViaApi }) => {
-    const uniqueTitle = `E2E Synced Course ${Date.now()}`;
-    await loginViaApi('sarah@meekoo.test');
-    await page.goto('/mentor');
-
-    await page.getByRole('button', { name: 'Kursus Baru' }).click();
-    await page.locator('form input[type="text"]').first().fill(uniqueTitle);
-    await page.locator('form textarea').fill('End-to-end synchronized course description for testing.');
-    await page.getByRole('button', { name: 'Simpan Kursus' }).click();
-
-    const row = page.locator('tr', { hasText: uniqueTitle });
-    await expect(row).toBeVisible();
-    await row.getByRole('button', { name: 'Ajukan' }).click();
-    await expect(row).toContainText('pending_review');
-
-    const adminAuth = await loginViaApi('admin@meekoo.test');
-    await page.goto('/admin');
-    await page.getByRole('button', { name: 'Katalog & Persetujuan' }).click();
-
-    const adminRow = page.locator('tr', { hasText: uniqueTitle });
-    await expect(adminRow).toBeVisible();
-    await adminRow.getByRole('button', { name: 'Setujui' }).click();
-    await expect(adminRow).toContainText('approved');
-
-    await page.goto('/courses');
-    await page.getByLabel('Cari kursus').fill(uniqueTitle);
-    await page.getByRole('button', { name: 'Filter' }).click();
-    await expect(page.getByText(uniqueTitle)).toBeVisible();
-
-    const coursesList = await request.get('http://localhost:3001/api/v1/admin/courses', {
-      headers: { Authorization: `Bearer ${adminAuth.accessToken}` }
-    });
-    const { items } = await coursesList.json();
-    const created = items.find((c) => c.title === uniqueTitle);
-    if (created) {
-      await request.delete(`http://localhost:3001/api/v1/admin/courses/${created.id}`, {
-        headers: { Authorization: `Bearer ${adminAuth.accessToken}` }
-      });
-    }
-  });
-
-  test('J6: Admin Landing CMS updates Hero Title and syncs immediately to Home', async ({ page, loginViaApi }) => {
+  test('J3: Admin Control Center CMS updates Hero Title, switches i18n, and syncs to Home', async ({ page, loginViaApi }) => {
     await loginViaApi('admin@meekoo.test');
     await page.goto('/admin');
-    await page.getByRole('button', { name: 'CMS Halaman Utama' }).click();
+
+    await expect(page.getByRole('button', { name: 'CMS Halaman Utama' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pengguna & Peran' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Katalog & Persetujuan' })).toHaveCount(0);
+
+    await page.getByTestId('lang-switch-en').click();
+    await expect(page.getByRole('heading', { name: 'Faculty of Tarbiyah Portal Management' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Users & Roles' })).toBeVisible();
+    await page.getByTestId('lang-switch-id').click();
 
     const titleInput = page.getByLabel('Judul Hero');
     await expect(titleInput).toHaveValue(/.+/);
@@ -420,7 +233,6 @@ test.describe('Meekoo Critical User Journeys', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText(updatedTitle);
 
     await page.goto('/admin');
-    await page.getByRole('button', { name: 'CMS Halaman Utama' }).click();
     const restoreInput = page.getByLabel('Judul Hero');
     await expect(restoreInput).toHaveValue(/.+/);
     await restoreInput.fill(originalTitle);

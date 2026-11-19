@@ -29,10 +29,6 @@ export async function updateUserProfile(id, { name, avatarUrl, bio }) {
     'UPDATE users SET name = ?, avatar_url = ?, bio = ? WHERE id = ?',
     [name, avatarUrl, bio, id]
   );
-  await pool.execute(
-    'UPDATE mentors SET name = ?, bio = COALESCE(?, bio), photo_url = COALESCE(?, photo_url) WHERE user_id = ?',
-    [name, bio, avatarUrl, id]
-  );
   return findUserById(id);
 }
 
@@ -50,11 +46,7 @@ export async function deleteUserById(id) {
 
 export async function listUsersAdmin() {
   const [rows] = await pool.execute(
-    `SELECT u.id, u.name, u.email, u.role, u.avatar_url, u.is_active, u.created_at,
-            (SELECT COUNT(*) FROM enrollments e WHERE e.user_id = u.id) AS enrolled_courses,
-            (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id AND o.status = 'paid') AS paid_orders
-     FROM users u
-     ORDER BY u.created_at DESC`
+    'SELECT id, name, email, role, avatar_url, is_active, created_at FROM users ORDER BY created_at DESC'
   );
   return rows;
 }
@@ -64,18 +56,6 @@ export async function updateUserRoleAndStatusAdmin(id, { role, isActive }) {
     'UPDATE users SET role = ?, is_active = ? WHERE id = ?',
     [role, isActive ? 1 : 0, id]
   );
-  if (role === 'mentor') {
-    const user = await findUserById(id);
-    if (user) {
-      const [existing] = await pool.execute('SELECT id FROM mentors WHERE user_id = ? LIMIT 1', [id]);
-      if (existing.length === 0) {
-        await pool.execute(
-          'INSERT INTO mentors (user_id, name, title, bio, photo_url, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)',
-          [user.id, user.name, 'Industry Mentor', user.bio || 'Industry practitioner on Meekoo.', user.avatar_url, 99]
-        );
-      }
-    }
-  }
   return findUserById(id);
 }
 

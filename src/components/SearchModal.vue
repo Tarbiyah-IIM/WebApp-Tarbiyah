@@ -77,9 +77,22 @@ function closeAndNavigate(target) {
   router.push(target);
 }
 
-function submitCatalogSearch() {
-  const trimmed = query.value.trim();
-  closeAndNavigate(trimmed ? { path: '/courses', query: { q: trimmed } } : '/courses');
+function handleFormSubmit() {
+  if (newsMatches.value.length > 0) {
+    closeAndNavigate('/#testimonials');
+    return;
+  }
+  if (faqMatches.value.length > 0) {
+    closeAndNavigate('/#faq');
+    return;
+  }
+  if (serviceMatches.value.length > 0) {
+    closeAndNavigate('/#layanan-section');
+    return;
+  }
+  if (programMatches.value.length > 0) {
+    closeAndNavigate('/#courses-section');
+  }
 }
 
 function splitServiceName(rawName) {
@@ -94,7 +107,7 @@ function splitServiceName(rawName) {
 <template>
   <ModalDialog :open="open" :title="t('search.modalTitle')" header-variant="macos" @close="emit('close')">
     <div class="space-y-5">
-      <form class="relative flex items-center gap-2" @submit.prevent="submitCatalogSearch">
+      <form class="relative flex items-center gap-2" @submit.prevent="handleFormSubmit">
         <div class="relative flex-1">
           <Search class="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
@@ -237,21 +250,27 @@ function splitServiceName(rawName) {
         </div>
       </div>
 
-      <div class="border-t border-surface-border pt-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-t border-surface-border pt-3 text-xs">
         <button
           type="button"
-          data-testid="search-catalog-submit"
-          class="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white transition hover:bg-brand-700"
-          @click="submitCatalogSearch"
+          class="rounded-lg bg-brand-50 px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-100"
+          @click="closeAndNavigate('/#courses-section')"
         >
-          <Search class="h-4 w-4" />
-          <span>
-            {{
-              query.trim()
-                ? `${t('search.catalogCtaPrefix')}${query.trim()}${t('search.catalogCtaSuffix')}`
-                : t('search.catalogAllBtn')
-            }}
-          </span>
+          {{ t('nav.programs') }}
+        </button>
+        <button
+          type="button"
+          class="rounded-lg bg-brand-50 px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-100"
+          @click="closeAndNavigate('/#testimonials')"
+        >
+          {{ t('news.heading') }}
+        </button>
+        <button
+          type="button"
+          class="rounded-lg bg-brand-50 px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-100"
+          @click="closeAndNavigate('/#faq')"
+        >
+          {{ t('faq.heading') }}
         </button>
       </div>
     </div>

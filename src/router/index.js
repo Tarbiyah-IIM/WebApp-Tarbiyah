@@ -8,25 +8,9 @@ const routes = [
     component: () => import('../views/HomeView.vue')
   },
   {
-    path: '/courses',
-    name: 'courses',
-    component: () => import('../views/CoursesView.vue')
-  },
-  {
-    path: '/courses/:slug',
-    name: 'course-detail',
-    component: () => import('../views/CourseDetailView.vue')
-  },
-  {
     path: '/login',
     name: 'login',
     component: () => import('../views/LoginView.vue'),
-    meta: { guestOnly: true }
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('../views/RegisterView.vue'),
     meta: { guestOnly: true }
   },
   {
@@ -36,50 +20,19 @@ const routes = [
     meta: { guestOnly: true }
   },
   {
-    path: '/checkout/:orderId?',
-    name: 'checkout',
-    component: () => import('../views/CheckoutView.vue')
-  },
-  {
-    path: '/dashboard',
-    name: 'student-dashboard',
-    component: () => import('../views/StudentDashboardView.vue'),
-    meta: { requiresAuth: true, roles: ['student', 'mentor', 'admin'] }
-  },
-  {
-    path: '/learn/:id',
-    name: 'learn',
-    component: () => import('../views/LearnView.vue'),
-    meta: { requiresAuth: true, roles: ['student', 'mentor', 'admin'] }
-  },
-  {
-    path: '/mentor',
-    name: 'mentor-dashboard',
-    component: () => import('../views/MentorDashboardView.vue'),
-    meta: { requiresAuth: true, roles: ['mentor', 'admin'] }
-  },
-  {
     path: '/admin',
     name: 'admin-dashboard',
     component: () => import('../views/AdminDashboardView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
-    path: '/verify-certificate',
-    name: 'verify-certificate',
-    component: () => import('../views/CertificateVerifyView.vue')
-  },
-  {
-    path: '/terms',
-    name: 'terms',
-    component: () => import('../views/LegalView.vue'),
-    props: { type: 'terms' }
-  },
-  {
     path: '/privacy',
     name: 'privacy',
-    component: () => import('../views/LegalView.vue'),
-    props: { type: 'privacy' }
+    component: () => import('../views/LegalView.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/'
   }
 ];
 
@@ -105,15 +58,11 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.guestOnly && auth.isAuthenticated) {
-    if (auth.isAdmin) return '/admin';
-    if (auth.isMentor) return '/mentor';
-    return '/dashboard';
+    return auth.isAdmin ? '/admin' : '/';
   }
 
   if (to.meta.roles && !to.meta.roles.includes(auth.user?.role)) {
-    if (auth.isAdmin) return '/admin';
-    if (auth.isMentor) return '/mentor';
-    return '/dashboard';
+    return auth.isAdmin ? '/admin' : '/';
   }
 
   return true;

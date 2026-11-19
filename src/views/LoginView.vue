@@ -30,10 +30,8 @@ async function handleLogin() {
       router.push(redirect);
     } else if (user.role === 'admin') {
       router.push('/admin');
-    } else if (user.role === 'mentor') {
-      router.push('/mentor');
     } else {
-      router.push('/dashboard');
+      router.push('/');
     }
   } catch (err) {
     errorMessage.value = extractApiError(err);

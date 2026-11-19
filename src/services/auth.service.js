@@ -1,10 +1,6 @@
 import api from './api.js';
 
 export const authService = {
-  async register(payload) {
-    const { data } = await api.post('/auth/register', payload);
-    return data;
-  },
   async login(payload) {
     const { data } = await api.post('/auth/login', payload);
     return data;
@@ -31,10 +27,6 @@ export const authService = {
   },
   async updateMe(payload) {
     const { data } = await api.patch('/me', payload);
-    return data;
-  },
-  async deleteMe() {
-    const { data } = await api.delete('/me');
     return data;
   }
 };

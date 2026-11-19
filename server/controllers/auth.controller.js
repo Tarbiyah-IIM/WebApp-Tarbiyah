@@ -6,6 +6,7 @@ import { AppError } from '../middlewares/error.middleware.js';
 import {
   createPasswordReset,
   createUser,
+  deleteUserById,
   findUserByEmail,
   findUserById,
   findValidPasswordReset,
@@ -14,7 +15,8 @@ import {
   revokeAllUserRefreshTokens,
   revokeRefreshToken,
   storeRefreshToken,
-  updateUserPassword
+  updateUserPassword,
+  updateUserProfile
 } from '../models/user.model.js';
 
 function hashToken(raw) {
@@ -219,6 +221,40 @@ export async function resetPassword(req, res, next) {
     await revokeAllUserRefreshTokens(resetRow.user_id);
 
     return res.json({ message: 'Password berhasil diperbarui. Silakan login kembali.' });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getMe(req, res) {
+  return res.json({ user: req.user });
+}
+
+export async function updateMe(req, res, next) {
+  try {
+    const { name, avatarUrl, bio, newPassword } = req.body;
+    const updated = await updateUserProfile(req.user.id, {
+      name: name ? name.trim() : req.user.name,
+      avatarUrl: avatarUrl !== undefined ? avatarUrl : req.user.avatar_url,
+      bio: bio !== undefined ? bio : req.user.bio
+    });
+
+    if (newPassword) {
+      const hash = await bcrypt.hash(newPassword, 10);
+      await updateUserPassword(req.user.id, hash);
+    }
+
+    return res.json({ user: updated });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function deleteMe(req, res, next) {
+  try {
+    await deleteUserById(req.user.id);
+    res.clearCookie('meekoo_refresh', { path: '/api/v1/auth' });
+    return res.json({ message: 'Akun dan data terkait berhasil dihapus' });
   } catch (err) {
     return next(err);
   }

@@ -13,82 +13,6 @@ export const adminService = {
     const { data } = await api.patch(`/admin/users/${id}`, payload);
     return data;
   },
-  async listOrders() {
-    const { data } = await api.get('/admin/orders');
-    return data;
-  },
-  async updateOrderStatus(id, status) {
-    const { data } = await api.patch(`/admin/orders/${id}`, { status });
-    return data;
-  },
-  async listCourses() {
-    const { data } = await api.get('/admin/courses');
-    return data;
-  },
-  async getCourseCurriculum(id) {
-    const { data } = await api.get(`/admin/courses/${id}/curriculum`);
-    return data;
-  },
-  async createCourse(payload) {
-    const { data } = await api.post('/admin/courses', payload);
-    return data;
-  },
-  async updateCourse(id, payload) {
-    const { data } = await api.patch(`/admin/courses/${id}`, payload);
-    return data;
-  },
-  async deleteCourse(id) {
-    const { data } = await api.delete(`/admin/courses/${id}`);
-    return data;
-  },
-  async createSection(payload) {
-    const { data } = await api.post('/admin/sections', payload);
-    return data;
-  },
-  async deleteSection(id) {
-    const { data } = await api.delete(`/admin/sections/${id}`);
-    return data;
-  },
-  async createLesson(payload) {
-    const { data } = await api.post('/admin/lessons', payload);
-    return data;
-  },
-  async deleteLesson(id) {
-    const { data } = await api.delete(`/admin/lessons/${id}`);
-    return data;
-  },
-  async listCategories() {
-    const { data } = await api.get('/admin/categories');
-    return data;
-  },
-  async createCategory(payload) {
-    const { data } = await api.post('/admin/categories', payload);
-    return data;
-  },
-  async updateCategory(id, payload) {
-    const { data } = await api.patch(`/admin/categories/${id}`, payload);
-    return data;
-  },
-  async deleteCategory(id) {
-    const { data } = await api.delete(`/admin/categories/${id}`);
-    return data;
-  },
-  async listMentors() {
-    const { data } = await api.get('/admin/mentors');
-    return data;
-  },
-  async createMentor(payload) {
-    const { data } = await api.post('/admin/mentors', payload);
-    return data;
-  },
-  async updateMentor(id, payload) {
-    const { data } = await api.patch(`/admin/mentors/${id}`, payload);
-    return data;
-  },
-  async deleteMentor(id) {
-    const { data } = await api.delete(`/admin/mentors/${id}`);
-    return data;
-  },
   async listTestimonials() {
     const { data } = await api.get('/admin/testimonials');
     return data;
@@ -175,18 +99,6 @@ export const adminService = {
   },
   async updateSettings(payload) {
     const { data } = await api.patch('/admin/settings', payload);
-    return data;
-  },
-  async listLiveSessions() {
-    const { data } = await api.get('/admin/live-sessions');
-    return data;
-  },
-  async createLiveSession(payload) {
-    const { data } = await api.post('/admin/live-sessions', payload);
-    return data;
-  },
-  async deleteLiveSession(id) {
-    const { data } = await api.delete(`/admin/live-sessions/${id}`);
     return data;
   },
   async uploadImage(file) {

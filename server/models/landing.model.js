@@ -4,21 +4,17 @@ export async function getLandingData() {
   const [
     [statsRows],
     [featuresRows],
-    [mentorsRows],
     [partnersRows],
     [testimonialsRows],
     [faqsRows],
-    [settingsRows],
-    [categoriesRows]
+    [settingsRows]
   ] = await Promise.all([
     pool.execute('SELECT id, stat_group, label, value_num, suffix, sort_order FROM stats ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT id, title, description, icon, sort_order FROM features ORDER BY sort_order ASC, id ASC'),
-    pool.execute('SELECT id, user_id, name, title, bio, photo_url, sort_order FROM mentors WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT id, name, logo_url, url, sort_order FROM partners ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT id, name, job_title, quote, rating, avatar_url, sort_order FROM testimonials WHERE is_visible = 1 ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT id, question, answer, sort_order FROM faqs ORDER BY sort_order ASC, id ASC'),
-    pool.execute('SELECT setting_key, setting_value FROM site_settings'),
-    pool.execute('SELECT id, name, slug, description, sort_order FROM categories ORDER BY sort_order ASC, id ASC')
+    pool.execute('SELECT setting_key, setting_value FROM site_settings')
   ]);
 
   const settings = {};
@@ -33,12 +29,22 @@ export async function getLandingData() {
       journey: statsRows.filter((s) => s.stat_group === 'journey')
     },
     features: featuresRows,
-    mentors: mentorsRows,
     partners: partnersRows,
     testimonials: testimonialsRows,
-    faqs: faqsRows,
-    categories: categoriesRows
+    faqs: faqsRows
   };
+}
+
+export async function getPortalOverviewStats() {
+  const [[counts]] = await pool.execute(
+    `SELECT
+      (SELECT COUNT(*) FROM users) AS totalUsers,
+      (SELECT COUNT(*) FROM testimonials) AS totalNews,
+      (SELECT COUNT(*) FROM faqs) AS totalFaqs,
+      (SELECT COUNT(*) FROM partners) AS totalServices,
+      (SELECT COUNT(*) FROM features) AS totalFeatures`
+  );
+  return counts;
 }
 
 export async function createSubscriber({ email, source = 'footer' }) {

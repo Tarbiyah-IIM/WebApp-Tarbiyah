@@ -168,8 +168,8 @@ onMounted(loadCms);
           <input id="cms-hero-tagline" v-model="settings.hero_tagline" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div>
-          <label for="cms-premium-price" class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.premiumPriceLabel') }}</label>
-          <input id="cms-premium-price" v-model="settings.premium_price" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.footerCtaTitleLabel') }}</label>
+          <input v-model="settings.footer_cta_title" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div class="sm:col-span-2">
           <label for="cms-hero-title" class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.heroTitleLabel') }}</label>
@@ -179,13 +179,9 @@ onMounted(loadCms);
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.heroSubtitleLabel') }}</label>
           <textarea v-model="settings.hero_subtitle" rows="2" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
         </div>
-        <div>
+        <div class="sm:col-span-2">
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.contactEmailLabel') }}</label>
           <input v-model="settings.contact_email" type="email" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">{{ t('adminDashboard.cmsPanel.footerCtaTitleLabel') }}</label>
-          <input v-model="settings.footer_cta_title" type="text" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
       </div>
     </form>

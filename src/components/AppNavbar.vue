@@ -37,11 +37,7 @@ let logoClickTimer = null;
 
 const activeDropdown = computed(() => pinnedDropdown.value || hoveredDropdown.value);
 
-const dashboardRoute = computed(() => {
-  if (auth.isAdmin) return '/admin';
-  if (auth.isMentor) return '/mentor';
-  return '/dashboard';
-});
+const dashboardRoute = computed(() => (auth.isAdmin ? '/admin' : '/'));
 
 const navMenus = computed(() => [
   {
@@ -369,6 +365,7 @@ async function handleLogout() {
 
         <template v-if="auth.isAuthenticated">
           <router-link
+            v-if="auth.isAdmin"
             :to="dashboardRoute"
             class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-100 transition"
           >
@@ -518,6 +515,7 @@ async function handleLogout() {
           </div>
           <template v-if="auth.isAuthenticated">
             <router-link
+              v-if="auth.isAdmin"
               :to="dashboardRoute"
               class="flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white"
               @click="closeAllMenus"
