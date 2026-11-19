@@ -21,7 +21,6 @@ export const portalPagesId = {
     retryBtn: 'Muat Ulang Sinkronisasi',
     comingSoonBadge: 'Link menyusul',
     openInNewTabBtn: 'Buka di Tab Baru',
-    closeBtn: 'Tutup',
     embedNotice: 'Jika formulir tidak tampil di pratinjau karena pembatasan Google/browser, klik "Buka di Tab Baru".',
     loadingPreview: 'Memuat pratinjau formulir...',
     comingSoonDesc: 'Tautan formulir untuk layanan ini sedang dipersiapkan (Coming Soon).',

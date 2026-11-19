@@ -21,7 +21,6 @@ export const portalPagesEn = {
     retryBtn: 'Reload Sync',
     comingSoonBadge: 'Link coming soon',
     openInNewTabBtn: 'Open in New Tab',
-    closeBtn: 'Close',
     embedNotice: 'If the form preview does not appear due to Google/browser framing policy, click "Open in New Tab".',
     loadingPreview: 'Loading form preview...',
     comingSoonDesc: 'The submission form link for this item is currently being prepared (Coming Soon).',

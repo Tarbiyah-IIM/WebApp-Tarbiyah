@@ -200,6 +200,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.getByRole('button', { name: /Surat Keterangan Lulus/ }).click();
     const sklDialog = page.getByRole('dialog', { name: 'Surat Keterangan Lulus' });
     await expect(sklDialog).toBeVisible();
+    await expect(sklDialog.getByRole('button', { name: 'Tutup' })).toHaveCount(0);
     await expect(sklDialog.locator('iframe')).toHaveAttribute(
       'src',
       'https://drive.google.com/embeddedfolderview?id=13_dF8zydSGEh-21eJK16OgkKpDvwcW36#list'

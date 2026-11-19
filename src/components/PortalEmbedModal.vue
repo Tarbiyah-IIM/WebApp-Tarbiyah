@@ -55,16 +55,6 @@ watch(
           @load="iframeLoading = false"
         />
       </div>
-
-      <div class="flex justify-end gap-2">
-        <button
-          type="button"
-          class="min-h-[42px] rounded-xl border border-surface-border bg-surface-page px-5 text-sm font-semibold text-slate-700 hover:bg-brand-50 transition"
-          @click="emit('close')"
-        >
-          {{ t('portalPages.common.closeBtn') }}
-        </button>
-      </div>
     </div>
 
     <div v-else class="space-y-4 text-center py-4">
@@ -89,13 +79,6 @@ watch(
           <span>{{ t('portalPages.common.waAdminLabel') }}</span>
           <ExternalLink class="h-4 w-4" />
         </a>
-        <button
-          type="button"
-          class="min-h-[42px] rounded-xl border border-surface-border bg-surface-page px-5 text-sm font-semibold text-slate-700 hover:bg-brand-50 transition"
-          @click="emit('close')"
-        >
-          {{ t('portalPages.common.closeBtn') }}
-        </button>
       </div>
     </div>
   </ModalDialog>
