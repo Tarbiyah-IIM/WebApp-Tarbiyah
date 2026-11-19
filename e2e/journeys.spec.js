@@ -216,7 +216,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       'href',
       'https://drive.google.com/uc?export=download&id=1dY6O_gtnFmDsFdXWzjkWgatTuDtyJBiV'
     );
-    await expect(page.locator('main a', { hasText: 'Form Laporan PP' })).toHaveAttribute(
+    await expect(page.locator('main a', { hasText: 'Form Laporan PPL' })).toHaveAttribute(
       'href',
       'https://drive.google.com/uc?export=download&id=1g-z4PkwEtoNm_yJ3OUoxQmv7RZSBMsrW'
     );

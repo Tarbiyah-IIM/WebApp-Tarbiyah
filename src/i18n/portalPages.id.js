@@ -181,7 +181,7 @@ export const portalPagesId = {
           href: 'https://drive.google.com/uc?export=download&id=1dY6O_gtnFmDsFdXWzjkWgatTuDtyJBiV'
         },
         {
-          title: 'Form Laporan PP',
+          title: 'Form Laporan PPL',
           desc: 'Klik untuk mengunduh template sistematika penulisan laporan akhir.',
           href: 'https://drive.google.com/uc?export=download&id=1g-z4PkwEtoNm_yJ3OUoxQmv7RZSBMsrW'
         },

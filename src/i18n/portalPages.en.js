@@ -181,7 +181,7 @@ export const portalPagesEn = {
           href: 'https://drive.google.com/uc?export=download&id=1dY6O_gtnFmDsFdXWzjkWgatTuDtyJBiV'
         },
         {
-          title: 'PP Report Form',
+          title: 'PPL Report Form',
           desc: 'Click to download the official final report formatting template.',
           href: 'https://drive.google.com/uc?export=download&id=1g-z4PkwEtoNm_yJ3OUoxQmv7RZSBMsrW'
         },
