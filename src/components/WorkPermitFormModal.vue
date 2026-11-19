@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from 'vue';
-import { CheckCircle2, Download, ExternalLink, Loader2, Lock, RotateCcw, WifiOff } from 'lucide-vue-next';
+import { CheckCircle2, Download, Loader2, Lock, RotateCcw, WifiOff } from 'lucide-vue-next';
 import ModalDialog from './ModalDialog.vue';
 import { publicService } from '../services/public.service.js';
 import { extractApiError } from '../services/api.js';
@@ -230,10 +230,6 @@ function resetForm() {
             <Download class="h-4 w-4" />
             <span>{{ t('workPermit.downloadAgainBtn') }}</span>
           </button>
-          <a v-if="resultData.file_url" :href="resultData.file_url" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-surface-border bg-white px-4 text-xs font-semibold text-brand-900 hover:bg-brand-50">
-            <span>{{ t('workPermit.openDriveBtn') }}</span>
-            <ExternalLink class="h-3.5 w-3.5" />
-          </a>
           <button type="button" class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-surface-border bg-white px-4 text-xs font-semibold text-slate-700 hover:bg-surface-muted" @click="resetForm">
             <RotateCcw class="h-3.5 w-3.5" />
             <span>{{ t('workPermit.newSubmissionBtn') }}</span>
