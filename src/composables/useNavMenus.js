@@ -82,7 +82,10 @@ export function useNavMenus(t) {
       id: 'rpl',
       label: t('nav.rpl'),
       children: [
-        { label: t('nav.items.rpl.guide') },
+        {
+          label: t('nav.items.rpl.guide'),
+          href: 'https://drive.google.com/drive/folders/1knidvsDcia_CmXB4wfi81Xrr9RPImn7l?usp=sharing'
+        },
         { label: t('nav.items.rpl.regulations') },
         { label: t('nav.items.rpl.decree') }
       ]

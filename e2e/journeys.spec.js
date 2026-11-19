@@ -50,7 +50,10 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(mainNav.getByRole('button', { name: 'Penelitian dan Pengabdian' })).toBeVisible();
 
     await mainNav.getByRole('button', { name: 'RPL' }).click();
-    await expect(mainNav.getByRole('button', { name: 'Pedoman RPL' })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: 'Pedoman RPL' })).toHaveAttribute(
+      'href',
+      'https://drive.google.com/drive/folders/1knidvsDcia_CmXB4wfi81Xrr9RPImn7l?usp=sharing'
+    );
     await expect(mainNav.getByRole('button', { name: 'SK Pengelola' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(mainNav.getByRole('button', { name: 'SK Pengelola' })).toHaveCount(0);
