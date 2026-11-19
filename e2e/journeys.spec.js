@@ -195,16 +195,18 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.getByRole('button', { name: /Surat Ijin Kerja/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Surat Ijin PPL/ })).toBeVisible();
     await page.getByRole('button', { name: /Surat Ijin Kerja/ }).click();
-    const kerjaDialog = page.getByRole('dialog', { name: 'Surat Ijin Kerja' });
+    const kerjaDialog = page.getByRole('dialog', { name: 'Formulir Pengajuan Surat Ijin Kerja (PPL)' });
     await expect(kerjaDialog).toBeVisible();
-    await expect(kerjaDialog.locator('iframe')).toHaveAttribute(
-      'src',
-      'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
-    );
-    await expect(kerjaDialog.getByRole('link', { name: 'Buka di Tab Baru' })).toHaveAttribute(
-      'href',
-      'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
-    );
+    await expect(kerjaDialog.locator('iframe')).toHaveCount(0);
+    await expect(kerjaDialog.getByLabel(/Kepada \(Yth\.\)/)).toBeVisible();
+    await expect(kerjaDialog.getByLabel(/Nama Lengkap Mahasiswa/)).toBeVisible();
+    await expect(kerjaDialog.getByLabel(/NIM/)).toBeVisible();
+    await expect(kerjaDialog.getByLabel(/Program Studi/)).toBeVisible();
+    await expect(kerjaDialog.getByLabel(/Semester/)).toBeVisible();
+    await expect(kerjaDialog.getByLabel(/Instansi \/ Tempat PPL/)).toBeVisible();
+    await expect(kerjaDialog.getByLabel(/Alamat Lengkap Instansi PPL/)).toBeVisible();
+    await kerjaDialog.getByRole('button', { name: 'Buat & Unduh Surat' }).click();
+    await expect(kerjaDialog.getByText(/Kepada \(Yth\.\) wajib diisi\./)).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(kerjaDialog).toHaveCount(0);
 

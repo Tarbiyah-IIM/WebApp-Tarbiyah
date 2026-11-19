@@ -156,9 +156,7 @@ export const portalPagesEn = {
         {
           label: 'Work Permit Letter (Surat Ijin Kerja)',
           badge: 'Open Form',
-          popup: true,
-          modalUrl:
-            'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
+          formType: 'work-permit'
         },
         { label: 'PPL Permit Letter (Surat Ijin PPL)', badge: 'Coming Soon', popup: true }
       ],

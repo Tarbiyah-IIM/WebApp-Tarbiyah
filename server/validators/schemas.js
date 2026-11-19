@@ -74,3 +74,22 @@ export const adminUserUpdateSchema = z.object({
   role: z.enum(['student', 'mentor', 'admin']),
   isActive: z.boolean()
 });
+
+export const pplWorkPermitSchema = z.object({
+  kepada: z.string().trim().min(1, 'Kepada (Yth.) wajib diisi.').max(150),
+  nama_mahasiswa: z.string().trim().min(1, 'Nama Mahasiswa wajib diisi.').max(120),
+  nim: z
+    .string()
+    .trim()
+    .min(3, 'NIM minimal terdiri dari 3 karakter.')
+    .max(30)
+    .regex(/^[A-Za-z0-9.\-\/]+$/, 'NIM hanya boleh berisi huruf, angka, titik, garis miring, atau tanda hubung.'),
+  program_studi: z.enum([
+    'Pendidikan Agama Islam',
+    'Pendidikan Guru Madrasah Ibtidaiyah',
+    'Pendidikan Islam Anak Usia Dini'
+  ]),
+  semester: z.enum(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']),
+  tempat_ppl: z.string().trim().min(1, 'Tempat PPL wajib diisi.').max(150),
+  alamat_ppl: z.string().trim().min(1, 'Alamat PPL wajib diisi.').max(300)
+});

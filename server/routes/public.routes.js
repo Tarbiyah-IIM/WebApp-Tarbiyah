@@ -1,14 +1,17 @@
 import { Router } from 'express';
 import { deleteMe, getMe, updateMe } from '../controllers/auth.controller.js';
+import { getWorkPermitMeta, submitWorkPermit } from '../controllers/permit.controller.js';
 import { getLanding, subscribeNewsletter } from '../controllers/public.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { validateBody } from '../middlewares/validate.middleware.js';
-import { subscribeSchema, updateProfileSchema } from '../validators/schemas.js';
+import { pplWorkPermitSchema, subscribeSchema, updateProfileSchema } from '../validators/schemas.js';
 
 const router = Router();
 
 router.get('/landing', getLanding);
 router.post('/subscribers', validateBody(subscribeSchema), subscribeNewsletter);
+router.get('/permits/work-permit/meta', getWorkPermitMeta);
+router.post('/permits/work-permit', validateBody(pplWorkPermitSchema), submitWorkPermit);
 
 router.get('/me', authenticate, getMe);
 router.patch('/me', authenticate, validateBody(updateProfileSchema), updateMe);

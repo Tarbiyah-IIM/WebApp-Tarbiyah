@@ -19,5 +19,8 @@ export const env = {
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
     refreshExpiresDays: Number(process.env.JWT_REFRESH_EXPIRES_DAYS || 7)
   },
-  paymentWebhookSecret: process.env.PAYMENT_WEBHOOK_SECRET || 'dev-webhook-secret'
+  paymentWebhookSecret: process.env.PAYMENT_WEBHOOK_SECRET || 'dev-webhook-secret',
+  pplWorkPermitScriptUrl:
+    process.env.PPL_WORK_PERMIT_SCRIPT_URL ||
+    'https://script.google.com/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
 };

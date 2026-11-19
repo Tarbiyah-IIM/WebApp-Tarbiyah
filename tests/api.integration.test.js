@@ -132,4 +132,18 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ hero_title: originalTitle });
   });
+
+  it('serves stateless PPL work-permit metadata and validates submit payload without SQL bloat', async () => {
+    const metaRes = await request(app).get('/api/v1/permits/work-permit/meta');
+    expect(metaRes.status).toBe(200);
+    expect(metaRes.body.ok).toBe(true);
+    expect(metaRes.body.data.tahun_akademik).toMatch(/^\d{4}\/\d{4}$/);
+    expect(metaRes.body.data.program_studi_options).toContain('Pendidikan Agama Islam');
+    expect(metaRes.body.data.semester_options).toContain('7');
+
+    const invalidRes = await request(app)
+      .post('/api/v1/permits/work-permit')
+      .send({ kepada: '', nim: '1', program_studi: 'Invalid' });
+    expect(invalidRes.status).toBe(400);
+  });
 });

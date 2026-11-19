@@ -162,7 +162,7 @@ onUnmounted(() => {
                     <span>{{ item.label }}</span>
                     <span
                       class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
-                      :class="item.modalUrl ? 'bg-brand-50 text-brand-700' : 'bg-surface-muted text-slate-500'"
+                      :class="item.modalUrl || item.formType ? 'bg-brand-50 text-brand-700' : 'bg-surface-muted text-slate-500'"
                     >
                       {{ item.badge || t('portalPages.common.comingSoonBadge') }}
                     </span>

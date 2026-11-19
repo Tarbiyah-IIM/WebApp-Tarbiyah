@@ -156,9 +156,7 @@ export const portalPagesId = {
         {
           label: 'Surat Ijin Kerja',
           badge: 'Buka Formulir',
-          popup: true,
-          modalUrl:
-            'https://script.google.com/a/~/macros/s/AKfycby1rCchHW3F8zUOI7TMMBEZDRSRxG1px1eqUgJJevYtowXI6CT4_imYY0Llvz6KQxJvWw/exec'
+          formType: 'work-permit'
         },
         { label: 'Surat Ijin PPL', badge: 'Coming Soon', popup: true }
       ],

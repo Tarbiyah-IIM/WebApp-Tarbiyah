@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { ArrowLeft, CheckCircle2, Download, ExternalLink, FileText, Lock } from 'lucide-vue-next';
 import PortalEmbedModal from '../components/PortalEmbedModal.vue';
 import PortalPageShell from '../components/PortalPageShell.vue';
+import WorkPermitFormModal from '../components/WorkPermitFormModal.vue';
 import { useI18n } from '../composables/useI18n.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -13,6 +14,7 @@ const props = defineProps({
 const { t } = useI18n();
 const toast = useToast();
 const activePopupItem = ref(null);
+const workPermitModalOpen = ref(false);
 
 const infoPages = computed(() => t('portalPages.infoPages') || {});
 const pageData = computed(() => infoPages.value[props.pageKey] || null);
@@ -24,6 +26,10 @@ const highlightsGridClass = computed(() =>
 );
 
 function handlePendingLink(item) {
+  if (item?.formType === 'work-permit') {
+    workPermitModalOpen.value = true;
+    return;
+  }
   if (item?.popup || item?.modalUrl) {
     activePopupItem.value = item;
     return;
@@ -216,4 +222,5 @@ const relatedPages = computed(() =>
     </template>
   </PortalPageShell>
   <PortalEmbedModal :open="Boolean(activePopupItem)" :item="activePopupItem" @close="activePopupItem = null" />
+  <WorkPermitFormModal :open="workPermitModalOpen" @close="workPermitModalOpen = false" />
 </template>
