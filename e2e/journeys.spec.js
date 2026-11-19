@@ -392,9 +392,11 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(mobileSheet.getByRole('link', { name: 'Ujian Komprehensif' })).toHaveAttribute('href', '/akademik/ujian-komprehensif');
 
     await moreBtn.click();
-    await expect(mobileSheet.getByText('Publikasi', { exact: true })).toBeVisible();
-    await expect(mobileSheet.getByText('RPL', { exact: true })).toBeVisible();
+    await expect(mobileSheet.getByText('Tentang Kami')).toHaveCount(0);
+    await expect(mobileSheet.getByRole('link', { name: 'Jurnal' })).toHaveCount(0);
+    await mobileSheet.getByRole('button', { name: 'Publikasi' }).click();
     await expect(mobileSheet.getByRole('link', { name: 'Jurnal' })).toHaveAttribute('href', '/publikasi/jurnal');
+    await mobileSheet.getByRole('button', { name: 'RPL' }).click();
     await expect(mobileSheet.getByRole('link', { name: 'Pedoman RPL' })).toHaveAttribute(
       'href',
       'https://drive.google.com/drive/folders/1knidvsDcia_CmXB4wfi81Xrr9RPImn7l?usp=sharing'

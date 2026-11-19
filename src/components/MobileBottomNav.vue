@@ -1,8 +1,9 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   BookOpen,
+  ChevronDown,
   ChevronRight,
   ExternalLink,
   GraduationCap,
@@ -36,6 +37,15 @@ const emit = defineEmits(['toggle-sheet', 'close-sheet', 'open-search', 'pending
 const route = useRoute();
 const auth = useAuthStore();
 const { t } = useI18n();
+
+const expandedMoreGroup = ref(null);
+
+watch(
+  () => props.activeSheet,
+  () => {
+    expandedMoreGroup.value = null;
+  }
+);
 
 const menuById = computed(() => {
   const map = {};
@@ -78,6 +88,10 @@ const isMoreActive = computed(
   () => props.activeSheet === 'more' || (!props.activeSheet && route.path.startsWith('/publikasi'))
 );
 
+function toggleMoreGroup(groupId) {
+  expandedMoreGroup.value = expandedMoreGroup.value === groupId ? null : groupId;
+}
+
 function handleHomeClick() {
   emit('close-sheet');
 }
@@ -104,7 +118,7 @@ function handleSearchClick() {
       aria-modal="true"
       :aria-label="sheetHeading"
       data-testid="mobile-bottom-sheet"
-      class="fixed inset-x-3 bottom-[82px] z-50 mx-auto max-h-[68vh] max-w-lg overflow-y-auto rounded-3xl border border-surface-border bg-white p-4 shadow-float lg:hidden"
+      class="fixed inset-x-3 bottom-[96px] z-50 mx-auto max-h-[65vh] max-w-lg overflow-y-auto rounded-3xl border border-surface-border bg-white p-4 shadow-float lg:hidden"
     >
       <div class="mb-3 flex items-center justify-between gap-2 border-b border-surface-border pb-3">
         <h2 class="text-sm font-extrabold text-brand-900">{{ sheetHeading }}</h2>
@@ -118,15 +132,29 @@ function handleSearchClick() {
         </button>
       </div>
 
-      <div class="space-y-4">
-        <div v-for="group in sheetGroups" :key="group.id" class="space-y-2">
-          <p
-            v-if="activeSheet === 'more'"
-            class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500"
+      <div v-if="activeSheet === 'more'" class="space-y-2.5">
+        <div
+          v-for="group in sheetGroups"
+          :key="group.id"
+          class="overflow-hidden rounded-2xl border border-surface-border bg-surface-page"
+        >
+          <button
+            type="button"
+            :aria-expanded="expandedMoreGroup === group.id"
+            class="flex min-h-[48px] w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-bold text-brand-900 transition hover:bg-brand-50 hover:text-brand-700"
+            @click="toggleMoreGroup(group.id)"
           >
-            {{ group.label }}
-          </p>
-          <div class="space-y-1.5">
+            <span>{{ group.label }}</span>
+            <ChevronDown
+              class="h-4 w-4 shrink-0 text-slate-500 transition-transform duration-150"
+              :class="{ 'rotate-180 text-brand-600': expandedMoreGroup === group.id }"
+            />
+          </button>
+
+          <div
+            v-if="expandedMoreGroup === group.id"
+            class="space-y-1.5 border-t border-surface-border bg-white p-2.5"
+          >
             <template v-for="child in group.children" :key="child.label">
               <a
                 v-if="child.href"
@@ -161,33 +189,58 @@ function handleSearchClick() {
           </div>
         </div>
 
-        <div v-if="activeSheet === 'more'" class="space-y-2 border-t border-surface-border pt-3">
+        <div v-if="auth.isAuthenticated" class="space-y-2 border-t border-surface-border pt-3">
           <router-link
-            to="/#features"
-            class="flex min-h-[44px] items-center justify-between rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+            v-if="auth.isAdmin"
+            :to="dashboardRoute"
+            class="flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 transition"
             @click="emit('close-sheet')"
           >
-            <span>{{ t('nav.about') }}</span>
-            <ChevronRight class="h-4 w-4 shrink-0 text-slate-400" />
+            <LayoutDashboard class="h-4 w-4" />
+            <span>{{ auth.user.role.toUpperCase() }} {{ t('nav.dashboardSuffix') }}</span>
           </router-link>
+          <button
+            type="button"
+            class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-surface-border px-4 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
+            @click="emit('logout')"
+          >
+            <LogOut class="h-4 w-4" />
+            <span>{{ t('nav.logout') }}</span>
+          </button>
+        </div>
+      </div>
 
-          <template v-if="auth.isAuthenticated">
-            <router-link
-              v-if="auth.isAdmin"
-              :to="dashboardRoute"
-              class="flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 transition"
+      <div v-else class="space-y-2">
+        <div v-for="group in sheetGroups" :key="group.id" class="space-y-1.5">
+          <template v-for="child in group.children" :key="child.label">
+            <a
+              v-if="child.href"
+              :href="child.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex min-h-[44px] items-center justify-between gap-2 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-sm font-semibold text-brand-900 transition hover:border-brand-300 hover:bg-brand-50"
               @click="emit('close-sheet')"
             >
-              <LayoutDashboard class="h-4 w-4" />
-              <span>{{ auth.user.role.toUpperCase() }} {{ t('nav.dashboardSuffix') }}</span>
+              <span>{{ child.label }}</span>
+              <ExternalLink class="h-4 w-4 shrink-0 text-slate-400" />
+            </a>
+            <router-link
+              v-else-if="child.to"
+              :to="child.to"
+              class="flex min-h-[44px] items-center justify-between gap-2 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-sm font-semibold text-brand-900 transition hover:border-brand-300 hover:bg-brand-50"
+              @click="emit('close-sheet')"
+            >
+              <span>{{ child.label }}</span>
+              <ChevronRight class="h-4 w-4 shrink-0 text-brand-600" />
             </router-link>
             <button
+              v-else
               type="button"
-              class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-surface-border px-4 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
-              @click="emit('logout')"
+              class="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-left text-sm font-semibold text-brand-900 transition hover:border-brand-300 hover:bg-brand-50"
+              @click="emit('pending-item', group.label, child.label)"
             >
-              <LogOut class="h-4 w-4" />
-              <span>{{ t('nav.logout') }}</span>
+              <span>{{ child.label }}</span>
+              <ChevronRight class="h-4 w-4 shrink-0 text-slate-400" />
             </button>
           </template>
         </div>
@@ -200,7 +253,7 @@ function handleSearchClick() {
       class="fixed inset-x-0 bottom-0 z-50 lg:hidden"
     >
       <div class="mx-auto max-w-xl rounded-t-3xl border-x border-t border-surface-border bg-white px-2 pt-2 pb-2.5 shadow-float">
-        <div class="grid grid-cols-5 items-end">
+        <div class="grid grid-cols-5 items-center">
           <router-link
             to="/"
             data-testid="bottom-nav-home"
@@ -225,13 +278,13 @@ function handleSearchClick() {
             <span>{{ t('nav.bottomNav.prodi') }}</span>
           </button>
 
-          <div class="flex flex-col items-center justify-end">
+          <div class="flex items-center justify-center">
             <button
               type="button"
               data-testid="mobile-bottom-search"
               :aria-label="t('search.openLabel')"
               :title="t('search.openLabel')"
-              class="-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-float ring-4 ring-white transition hover:bg-brand-700 active:scale-95"
+              class="-mt-11 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-float ring-4 ring-white transition hover:bg-brand-700 active:scale-95"
               @click="handleSearchClick"
             >
               <Search class="h-6 w-6" />
