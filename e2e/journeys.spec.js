@@ -158,6 +158,11 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       'href',
       'https://iimsurakarta.siakadcloud.com/spmbfront/program-studi-detail/detail/86208'
     );
+    await expect(page.locator('main aside').getByText('Pusat Layanan Tarbiyah')).toBeVisible();
+    await expect(page.locator('main aside').getByText('Email Resmi')).toHaveCount(0);
+    await expect(page.locator('main aside').getByText(/meekoo/i)).toHaveCount(0);
+    await expect(page.locator('main aside').getByRole('link', { name: 'Hubungi Admin Fakultas' })).toBeVisible();
+    await expect(page.locator('main aside').getByRole('link', { name: 'Konsultasi PMB Center' })).toBeVisible();
     await page.goto('/program-studi/pgmi');
     await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toBeVisible();
     await page.goto('/program-studi/piaud');

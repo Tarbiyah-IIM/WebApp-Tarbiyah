@@ -14,7 +14,6 @@ export const portalPagesEn = {
     otherProgramsHeading: 'Other Study Programs',
     otherPagesHeading: 'Related Academic & Publication Pages',
     contactHeading: 'Tarbiyah Service Desk',
-    emailLabel: 'Official Email',
     waAdminLabel: 'Contact Faculty Admin',
     waPmbLabel: 'Admissions Consultation',
     backHomeBtn: 'Back to Home',

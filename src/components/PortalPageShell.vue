@@ -23,7 +23,6 @@ const { t } = useI18n();
 const isOffline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false);
 
 const settings = computed(() => landingStore.data?.settings || {});
-const contactEmail = computed(() => settings.value.contact_email || 'tarbiyah@iim.ac.id');
 
 function syncOnlineStatus() {
   isOffline.value = typeof navigator !== 'undefined' ? !navigator.onLine : false;
@@ -113,14 +112,6 @@ onUnmounted(() => {
 
             <section v-if="!hideContactCard" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
               <h2 class="text-base font-extrabold text-brand-900">{{ t('portalPages.common.contactHeading') }}</h2>
-              <div class="rounded-xl border border-surface-border bg-surface-page px-4 py-3">
-                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  {{ t('portalPages.common.emailLabel') }}
-                </p>
-                <a :href="`mailto:${contactEmail}`" class="mt-0.5 block text-sm font-bold text-brand-700 hover:underline">
-                  {{ contactEmail }}
-                </a>
-              </div>
               <div class="space-y-2.5">
                 <a
                   href="https://wa.link/qrwv15"

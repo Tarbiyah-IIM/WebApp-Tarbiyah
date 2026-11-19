@@ -14,7 +14,6 @@ export const portalPagesId = {
     otherProgramsHeading: 'Program Studi Lainnya',
     otherPagesHeading: 'Layanan & Publikasi Terkait',
     contactHeading: 'Pusat Layanan Tarbiyah',
-    emailLabel: 'Email Resmi',
     waAdminLabel: 'Hubungi Admin Fakultas',
     waPmbLabel: 'Konsultasi PMB Center',
     backHomeBtn: 'Kembali ke Beranda',
