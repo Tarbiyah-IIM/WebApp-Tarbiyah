@@ -105,6 +105,12 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.getByText('Pastikan anda sudah mengisi kuisioner evaluasi pembelajaran sebelum melihat KHS')).toBeVisible();
 
     const footerSection = page.locator('#footer-cta');
+    await expect(
+      footerSection.getByText(
+        'Join more than 2K+ students who are developing the skills to become the educators and professionals of the future.'
+      )
+    ).toBeVisible();
+    await expect(footerSection.getByText('2,000 students')).toHaveCount(0);
     await expect(footerSection.getByRole('link', { name: 'PMB Center' })).toHaveAttribute('href', 'https://wa.link/agu1p5');
     await expect(footerSection.getByRole('link', { name: 'Admin Fakultas' })).toHaveAttribute('href', 'https://wa.link/qrwv15');
     await expect(footerSection.getByRole('link', { name: /PAI \(Al'ulum/ })).toHaveAttribute(

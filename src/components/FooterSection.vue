@@ -56,7 +56,7 @@ const mapsEmbedUrl =
               {{
                 tr(
                   settings.footer_cta_subtitle ||
-                    'Join more than 2,000 students who are developing the skills to become the educators and professionals of the future.'
+                    'Join more than 2K+ students who are developing the skills to become the educators and professionals of the future.'
                 )
               }}
             </p>
