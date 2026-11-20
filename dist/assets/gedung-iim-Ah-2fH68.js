@@ -1,0 +1,1 @@
+var e=`/assets/gedung-iim-XKljsqPc.jpg`;export{e as t};
