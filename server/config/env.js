@@ -11,7 +11,7 @@ export const env = {
     port: Number(process.env.DB_PORT || 3306),
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'meekoo_db'
+    database: process.env.DB_NAME || 'tarbiyah_iim'
   },
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET || 'dev-access-secret',

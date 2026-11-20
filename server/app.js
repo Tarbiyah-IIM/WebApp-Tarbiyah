@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -34,6 +35,16 @@ app.get('/api/v1/health', (_req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1', publicRoutes);
 app.use('/api/v1/admin', adminRoutes);
+
+const distDir = path.resolve(process.cwd(), 'dist');
+if (fs.existsSync(distDir)) {
+  app.use(express.static(distDir));
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+    res.sendFile(path.join(distDir, 'index.html'));
+  });
+}
 
 app.use(notFoundHandler);
 app.use(errorHandler);
