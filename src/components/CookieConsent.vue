@@ -7,13 +7,13 @@ const { t } = useI18n();
 const visible = ref(false);
 
 onMounted(() => {
-  if (!localStorage.getItem('meekoo_cookie_consent')) {
+  if (!localStorage.getItem('tarbiyah_cookie_consent')) {
     visible.value = true;
   }
 });
 
 function accept(choice) {
-  localStorage.setItem('meekoo_cookie_consent', choice);
+  localStorage.setItem('tarbiyah_cookie_consent', choice);
   visible.value = false;
 }
 </script>

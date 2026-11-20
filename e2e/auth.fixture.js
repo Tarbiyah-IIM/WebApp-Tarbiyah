@@ -2,7 +2,7 @@ import { test as base, expect } from '@playwright/test';
 
 export const test = base.extend({
   loginViaApi: async ({ page, request }, use) => {
-    const fn = async (email, password = 'Meekoo123!') => {
+    const fn = async (email, password = 'adminganteng') => {
       const res = await request.post('http://localhost:3001/api/v1/auth/login', {
         data: { email, password }
       });
@@ -10,7 +10,7 @@ export const test = base.extend({
       const body = await res.json();
       await page.goto('/login');
       await page.evaluate((token) => {
-        localStorage.setItem('meekoo_token', token);
+        localStorage.setItem('tarbiyah_token', token);
       }, body.accessToken);
       return body;
     };
@@ -19,7 +19,7 @@ export const test = base.extend({
   createIsolatedStudent: async ({ request }, use) => {
     const createdTokens = [];
     const fn = async (name = 'E2E Learner') => {
-      const email = `e2e.${Date.now()}.${Math.random().toString(36).slice(2, 6)}@meekoo.test`;
+      const email = `e2e.${Date.now()}.${Math.random().toString(36).slice(2, 6)}@tarbiyah.test`;
       const password = 'Password123!';
       const res = await request.post('http://localhost:3001/api/v1/auth/register', {
         data: { name, email, password }

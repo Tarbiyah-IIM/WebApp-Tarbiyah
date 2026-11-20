@@ -40,7 +40,7 @@ async function issueAndStoreRefreshToken(user) {
 }
 
 function setRefreshCookie(res, rawToken, expiresAt) {
-  res.cookie('meekoo_refresh', rawToken, {
+  res.cookie('tarbiyah_refresh', rawToken, {
     httpOnly: true,
     sameSite: 'lax',
     secure: env.nodeEnv === 'production',
@@ -122,7 +122,7 @@ export async function login(req, res, next) {
 
 export async function refresh(req, res, next) {
   try {
-    const rawCookie = req.cookies?.meekoo_refresh;
+    const rawCookie = req.cookies?.tarbiyah_refresh;
     if (!rawCookie) {
       return next(new AppError(401, 'NO_REFRESH_TOKEN', 'Sesi login telah berakhir'));
     }
@@ -130,14 +130,14 @@ export async function refresh(req, res, next) {
     const tokenHash = hashToken(rawCookie);
     const stored = await findValidRefreshToken(tokenHash);
     if (!stored) {
-      res.clearCookie('meekoo_refresh', { path: '/api/v1/auth' });
+      res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
       return next(new AppError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token tidak valid'));
     }
 
     const user = await findUserById(stored.user_id);
     if (!user || !user.is_active) {
       await revokeRefreshToken(tokenHash);
-      res.clearCookie('meekoo_refresh', { path: '/api/v1/auth' });
+      res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
       return next(new AppError(401, 'UNAUTHORIZED', 'Akun tidak aktif'));
     }
 
@@ -157,11 +157,11 @@ export async function refresh(req, res, next) {
 
 export async function logout(req, res, next) {
   try {
-    const rawCookie = req.cookies?.meekoo_refresh;
+    const rawCookie = req.cookies?.tarbiyah_refresh;
     if (rawCookie) {
       await revokeRefreshToken(hashToken(rawCookie));
     }
-    res.clearCookie('meekoo_refresh', { path: '/api/v1/auth' });
+    res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
     return res.json({ message: 'Logout berhasil' });
   } catch (err) {
     return next(err);
@@ -253,7 +253,7 @@ export async function updateMe(req, res, next) {
 export async function deleteMe(req, res, next) {
   try {
     await deleteUserById(req.user.id);
-    res.clearCookie('meekoo_refresh', { path: '/api/v1/auth' });
+    res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
     return res.json({ message: 'Akun dan data terkait berhasil dihapus' });
   } catch (err) {
     return next(err);

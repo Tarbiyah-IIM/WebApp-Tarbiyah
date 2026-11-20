@@ -206,7 +206,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     );
     await expect(page.locator('main aside').getByText('Pusat Layanan Tarbiyah')).toBeVisible();
     await expect(page.locator('main aside').getByText('Email Resmi')).toHaveCount(0);
-    await expect(page.locator('main aside').getByText(/meekoo/i)).toHaveCount(0);
+    await expect(page.locator('main aside').getByText(/tarbiyah platform/i)).toHaveCount(0);
     await expect(page.locator('main aside').getByRole('link', { name: 'Hubungi Admin Fakultas' })).toBeVisible();
     await expect(page.locator('main aside').getByRole('link', { name: 'Konsultasi PMB Center' })).toBeVisible();
     await page.goto('/program-studi/pgmi');
@@ -487,7 +487,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
   });
 
   test('J3: Admin Control Center CMS updates Hero Title, switches i18n, and syncs to Home', async ({ page, loginViaApi }) => {
-    await loginViaApi('admin@meekoo.test');
+    await loginViaApi('tarbiyah@iim.ac.id');
     await page.goto('/admin');
 
     await expect(page.getByRole('button', { name: 'CMS Halaman Utama' })).toBeVisible();

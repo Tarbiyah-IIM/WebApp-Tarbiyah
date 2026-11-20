@@ -5,7 +5,7 @@ import { authService } from '../services/auth.service.js';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
-  const accessToken = ref(localStorage.getItem('meekoo_token') || '');
+  const accessToken = ref(localStorage.getItem('tarbiyah_token') || '');
   const hydrated = ref(false);
 
   const isAuthenticated = computed(() => Boolean(user.value && accessToken.value));
@@ -15,9 +15,9 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = token || '';
     user.value = nextUser || null;
     if (token) {
-      localStorage.setItem('meekoo_token', token);
+      localStorage.setItem('tarbiyah_token', token);
     } else {
-      localStorage.removeItem('meekoo_token');
+      localStorage.removeItem('tarbiyah_token');
     }
   }
 
