@@ -165,6 +165,7 @@ export default {
     },
     campusMapTitle: 'Campus Location',
     mapIframeTitle: 'Map of Faculty of Tarbiyah IIM Surakarta Campus',
+    openInMaps: 'Open in Google Maps',
     rightsText: 'Faculty of Tarbiyah, Mambaul Ulum Islamic Institute of Surakarta. All rights reserved.'
   },
   auth: {

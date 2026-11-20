@@ -37,10 +37,10 @@ const footerCtas = computed(() => [
   }
 ]);
 
-const campusBadges = ['IIM', 'Tarbiyah', 'SIAKAD', 'EdLink'];
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
 
-const mapsEmbedUrl =
-  'https://maps.google.com/maps?ll=-7.584322,110.81806&z=13&t=m&hl=en-ID&gl=US&q=Jl.+Sadewa+No.14+Serengan+Kec.+Serengan+Kota+Surakarta,+Jawa+Tengah+57155&output=embed';
+const mapsEmbedUrl = 'https://www.google.com/maps?q=-7.584322,110.81806&z=17&hl=id&output=embed';
+const mapsExternalUrl = 'https://maps.app.goo.gl/nV3QhFWXLT1VxUB26';
 </script>
 
 <template>
@@ -143,6 +143,15 @@ const mapsEmbedUrl =
               class="block h-36 w-full border-0"
             />
           </div>
+          <a
+            :href="mapsExternalUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 transition hover:text-white"
+          >
+            {{ t('footer.openInMaps') }}
+            <ExternalLink class="h-3.5 w-3.5 shrink-0" />
+          </a>
         </div>
       </div>
 
@@ -150,15 +159,11 @@ const mapsEmbedUrl =
         <p class="text-xs text-slate-400">
           © {{ new Date().getFullYear() }} {{ t('footer.rightsText') }}
         </p>
-        <div class="flex flex-wrap items-center gap-2">
-          <span
-            v-for="badge in campusBadges"
-            :key="badge"
-            class="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-bold text-slate-300"
-          >
-            {{ badge }}
-          </span>
-        </div>
+        <span
+          class="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-bold text-slate-300"
+        >
+          Version WebApp v{{ appVersion }}
+        </span>
       </div>
     </div>
   </footer>
