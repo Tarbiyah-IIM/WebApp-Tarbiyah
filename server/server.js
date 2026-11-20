@@ -4,8 +4,10 @@ import { env } from './config/env.js';
 
 async function start() {
   await pool.query('SELECT 1');
-  app.listen(env.port, () => {
-    console.log(`Tarbiyah API listening on http://localhost:${env.port}`);
+  app.listen(env.port, '0.0.0.0', () => {
+    console.log(
+      `Tarbiyah API listening on 0.0.0.0:${env.port} (PORT env: ${process.env.PORT ?? 'unset'})`
+    );
   });
 }
 
