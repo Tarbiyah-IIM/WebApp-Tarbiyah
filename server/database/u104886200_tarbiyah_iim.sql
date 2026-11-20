@@ -1,10 +1,4 @@
-CREATE DATABASE IF NOT EXISTS `tarbiyah_iim`
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE `tarbiyah_iim`;
-
-SET FOREIGN_KEY_CHECKS = 0;
+﻿SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `certificates`;
 DROP TABLE IF EXISTS `learning_path_items`;
