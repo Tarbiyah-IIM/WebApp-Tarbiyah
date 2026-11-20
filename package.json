@@ -12,6 +12,7 @@
     "dev:server": "node --watch server/server.js",
     "dev:all": "node scripts/dev.mjs",
     "build": "vite build",
+    "postinstall": "vite build",
     "preview": "vite preview",
     "start": "node server/server.js",
     "test": "vitest run",
@@ -19,6 +20,8 @@
     "check:server": "node -e \"import('node:fs').then(async fs=>{const {execSync}=await import('node:child_process');const walk=(d)=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?[...walk(d+'/'+e.name)]:e.name.endsWith('.js')?[d+'/'+e.name]:[]);for(const f of [...walk('server'),...walk('src')]){execSync('node --check \"'+f+'\"',{stdio:'inherit'})}console.log('All JS syntax OK')})\""
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@vitejs/plugin-vue": "^6.0.11",
     "axios": "^1.21.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -32,17 +35,15 @@
     "multer": "^2.5.0",
     "mysql2": "^3.24.6",
     "pinia": "^4.1.0",
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.8",
     "vue": "^3.5.45",
     "vue-router": "^5.5.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
-    "@tailwindcss/vite": "^4.3.5",
-    "@vitejs/plugin-vue": "^6.0.11",
     "supertest": "^7.3.2",
-    "tailwindcss": "^4.3.5",
-    "vite": "^8.3.8",
     "vitest": "^5.1.0"
   }
 }
