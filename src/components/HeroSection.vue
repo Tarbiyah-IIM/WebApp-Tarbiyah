@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import heroTarbiyahImage from '../assets/hero-tarbiyah.png';
+import strukturOrganisasiImage from '../assets/struktur-organisasi.jpg';
 import ModalDialog from './ModalDialog.vue';
 import ScholarshipModal from './ScholarshipModal.vue';
 import { useI18n } from '../composables/useI18n.js';
@@ -94,6 +95,22 @@ const missionItems = computed(() => t('hero.missions'));
               {{ item }}
             </li>
           </ol>
+        </div>
+
+        <div class="rounded-2xl border border-surface-border bg-surface-page p-5">
+          <span class="inline-block rounded-full bg-sky-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+            {{ t('hero.structureBadge') }}
+          </span>
+          <h3 class="mt-3 text-base font-bold text-brand-900 sm:text-lg">
+            {{ t('hero.structureTitle') }}
+          </h3>
+          <img
+            :src="strukturOrganisasiImage"
+            :alt="t('hero.structureAlt')"
+            loading="lazy"
+            decoding="async"
+            class="mt-4 w-full h-auto rounded-xl border border-surface-border bg-white"
+          />
         </div>
       </div>
     </ModalDialog>

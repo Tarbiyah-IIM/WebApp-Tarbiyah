@@ -72,6 +72,9 @@ export default {
       'Menyelenggarakan pengkajian, penelitian, dan pengabdian masyarakat dalam bidang Pendidikan Dasar dan Agama Islam.',
       'Memperluas dan memperkuat jaringan kerjasama dalam bidang pendidikan yang berwawasan global serta menguasai ilmu pengetahuan dan teknologi.'
     ],
+    structureBadge: 'Struktur',
+    structureTitle: 'Struktur Organisasi Fakultas',
+    structureAlt: 'Bagan struktur organisasi Fakultas Tarbiyah',
     closeBtn: 'Tutup',
     macCloseLabel: 'Tutup modal'
   },

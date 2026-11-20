@@ -72,6 +72,9 @@ export default {
       'Conduct study, research, and community engagement in Elementary Education and Islamic Studies.',
       'Expand and strengthen collaborative networks in globally oriented education while mastering science and technology.'
     ],
+    structureBadge: 'Structure',
+    structureTitle: 'Faculty Organizational Structure',
+    structureAlt: 'Organizational chart of the Faculty of Tarbiyah',
     closeBtn: 'Close',
     macCloseLabel: 'Close modal'
   },
