@@ -37,7 +37,7 @@ const newsMatches = computed(() => {
   const list = landingStore.data?.testimonials || [];
   if (!normalizedQuery.value) return [];
   return list
-    .filter((n) => `${n.name} ${tr(n.name)} ${n.quote} ${tr(n.quote)}`.toLowerCase().includes(normalizedQuery.value))
+    .filter((n) => `${n.name} ${tr(n.name)} ${n.category_name || ''} ${n.job_title || ''} ${n.quote} ${tr(n.quote)}`.toLowerCase().includes(normalizedQuery.value))
     .slice(0, 4);
 });
 

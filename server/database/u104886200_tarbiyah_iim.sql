@@ -234,10 +234,20 @@ CREATE TABLE `reviews` (
   CONSTRAINT `fk_reviews_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `news_categories` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_news_categories_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `testimonials` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(120) NOT NULL,
   `job_title` VARCHAR(160) NOT NULL,
+  `category_id` BIGINT UNSIGNED NULL,
   `quote` TEXT NOT NULL,
   `rating` TINYINT UNSIGNED NOT NULL DEFAULT 5,
   `avatar_url` VARCHAR(500) NULL,
@@ -245,7 +255,9 @@ CREATE TABLE `testimonials` (
   `sort_order` INT NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_testimonials_category` (`category_id`),
+  CONSTRAINT `fk_testimonials_news_category` FOREIGN KEY (`category_id`) REFERENCES `news_categories` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `faqs` (
@@ -452,6 +464,11 @@ INSERT INTO `features` (`id`, `title`, `description`, `icon`, `sort_order`) VALU
 (2, 'Pendidikan Agama Islam', 'Prodi ini menyelenggarakan pembelajaran yang profesional, responsif, dan berwawasan global hingga mampu menciptakan lulusan yang unggul.', 'video', 2),
 (3, 'Pendidikan Guru Madrasah Ibtidaiyah', 'PGMI mampu menyiapkan sarjana yang mempunyai kemampuan akademis yang profesional dan berkarakter, memiliki kecakapan sosial dan manajerial, serta dapat mengembangkan pola kemitraan dengan berbagai pihak dalam rangka pengembangan Madrasah Ibtidaiyah.', 'layout-dashboard', 3),
 (4, 'Pendidikan Islam Anak Usia Dini', 'Membangun Generasi Emas Sejak Usia Dini. PIAUD membekali mahasiswa dengan ilmu pendidikan, kreativitas, dan nilai-nilai keislaman untuk menjadi pendidik profesional, inovatif, dan inspiratif dalam membentuk karakter serta kecerdasan anak sejak usia dini.', 'users', 4);
+
+INSERT INTO `news_categories` (`name`) VALUES
+('Akademik'),
+('Benchmarking'),
+('Akreditasi');
 
 INSERT INTO `partners` (`id`, `name`, `logo_url`, `url`, `sort_order`) VALUES
 (1, 'SIAKAD | Sistem Informasi Akademik Mahasiswa', NULL, 'https://iimsurakarta.siakadcloud.com/gate/login', 1),

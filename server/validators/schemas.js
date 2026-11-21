@@ -38,8 +38,13 @@ export const testimonialBodySchema = z.object({
   quote: z.string().trim().min(5).max(2000),
   rating: z.coerce.number().int().min(1).max(5).default(5),
   avatarUrl: z.string().trim().max(500).nullable().optional(),
+  categoryId: z.coerce.number().int().positive(),
   isVisible: z.boolean().default(true),
   sortOrder: z.coerce.number().int().min(0).default(0)
+});
+
+export const newsCategoryBodySchema = z.object({
+  name: z.string().trim().min(2).max(100)
 });
 
 export const faqBodySchema = z.object({

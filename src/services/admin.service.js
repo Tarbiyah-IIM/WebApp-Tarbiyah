@@ -29,6 +29,18 @@ export const adminService = {
     const { data } = await api.delete(`/admin/testimonials/${id}`);
     return data;
   },
+  async listNewsCategories() {
+    const { data } = await api.get('/admin/news-categories');
+    return data;
+  },
+  async createNewsCategory(payload) {
+    const { data } = await api.post('/admin/news-categories', payload);
+    return data;
+  },
+  async deleteNewsCategory(id) {
+    const { data } = await api.delete(`/admin/news-categories/${id}`);
+    return data;
+  },
   async listFaqs() {
     const { data } = await api.get('/admin/faqs');
     return data;

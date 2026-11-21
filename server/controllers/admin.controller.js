@@ -3,11 +3,13 @@ import { AppError } from '../middlewares/error.middleware.js';
 import {
   createFaq,
   createFeature,
+  createNewsCategory,
   createPartner,
   createStat,
   createTestimonial,
   deleteFaq,
   deleteFeature,
+  deleteNewsCategory,
   deletePartner,
   deleteStat,
   deleteTestimonial,
@@ -15,6 +17,7 @@ import {
   getSettingsMap,
   listFaqsAdmin,
   listFeaturesAdmin,
+  listNewsCategoriesAdmin,
   listPartnersAdmin,
   listStatsAdmin,
   listTestimonialsAdmin,
@@ -86,6 +89,9 @@ export async function adminUpdateTestimonial(req, res, next) {
     invalidateLandingCache();
     return res.json({ testimonial: item });
   } catch (err) {
+    if (err?.code === 'ER_NO_REFERENCED_ROW_2') {
+      return next(new AppError(400, 'INVALID_CATEGORY', 'Kategori berita tidak valid'));
+    }
     return next(err);
   }
 }
@@ -97,6 +103,42 @@ export async function adminDeleteTestimonial(req, res, next) {
     invalidateLandingCache();
     return res.json({ message: 'Berita dihapus' });
   } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminListNewsCategories(_req, res, next) {
+  try {
+    return res.json({ items: await listNewsCategoriesAdmin() });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminCreateNewsCategory(req, res, next) {
+  try {
+    const item = await createNewsCategory(req.body);
+    return res.status(201).json({ category: item });
+  } catch (err) {
+    if (err?.code === 'ER_DUP_ENTRY') {
+      return next(new AppError(409, 'CATEGORY_EXISTS', 'Kategori berita sudah tersedia'));
+    }
+    return next(err);
+  }
+}
+
+export async function adminDeleteNewsCategory(req, res, next) {
+  try {
+    const result = await deleteNewsCategory(Number(req.params.id));
+    if (result.inUse) {
+      return next(new AppError(409, 'CATEGORY_IN_USE', 'Kategori masih dipakai berita'));
+    }
+    if (!result.deleted) return next(new AppError(404, 'NOT_FOUND', 'Kategori berita tidak ditemukan'));
+    return res.json({ message: 'Kategori berita dihapus' });
+  } catch (err) {
+    if (err?.code === 'ER_ROW_IS_REFERENCED_2') {
+      return next(new AppError(409, 'CATEGORY_IN_USE', 'Kategori masih dipakai berita'));
+    }
     return next(err);
   }
 }

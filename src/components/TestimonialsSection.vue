@@ -82,7 +82,7 @@ function goToPage(page) {
           <div class="flex flex-1 flex-col p-6">
             <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700">
               <Calendar class="h-3.5 w-3.5 shrink-0" />
-              <span>{{ tr(item.job_title) }}</span>
+              <span>{{ tr(item.category_name || item.job_title) }}<template v-if="item.category_name && item.job_title"> · {{ tr(item.job_title) }}</template></span>
             </div>
 
             <h3 class="mt-2.5 text-base font-bold leading-snug text-brand-900">

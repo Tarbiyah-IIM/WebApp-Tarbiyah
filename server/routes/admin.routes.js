@@ -2,17 +2,20 @@ import { Router } from 'express';
 import {
   adminCreateFaq,
   adminCreateFeature,
+  adminCreateNewsCategory,
   adminCreatePartner,
   adminCreateStat,
   adminCreateTestimonial,
   adminDeleteFaq,
   adminDeleteFeature,
+  adminDeleteNewsCategory,
   adminDeletePartner,
   adminDeleteStat,
   adminDeleteTestimonial,
   adminGetSettings,
   adminListFaqs,
   adminListFeatures,
+  adminListNewsCategories,
   adminListPartners,
   adminListStats,
   adminListTestimonials,
@@ -34,6 +37,7 @@ import {
   adminUserUpdateSchema,
   faqBodySchema,
   featureBodySchema,
+  newsCategoryBodySchema,
   partnerBodySchema,
   statBodySchema,
   testimonialBodySchema
@@ -51,6 +55,10 @@ router.get('/testimonials', adminListTestimonials);
 router.post('/testimonials', validateBody(testimonialBodySchema), adminCreateTestimonial);
 router.patch('/testimonials/:id', validateBody(testimonialBodySchema), adminUpdateTestimonial);
 router.delete('/testimonials/:id', adminDeleteTestimonial);
+
+router.get('/news-categories', adminListNewsCategories);
+router.post('/news-categories', validateBody(newsCategoryBodySchema), adminCreateNewsCategory);
+router.delete('/news-categories/:id', adminDeleteNewsCategory);
 
 router.get('/faqs', adminListFaqs);
 router.post('/faqs', validateBody(faqBodySchema), adminCreateFaq);

@@ -12,7 +12,14 @@ export async function getLandingData() {
     pool.execute('SELECT id, stat_group, label, value_num, suffix, sort_order FROM stats ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT id, title, description, icon, sort_order FROM features ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT id, name, logo_url, url, sort_order FROM partners ORDER BY sort_order ASC, id ASC'),
-    pool.execute('SELECT id, name, job_title, quote, rating, avatar_url, sort_order FROM testimonials WHERE is_visible = 1 ORDER BY sort_order ASC, id ASC'),
+    pool.execute(`
+      SELECT t.id, t.name, t.job_title, t.quote, t.rating, t.avatar_url, t.sort_order,
+             t.category_id, nc.name AS category_name
+      FROM testimonials t
+      LEFT JOIN news_categories nc ON nc.id = t.category_id
+      WHERE t.is_visible = 1
+      ORDER BY t.sort_order ASC, t.id ASC
+    `),
     pool.execute('SELECT id, question, answer, sort_order FROM faqs ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT setting_key, setting_value FROM site_settings')
   ]);
@@ -57,23 +64,28 @@ export async function createSubscriber({ email, source = 'footer' }) {
 }
 
 export async function listTestimonialsAdmin() {
-  const [rows] = await pool.execute('SELECT * FROM testimonials ORDER BY sort_order ASC, id ASC');
+  const [rows] = await pool.execute(`
+    SELECT t.*, nc.name AS category_name
+    FROM testimonials t
+    LEFT JOIN news_categories nc ON nc.id = t.category_id
+    ORDER BY t.sort_order ASC, t.id ASC
+  `);
   return rows;
 }
 
-export async function createTestimonial({ name, jobTitle, quote, rating, avatarUrl, isVisible, sortOrder }) {
+export async function createTestimonial({ name, jobTitle, quote, rating, avatarUrl, categoryId, isVisible, sortOrder }) {
   const [result] = await pool.execute(
-    'INSERT INTO testimonials (name, job_title, quote, rating, avatar_url, is_visible, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [name, jobTitle, quote, rating, avatarUrl, isVisible ? 1 : 0, sortOrder]
+    'INSERT INTO testimonials (name, job_title, quote, rating, avatar_url, category_id, is_visible, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [name, jobTitle, quote, rating, avatarUrl, categoryId, isVisible ? 1 : 0, sortOrder]
   );
   const [rows] = await pool.execute('SELECT * FROM testimonials WHERE id = ?', [result.insertId]);
   return rows[0];
 }
 
-export async function updateTestimonial(id, { name, jobTitle, quote, rating, avatarUrl, isVisible, sortOrder }) {
+export async function updateTestimonial(id, { name, jobTitle, quote, rating, avatarUrl, categoryId, isVisible, sortOrder }) {
   await pool.execute(
-    'UPDATE testimonials SET name = ?, job_title = ?, quote = ?, rating = ?, avatar_url = ?, is_visible = ?, sort_order = ? WHERE id = ?',
-    [name, jobTitle, quote, rating, avatarUrl, isVisible ? 1 : 0, sortOrder, id]
+    'UPDATE testimonials SET name = ?, job_title = ?, quote = ?, rating = ?, avatar_url = ?, category_id = ?, is_visible = ?, sort_order = ? WHERE id = ?',
+    [name, jobTitle, quote, rating, avatarUrl, categoryId, isVisible ? 1 : 0, sortOrder, id]
   );
   const [rows] = await pool.execute('SELECT * FROM testimonials WHERE id = ?', [id]);
   return rows[0] || null;
@@ -82,6 +94,29 @@ export async function updateTestimonial(id, { name, jobTitle, quote, rating, ava
 export async function deleteTestimonial(id) {
   const [result] = await pool.execute('DELETE FROM testimonials WHERE id = ?', [id]);
   return result.affectedRows > 0;
+}
+
+export async function listNewsCategoriesAdmin() {
+  const [rows] = await pool.execute('SELECT id, name FROM news_categories ORDER BY name ASC, id ASC');
+  return rows;
+}
+
+export async function createNewsCategory({ name }) {
+  const [result] = await pool.execute('INSERT INTO news_categories (name) VALUES (?)', [name]);
+  const [rows] = await pool.execute('SELECT id, name FROM news_categories WHERE id = ?', [result.insertId]);
+  return rows[0];
+}
+
+export async function deleteNewsCategory(id) {
+  try {
+    const [result] = await pool.execute('DELETE FROM news_categories WHERE id = ?', [id]);
+    return { deleted: result.affectedRows > 0 };
+  } catch (err) {
+    if (err?.code === 'ER_ROW_IS_REFERENCED_2') {
+      return { deleted: false, inUse: true };
+    }
+    throw err;
+  }
 }
 
 export async function listFaqsAdmin() {
