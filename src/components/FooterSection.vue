@@ -40,7 +40,6 @@ const footerCtas = computed(() => [
 const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
 
 const mapsEmbedUrl = 'https://www.google.com/maps?q=-7.584322,110.81806&z=17&hl=id&output=embed';
-const mapsExternalUrl = 'https://maps.app.goo.gl/nV3QhFWXLT1VxUB26';
 </script>
 
 <template>
@@ -143,15 +142,6 @@ const mapsExternalUrl = 'https://maps.app.goo.gl/nV3QhFWXLT1VxUB26';
               class="block h-36 w-full border-0"
             />
           </div>
-          <a
-            :href="mapsExternalUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 transition hover:text-white"
-          >
-            {{ t('footer.openInMaps') }}
-            <ExternalLink class="h-3.5 w-3.5 shrink-0" />
-          </a>
         </div>
       </div>
 
@@ -162,7 +152,7 @@ const mapsExternalUrl = 'https://maps.app.goo.gl/nV3QhFWXLT1VxUB26';
         <span
           class="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-bold text-slate-300"
         >
-          Version WebApp v{{ appVersion }}
+          Version Website v{{ appVersion }}
         </span>
       </div>
     </div>
