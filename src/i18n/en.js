@@ -137,6 +137,14 @@ export default {
     pendingPrefix: 'The service link "',
     pendingSuffix: '" is currently being prepared.'
   },
+  guestLecture: {
+    title: 'Guest Lecture',
+    description: 'Guest lecture activity submission and management form for the Faculty of Tarbiyah.',
+    loading: 'Loading the Guest Lecture form…',
+    unavailable: 'The form could not be loaded. Open it directly using the link below.',
+    openDirect: 'Open the Guest Lecture form',
+    iframeTitle: 'Faculty of Tarbiyah Guest Lecture Form'
+  },
   news: {
     badge: 'Latest Activities',
     heading: 'Faculty News',

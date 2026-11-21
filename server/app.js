@@ -16,7 +16,12 @@ app.set('trust proxy', 1);
 
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' }
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: {
+      directives: {
+        frameSrc: ["'self'", 'https://script.google.com', 'https://*.googleusercontent.com']
+      }
+    }
   })
 );
 app.use(

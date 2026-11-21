@@ -61,6 +61,11 @@ const routes = [
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
+    path: '/kuliah-tamu',
+    name: 'guest-lecture',
+    component: () => import('../views/GuestLectureView.vue')
+  },
+  {
     path: '/privacy',
     name: 'privacy',
     component: () => import('../views/LegalView.vue')

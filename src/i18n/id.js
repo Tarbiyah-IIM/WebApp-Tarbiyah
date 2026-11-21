@@ -137,6 +137,14 @@ export default {
     pendingPrefix: 'Tautan layanan "',
     pendingSuffix: '" sedang disiapkan.'
   },
+  guestLecture: {
+    title: 'Kuliah Tamu',
+    description: 'Formulir pengajuan dan pengelolaan kegiatan kuliah tamu Fakultas Tarbiyah.',
+    loading: 'Memuat formulir Kuliah Tamu…',
+    unavailable: 'Formulir tidak dapat dimuat. Buka langsung melalui tautan berikut.',
+    openDirect: 'Buka formulir Kuliah Tamu',
+    iframeTitle: 'Formulir Kuliah Tamu Fakultas Tarbiyah'
+  },
   news: {
     badge: 'Kegiatan Terbaru',
     heading: 'Berita Fakultas',
