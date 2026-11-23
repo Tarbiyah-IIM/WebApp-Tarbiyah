@@ -277,7 +277,7 @@ CREATE TABLE `testimonials` (
   `rating` tinyint(3) UNSIGNED NOT NULL DEFAULT 5,
   `avatar_url` varchar(500) DEFAULT NULL,
   `gallery_urls` text DEFAULT NULL,
-  `slideshow_position` enum('top','bottom','none') NOT NULL DEFAULT 'bottom',
+  `slideshow_position` enum('top','middle','bottom','none') NOT NULL DEFAULT 'bottom',
   `related_url` varchar(500) DEFAULT NULL,
   `is_visible` tinyint(1) NOT NULL DEFAULT 1,
   `sort_order` int(11) NOT NULL DEFAULT 0,
