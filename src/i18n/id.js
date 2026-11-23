@@ -154,8 +154,6 @@ export default {
     galleryHeading: 'Dokumentasi Kegiatan',
     relatedDocBtn: 'Buka Tautan / Dokumen Terkait',
     relatedDocPending: 'Tautan dokumen terkait belum tersedia.',
-    otherNewsHeading: 'Berita Fakultas Lainnya',
-    backToNews: 'Kembali ke Berita',
     photosCountBadge: 'Foto'
   },
   faq: {
@@ -378,6 +376,7 @@ export default {
       galleryCountSuffix: 'foto dokumentasi terpasang',
       slideshowPosLabel: 'Posisi Slideshow Foto di Artikel',
       slideshowPosBottom: 'Akhir Berita (Bawah)',
+      slideshowPosMiddle: 'Tengah Berita',
       slideshowPosTop: 'Awal Berita (Atas)',
       slideshowPosNone: 'Sembunyikan Slideshow',
       newsSummaryLabel: 'Ringkasan Berita',

@@ -106,7 +106,8 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     await expect(dialog.getByText(/1 foto dokumentasi terpasang/)).toBeVisible();
 
     await dialog.getByLabel(/Ringkasan Berita/).fill('Gambar berita tersimpan permanen di tabel MySQL media_files.');
-    await dialog.getByLabel(/Isi Berita Lengkap/).fill('Isi artikel lengkap terverifikasi dari E2E.');
+    await dialog.getByLabel(/Isi Berita Lengkap/).fill('Paragraf pembuka artikel E2E.\n\nParagraf penutup artikel E2E.');
+    await dialog.getByLabel(/Posisi Slideshow Foto di Artikel/).selectOption('middle');
     await dialog.getByLabel(/Tautan Terkait/).fill('https://ft.iim.ac.id/e2e-doc');
     await dialog.getByRole('button', { name: 'Simpan', exact: true }).click();
     await expect(page.getByText('Berita fakultas disimpan & disinkronkan.')).toBeVisible();
@@ -116,6 +117,7 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     const created = (await listRes.json()).items.find((item) => item.name === newsTitle);
     expect(created).toBeTruthy();
     expect(created.job_title).toBe('23 November 2026');
+    expect(created.slideshow_position).toBe('middle');
     expect(created.gallery_urls.length).toBe(1);
     createdNewsId = created.id;
 
@@ -131,10 +133,16 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     const galleryFetch = await page.request.get(created.gallery_urls[0]);
     expect(galleryFetch.status()).toBe(200);
 
-    await page.getByRole('link', { name: new RegExp(newsTitle) }).click();
-    await expect(page).toHaveURL(new RegExp(`/berita/${created.id}$`));
-    await expect(page.getByText('Isi artikel lengkap terverifikasi dari E2E.')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Dokumentasi Kegiatan' })).toBeVisible();
+    await page.getByRole('button', { name: new RegExp(newsTitle) }).click();
+    await expect(page).toHaveURL(/\/$/);
+    const articleDialog = page.getByRole('dialog');
+    await expect(articleDialog).toBeVisible();
+    await expect(articleDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
+    await expect(articleDialog.getByText('Paragraf pembuka artikel E2E.')).toBeVisible();
+    await expect(articleDialog.getByRole('heading', { name: 'Dokumentasi Kegiatan' })).toBeVisible();
+    await expect(articleDialog.getByText('Paragraf penutup artikel E2E.')).toBeVisible();
+    await articleDialog.getByRole('button', { name: 'Close modal' }).click();
+    await expect(articleDialog).toHaveCount(0);
   } finally {
     if (createdNewsId) {
       await request.delete(`http://localhost:3001/api/v1/admin/testimonials/${createdNewsId}`, { headers });

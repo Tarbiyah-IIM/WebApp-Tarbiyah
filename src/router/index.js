@@ -66,11 +66,6 @@ const routes = [
     component: () => import('../views/GuestLectureView.vue')
   },
   {
-    path: '/berita/:id',
-    name: 'news-detail',
-    component: () => import('../views/NewsDetailView.vue')
-  },
-  {
     path: '/privacy',
     name: 'privacy',
     component: () => import('../views/LegalView.vue')

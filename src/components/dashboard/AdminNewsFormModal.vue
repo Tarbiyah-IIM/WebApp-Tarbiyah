@@ -106,7 +106,7 @@ function hydrateForm() {
     form.categoryIds = hydrateCategoryIds(item);
     form.avatarUrl = item.avatar_url || '';
     form.galleryUrls = Array.isArray(item.gallery_urls) ? [...item.gallery_urls] : [];
-    form.slideshowPosition = ['top', 'bottom', 'none'].includes(item.slideshow_position)
+    form.slideshowPosition = ['top', 'middle', 'bottom', 'none'].includes(item.slideshow_position)
       ? item.slideshow_position
       : 'bottom';
     form.quote = item.quote || '';
@@ -503,6 +503,7 @@ function submit() {
             class="min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm font-medium"
           >
             <option value="bottom">{{ t('adminDashboard.cmsPanel.slideshowPosBottom') }}</option>
+            <option value="middle">{{ t('adminDashboard.cmsPanel.slideshowPosMiddle') }}</option>
             <option value="top">{{ t('adminDashboard.cmsPanel.slideshowPosTop') }}</option>
             <option value="none">{{ t('adminDashboard.cmsPanel.slideshowPosNone') }}</option>
           </select>

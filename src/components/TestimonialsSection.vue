@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { Calendar, ChevronRight } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.jpg';
+import NewsDetailModal from './NewsDetailModal.vue';
 import { useI18n } from '../composables/useI18n.js';
 
 const props = defineProps({
@@ -12,6 +13,7 @@ const { t, tr } = useI18n();
 
 const PAGE_SIZE = 6;
 const currentPage = ref(1);
+const selectedNews = ref(null);
 
 const totalPages = computed(() => Math.max(1, Math.ceil(props.testimonials.length / PAGE_SIZE)));
 
@@ -80,8 +82,12 @@ function goToPage(page) {
           :key="item.id"
           class="group flex flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-float"
         >
-          <router-link :to="'/berita/' + item.id" class="flex flex-1 flex-col">
-            <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
+          <button
+            type="button"
+            class="flex flex-1 flex-col text-left"
+            @click="selectedNews = item"
+          >
+            <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
               <img
                 :src="item.avatar_url || gedungIimFallback"
                 :alt="tr(item.name)"
@@ -119,13 +125,19 @@ function goToPage(page) {
                 <ChevronRight class="h-3.5 w-3.5 transition group-hover:translate-x-0.5" aria-hidden="true" />
               </span>
             </div>
-          </router-link>
+          </button>
         </article>
       </div>
 
       <p v-else class="mt-12 text-center text-sm text-slate-500">
         {{ t('news.empty') }}
       </p>
+
+      <NewsDetailModal
+        :open="Boolean(selectedNews)"
+        :item="selectedNews"
+        @close="selectedNews = null"
+      />
 
       <nav
         v-if="totalPages > 1"

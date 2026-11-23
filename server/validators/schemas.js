@@ -73,7 +73,7 @@ export const testimonialBodySchema = z
       .max(20)
       .optional()
       .default([]),
-    slideshowPosition: z.enum(['top', 'bottom', 'none']).default('bottom'),
+    slideshowPosition: z.enum(['top', 'middle', 'bottom', 'none']).default('bottom'),
     relatedUrl: z
       .string()
       .trim()

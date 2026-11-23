@@ -154,8 +154,6 @@ export default {
     galleryHeading: 'Event Documentation',
     relatedDocBtn: 'Open Related Link / Document',
     relatedDocPending: 'Related document link is not available yet.',
-    otherNewsHeading: 'More Faculty News',
-    backToNews: 'Back to News',
     photosCountBadge: 'Photos'
   },
   faq: {
@@ -378,6 +376,7 @@ export default {
       galleryCountSuffix: 'documentation photos attached',
       slideshowPosLabel: 'Article Photo Slideshow Position',
       slideshowPosBottom: 'End of Article (Bottom)',
+      slideshowPosMiddle: 'Middle of Article',
       slideshowPosTop: 'Start of Article (Top)',
       slideshowPosNone: 'Hide Slideshow',
       newsSummaryLabel: 'News Summary',

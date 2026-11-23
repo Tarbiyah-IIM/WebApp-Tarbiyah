@@ -216,7 +216,7 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
         fullContent: 'Paragraf pertama artikel lengkap.\n\nParagraf kedua untuk detail berita.',
         avatarUrl: uploadRes.body.url,
         galleryUrls: [galleryUploadRes.body.url],
-        slideshowPosition: 'top',
+        slideshowPosition: 'middle',
         relatedUrl: 'https://ft.iim.ac.id/dokumen-test',
         categoryIds: firstCatId !== secondCatId ? [firstCatId, secondCatId] : [firstCatId],
         isVisible: true,
@@ -224,14 +224,18 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       });
     expect(newsCreateRes.status).toBe(201);
     expect(newsCreateRes.body.testimonial.gallery_urls).toEqual([galleryUploadRes.body.url]);
-    expect(newsCreateRes.body.testimonial.slideshow_position).toBe('top');
+    expect(newsCreateRes.body.testimonial.slideshow_position).toBe('middle');
     expect(newsCreateRes.body.testimonial.related_url).toBe('https://ft.iim.ac.id/dokumen-test');
 
-    const detailRes = await request(app).get(`/api/v1/news/${newsCreateRes.body.testimonial.id}`);
-    expect(detailRes.status).toBe(200);
-    expect(detailRes.body.news.full_content).toContain('Paragraf pertama artikel lengkap.');
-    expect(detailRes.body.news.gallery_urls).toEqual([galleryUploadRes.body.url]);
-    expect(detailRes.body.news.categories.length).toBe(firstCatId !== secondCatId ? 2 : 1);
+    const landingRes = await request(app).get('/api/v1/landing');
+    expect(landingRes.status).toBe(200);
+    const createdLandingItem = landingRes.body.testimonials.find(
+      (item) => item.id === newsCreateRes.body.testimonial.id
+    );
+    expect(createdLandingItem.full_content).toContain('Paragraf pertama artikel lengkap.');
+    expect(createdLandingItem.slideshow_position).toBe('middle');
+    expect(createdLandingItem.gallery_urls).toEqual([galleryUploadRes.body.url]);
+    expect(createdLandingItem.categories.length).toBe(firstCatId !== secondCatId ? 2 : 1);
 
     const delNewsRes = await request(app)
       .delete(`/api/v1/admin/testimonials/${newsCreateRes.body.testimonial.id}`)

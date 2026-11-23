@@ -64,6 +64,7 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(page.getByRole('heading', { name: 'Tambah Data Berita & Info' })).toBeVisible();
     await expect(page.locator('#news-modal-category-trigger')).toBeVisible();
     await expect(page.locator('#news-modal-slideshow-pos')).toBeVisible();
+    await expect(page.locator('#news-modal-slideshow-pos option[value="middle"]')).toHaveText('Tengah Berita');
     await expect(page.locator('#news-modal-full-content')).toBeVisible();
     await expect(page.locator('#news-modal-related-url')).toBeVisible();
     await page.getByRole('button', { name: 'Batal' }).click();
@@ -76,9 +77,9 @@ test('admin manages news categories; refuses deletion while category is assigned
         name: `E2E full article ${Date.now()}`,
         jobTitle: '23 November 2026',
         quote: 'Ringkasan singkat artikel uji coba E2E.',
-        fullContent: 'Isi paragraf lengkap artikel uji coba.\n\nParagraf lanjutan untuk verifikasi halaman detail.',
+        fullContent: 'Isi paragraf lengkap artikel uji coba.\n\nParagraf lanjutan untuk verifikasi pop-up.',
         galleryUrls: [],
-        slideshowPosition: 'top',
+        slideshowPosition: 'middle',
         relatedUrl: 'https://ft.iim.ac.id/berkas-uji',
         categoryIds: firstCatId !== secondCatId ? [firstCatId, secondCatId] : [firstCatId],
         isVisible: true,
@@ -89,13 +90,20 @@ test('admin manages news categories; refuses deletion while category is assigned
     const { testimonial: fullArticle } = await fullNewsRes.json();
     newsIds.push(fullArticle.id);
 
-    await page.goto(`/berita/${fullArticle.id}`);
-    await expect(page.getByRole('heading', { name: fullArticle.name })).toBeVisible();
-    await expect(page.getByText('Isi paragraf lengkap artikel uji coba.')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Buka Tautan / Dokumen Terkait' })).toHaveAttribute(
+    await page.goto('/');
+    await page.getByRole('button', { name: new RegExp(fullArticle.name) }).click();
+    await expect(page).toHaveURL(/\/$/);
+    const articleDialog = page.getByRole('dialog');
+    await expect(articleDialog).toBeVisible();
+    await expect(articleDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
+    await expect(articleDialog.getByRole('heading', { name: fullArticle.name })).toBeVisible();
+    await expect(articleDialog.getByText('Isi paragraf lengkap artikel uji coba.')).toBeVisible();
+    await expect(articleDialog.getByRole('link', { name: 'Buka Tautan / Dokumen Terkait' })).toHaveAttribute(
       'href',
       'https://ft.iim.ac.id/berkas-uji'
     );
+    await articleDialog.getByRole('button', { name: 'Close modal' }).click();
+    await expect(articleDialog).toHaveCount(0);
   } finally {
     for (const id of newsIds) {
       await request.delete(`http://localhost:3001/api/v1/admin/testimonials/${id}`, { headers });

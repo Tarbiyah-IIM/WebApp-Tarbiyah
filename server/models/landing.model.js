@@ -1,5 +1,11 @@
 import { pool } from '../config/db.js';
 
+const VALID_SLIDESHOW_POSITIONS = new Set(['top', 'middle', 'bottom', 'none']);
+
+function normalizeSlideshowPosition(pos) {
+  return VALID_SLIDESHOW_POSITIONS.has(pos) ? pos : 'bottom';
+}
+
 function parseGalleryUrls(raw) {
   if (Array.isArray(raw)) {
     return raw.map((item) => String(item || '').trim()).filter(Boolean);
@@ -67,9 +73,7 @@ async function hydrateNewsRows(rows) {
       ...row,
       full_content: row.full_content ?? null,
       gallery_urls: parseGalleryUrls(row.gallery_urls),
-      slideshow_position: ['top', 'bottom', 'none'].includes(row.slideshow_position)
-        ? row.slideshow_position
-        : 'bottom',
+      slideshow_position: normalizeSlideshowPosition(row.slideshow_position),
       related_url: row.related_url ?? null,
       categories,
       category_ids: categoryIds,
@@ -203,7 +207,7 @@ export async function createTestimonial({
   const serializedGallery = serializeGalleryUrls(galleryUrls);
   const cleanFullContent = fullContent?.trim() ? fullContent.trim() : null;
   const cleanRelatedUrl = relatedUrl?.trim() ? relatedUrl.trim() : null;
-  const cleanPosition = ['top', 'bottom', 'none'].includes(slideshowPosition) ? slideshowPosition : 'bottom';
+  const cleanPosition = normalizeSlideshowPosition(slideshowPosition);
 
   const conn = await pool.getConnection();
   let insertedId = null;
@@ -269,7 +273,7 @@ export async function updateTestimonial(
   const serializedGallery = serializeGalleryUrls(galleryUrls);
   const cleanFullContent = fullContent?.trim() ? fullContent.trim() : null;
   const cleanRelatedUrl = relatedUrl?.trim() ? relatedUrl.trim() : null;
-  const cleanPosition = ['top', 'bottom', 'none'].includes(slideshowPosition) ? slideshowPosition : 'bottom';
+  const cleanPosition = normalizeSlideshowPosition(slideshowPosition);
 
   const conn = await pool.getConnection();
   try {
