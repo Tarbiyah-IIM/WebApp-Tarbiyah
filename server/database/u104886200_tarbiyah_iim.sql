@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS `subscriptions`;
 DROP TABLE IF EXISTS `session_registrations`;
 DROP TABLE IF EXISTS `live_sessions`;
 DROP TABLE IF EXISTS `subscribers`;
+DROP TABLE IF EXISTS `media_files`;
 DROP TABLE IF EXISTS `site_settings`;
 DROP TABLE IF EXISTS `partners`;
 DROP TABLE IF EXISTS `features`;
@@ -258,6 +259,19 @@ CREATE TABLE `testimonials` (
   PRIMARY KEY (`id`),
   KEY `idx_testimonials_category` (`category_id`),
   CONSTRAINT `fk_testimonials_news_category` FOREIGN KEY (`category_id`) REFERENCES `news_categories` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `media_files` (
+  `id` CHAR(36) NOT NULL,
+  `original_name` VARCHAR(255) NOT NULL,
+  `mime_type` VARCHAR(80) NOT NULL,
+  `size_bytes` INT UNSIGNED NOT NULL,
+  `data` MEDIUMBLOB NOT NULL,
+  `uploaded_by` BIGINT UNSIGNED NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_media_files_uploaded_by` (`uploaded_by`),
+  CONSTRAINT `fk_media_files_user` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `faqs` (
