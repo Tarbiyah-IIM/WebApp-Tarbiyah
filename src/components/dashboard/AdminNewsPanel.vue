@@ -198,18 +198,9 @@ function confirmDelete() {
 
       <div
         v-if="filteredNews.length === 0"
-        class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-surface-border py-12 text-center"
+        class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-surface-border py-12 text-center"
       >
         <p class="text-sm text-slate-500">{{ t('adminDashboard.cmsPanel.noNews') }}</p>
-        <button
-          v-if="categories.length > 0"
-          type="button"
-          class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white hover:bg-brand-700"
-          @click="openAddModal"
-        >
-          <Plus class="h-4 w-4" aria-hidden="true" />
-          <span>{{ t('adminDashboard.cmsPanel.addNewsBtn') }}</span>
-        </button>
       </div>
 
       <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2">

@@ -59,7 +59,8 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(page.getByRole('button', { name: /Hapus kategori.*Benchmarking/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Hapus kategori.*Akreditasi/ })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Tambah Berita' }).first().click();
+    await expect(page.getByRole('button', { name: 'Tambah Berita' })).toHaveCount(1);
+    await page.getByRole('button', { name: 'Tambah Berita' }).click();
     await expect(page.getByRole('heading', { name: 'Tambah Data Berita & Info' })).toBeVisible();
     await expect(page.locator('#news-modal-category-trigger')).toBeVisible();
     await expect(page.locator('#news-modal-slideshow-pos')).toBeVisible();
