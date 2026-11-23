@@ -1,5 +1,7 @@
 import { getCache, setCache } from '../config/cache.js';
+import { AppError } from '../middlewares/error.middleware.js';
 import { createSubscriber, getLandingData } from '../models/landing.model.js';
+import { findMediaFileById } from '../models/media.model.js';
 
 export async function getLanding(_req, res, next) {
   try {
@@ -26,6 +28,23 @@ export async function subscribeNewsletter(req, res, next) {
         : 'Berhasil berlangganan informasi Fakultas Tarbiyah',
       subscriber: result
     });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getPublicMedia(req, res, next) {
+  try {
+    const media = await findMediaFileById(req.params.id);
+    if (!media) {
+      return next(new AppError(404, 'MEDIA_NOT_FOUND', 'Media tidak ditemukan'));
+    }
+    res.setHeader('Content-Type', media.mime_type);
+    res.setHeader('Content-Length', String(media.size_bytes));
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('ETag', `"${media.id}"`);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.send(media.data);
   } catch (err) {
     return next(err);
   }

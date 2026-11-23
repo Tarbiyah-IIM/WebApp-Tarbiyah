@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { deleteMe, getMe, updateMe } from '../controllers/auth.controller.js';
 import { getWorkPermitMeta, submitWorkPermit } from '../controllers/permit.controller.js';
-import { getLanding, subscribeNewsletter } from '../controllers/public.controller.js';
+import { getLanding, getPublicMedia, subscribeNewsletter } from '../controllers/public.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { validateBody } from '../middlewares/validate.middleware.js';
 import { pplWorkPermitSchema, subscribeSchema, updateProfileSchema } from '../validators/schemas.js';
@@ -9,6 +9,7 @@ import { pplWorkPermitSchema, subscribeSchema, updateProfileSchema } from '../va
 const router = Router();
 
 router.get('/landing', getLanding);
+router.get('/media/:id', getPublicMedia);
 router.post('/subscribers', validateBody(subscribeSchema), subscribeNewsletter);
 router.get('/permits/work-permit/meta', getWorkPermitMeta);
 router.post('/permits/work-permit', validateBody(pplWorkPermitSchema), submitWorkPermit);

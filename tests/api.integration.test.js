@@ -167,6 +167,59 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .patch('/api/v1/admin/settings')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ cms_nav_links: originalNav });
+
+    const spoofedRes = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', Buffer.from('not-a-valid-png-binary'), {
+        filename: 'fake.png',
+        contentType: 'image/png'
+      });
+    expect(spoofedRes.status).toBe(400);
+
+    const png1x1 = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    const uploadRes = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', png1x1, { filename: 'pixel.png', contentType: 'image/png' });
+    expect(uploadRes.status).toBe(201);
+    expect(uploadRes.body.storage).toBe('mysql');
+    expect(uploadRes.body.url).toMatch(/^\/api\/v1\/media\/[0-9a-f-]{36}$/i);
+
+    const mediaRes = await request(app).get(uploadRes.body.url);
+    expect(mediaRes.status).toBe(200);
+    expect(mediaRes.headers['content-type']).toContain('image/png');
+    expect(Buffer.compare(mediaRes.body, png1x1)).toBe(0);
+
+    const categoriesRes = await request(app)
+      .get('/api/v1/admin/news-categories')
+      .set('Authorization', `Bearer ${adminToken}`);
+    const firstCatId = categoriesRes.body.items[0].id;
+
+    const newsCreateRes = await request(app)
+      .post('/api/v1/admin/testimonials')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Berita Media MySQL Test',
+        jobTitle: '23 November 2026',
+        quote: 'Pengujian penyimpanan permanen gambar berita di MySQL.',
+        avatarUrl: uploadRes.body.url,
+        categoryId: firstCatId,
+        isVisible: true,
+        sortOrder: 0
+      });
+    expect(newsCreateRes.status).toBe(201);
+
+    const delNewsRes = await request(app)
+      .delete(`/api/v1/admin/testimonials/${newsCreateRes.body.testimonial.id}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(delNewsRes.status).toBe(200);
+
+    const removedMediaRes = await request(app).get(uploadRes.body.url);
+    expect(removedMediaRes.status).toBe(404);
   });
 
   it('serves stateless PPL work-permit metadata and validates submit payload without SQL bloat', async () => {

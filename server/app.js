@@ -19,6 +19,7 @@ app.use(
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     contentSecurityPolicy: {
       directives: {
+        imgSrc: ["'self'", 'data:', 'https:'],
         frameSrc: ["'self'", 'https://script.google.com', 'https://*.googleusercontent.com', 'https://www.google.com/maps']
       }
     }

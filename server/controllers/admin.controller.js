@@ -1,5 +1,12 @@
 import { invalidateLandingCache } from '../config/cache.js';
+import { ALLOWED_IMAGE_MIME_TO_EXT, detectImageMimeFromBuffer } from '../middlewares/upload.middleware.js';
 import { AppError } from '../middlewares/error.middleware.js';
+import {
+  createMediaFile,
+  deleteMediaFileIfUnreferenced,
+  extractMediaId,
+  findTestimonialAvatarUrl
+} from '../models/media.model.js';
 import {
   createFaq,
   createFeature,
@@ -82,10 +89,22 @@ export async function adminCreateTestimonial(req, res, next) {
   }
 }
 
+async function cleanupUnusedMedia(url) {
+  const mediaId = extractMediaId(url);
+  if (mediaId) {
+    await deleteMediaFileIfUnreferenced(mediaId);
+  }
+}
+
 export async function adminUpdateTestimonial(req, res, next) {
   try {
-    const item = await updateTestimonial(Number(req.params.id), req.body);
+    const id = Number(req.params.id);
+    const oldAvatarUrl = await findTestimonialAvatarUrl(id);
+    const item = await updateTestimonial(id, req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Berita tidak ditemukan'));
+    if (oldAvatarUrl && oldAvatarUrl !== item.avatar_url) {
+      await cleanupUnusedMedia(oldAvatarUrl);
+    }
     invalidateLandingCache();
     return res.json({ testimonial: item });
   } catch (err) {
@@ -98,8 +117,11 @@ export async function adminUpdateTestimonial(req, res, next) {
 
 export async function adminDeleteTestimonial(req, res, next) {
   try {
-    const ok = await deleteTestimonial(Number(req.params.id));
+    const id = Number(req.params.id);
+    const oldAvatarUrl = await findTestimonialAvatarUrl(id);
+    const ok = await deleteTestimonial(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Berita tidak ditemukan'));
+    await cleanupUnusedMedia(oldAvatarUrl);
     invalidateLandingCache();
     return res.json({ message: 'Berita dihapus' });
   } catch (err) {
@@ -321,12 +343,30 @@ export async function adminUpdateSettings(req, res, next) {
   }
 }
 
-export function adminUploadImage(req, res, next) {
-  if (!req.file) {
-    return next(new AppError(400, 'NO_FILE', 'File gambar tidak ditemukan'));
+export async function adminUploadImage(req, res, next) {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return next(new AppError(400, 'NO_FILE', 'File gambar tidak ditemukan'));
+    }
+    const detectedMime = detectImageMimeFromBuffer(req.file.buffer);
+    if (!detectedMime || detectedMime !== req.file.mimetype) {
+      return next(new AppError(400, 'INVALID_IMAGE_SIGNATURE', 'File bukan gambar JPG, PNG, WebP, atau GIF yang valid'));
+    }
+    const created = await createMediaFile({
+      originalName: req.file.originalname,
+      mimeType: detectedMime,
+      data: req.file.buffer,
+      uploadedBy: req.user?.id || null
+    });
+    const ext = ALLOWED_IMAGE_MIME_TO_EXT[detectedMime] || '.png';
+    return res.status(201).json({
+      id: created.id,
+      url: created.url,
+      filename: `${created.id}${ext}`,
+      sizeBytes: created.sizeBytes,
+      storage: 'mysql'
+    });
+  } catch (err) {
+    return next(err);
   }
-  return res.status(201).json({
-    url: `/uploads/${req.file.filename}`,
-    filename: req.file.filename
-  });
 }
