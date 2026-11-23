@@ -5,7 +5,7 @@ import {
   createMediaFile,
   deleteMediaFileIfUnreferenced,
   extractMediaId,
-  findTestimonialAvatarUrl
+  findTestimonialMediaUrls
 } from '../models/media.model.js';
 import {
   createFaq,
@@ -85,25 +85,37 @@ export async function adminCreateTestimonial(req, res, next) {
     invalidateLandingCache();
     return res.status(201).json({ testimonial: item });
   } catch (err) {
+    if (err?.code === 'ER_NO_REFERENCED_ROW_2') {
+      return next(new AppError(400, 'INVALID_CATEGORY', 'Kategori berita tidak valid'));
+    }
     return next(err);
   }
 }
 
-async function cleanupUnusedMedia(url) {
-  const mediaId = extractMediaId(url);
-  if (mediaId) {
-    await deleteMediaFileIfUnreferenced(mediaId);
+async function cleanupUnusedMediaList(urls) {
+  const seen = new Set();
+  for (const url of urls || []) {
+    const mediaId = extractMediaId(url);
+    if (mediaId && !seen.has(mediaId)) {
+      seen.add(mediaId);
+      await deleteMediaFileIfUnreferenced(mediaId);
+    }
   }
 }
 
 export async function adminUpdateTestimonial(req, res, next) {
   try {
     const id = Number(req.params.id);
-    const oldAvatarUrl = await findTestimonialAvatarUrl(id);
+    const oldUrls = await findTestimonialMediaUrls(id);
     const item = await updateTestimonial(id, req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Berita tidak ditemukan'));
-    if (oldAvatarUrl && oldAvatarUrl !== item.avatar_url) {
-      await cleanupUnusedMedia(oldAvatarUrl);
+    const nextUrlSet = new Set([
+      ...(item.avatar_url ? [item.avatar_url] : []),
+      ...(Array.isArray(item.gallery_urls) ? item.gallery_urls : [])
+    ]);
+    const removedUrls = oldUrls.filter((url) => !nextUrlSet.has(url));
+    if (removedUrls.length > 0) {
+      await cleanupUnusedMediaList(removedUrls);
     }
     invalidateLandingCache();
     return res.json({ testimonial: item });
@@ -118,10 +130,10 @@ export async function adminUpdateTestimonial(req, res, next) {
 export async function adminDeleteTestimonial(req, res, next) {
   try {
     const id = Number(req.params.id);
-    const oldAvatarUrl = await findTestimonialAvatarUrl(id);
+    const oldUrls = await findTestimonialMediaUrls(id);
     const ok = await deleteTestimonial(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Berita tidak ditemukan'));
-    await cleanupUnusedMedia(oldAvatarUrl);
+    await cleanupUnusedMediaList(oldUrls);
     invalidateLandingCache();
     return res.json({ message: 'Berita dihapus' });
   } catch (err) {

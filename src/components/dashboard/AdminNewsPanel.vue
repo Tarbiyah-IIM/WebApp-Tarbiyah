@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Calendar, Plus, Search, Trash2 } from 'lucide-vue-next';
+import { Calendar, Images, Link2, Plus, Search, Trash2 } from 'lucide-vue-next';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import AdminNewsFormModal from './AdminNewsFormModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
@@ -22,16 +22,33 @@ const modalOpen = ref(false);
 const editingItem = ref(null);
 const confirmState = ref({ open: false, type: '', payload: null, description: '' });
 
+function getItemCategories(item) {
+  if (Array.isArray(item.categories) && item.categories.length > 0) {
+    return item.categories;
+  }
+  if (item.category_name) {
+    return [{ id: item.category_id || 0, name: item.category_name }];
+  }
+  return [];
+}
+
 const filteredNews = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   return props.news.filter((item) => {
-    if (filterCategoryId.value !== 'all' && Number(item.category_id) !== Number(filterCategoryId.value)) {
-      return false;
+    if (filterCategoryId.value !== 'all') {
+      const targetId = Number(filterCategoryId.value);
+      const ids = Array.isArray(item.category_ids) && item.category_ids.length > 0
+        ? item.category_ids.map(Number)
+        : [Number(item.category_id)];
+      if (!ids.includes(targetId)) {
+        return false;
+      }
     }
     if (!q) return true;
     return (
       String(item.name || '').toLowerCase().includes(q) ||
       String(item.quote || '').toLowerCase().includes(q) ||
+      String(item.full_content || '').toLowerCase().includes(q) ||
       String(item.job_title || '').toLowerCase().includes(q)
     );
   });
@@ -209,15 +226,38 @@ function confirmDelete() {
               class="h-18 w-24 shrink-0 rounded-xl border border-surface-border object-cover"
             />
             <div class="min-w-0 flex-1 space-y-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-bold text-brand-700">
-                  {{ item.category_name || t('adminDashboard.cmsPanel.uncategorized') }}
+              <div class="flex flex-wrap items-center gap-1.5">
+                <template v-if="getItemCategories(item).length">
+                  <span
+                    v-for="cat in getItemCategories(item)"
+                    :key="cat.id + '-' + cat.name"
+                    class="rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-bold text-brand-700"
+                  >
+                    {{ cat.name }}
+                  </span>
+                </template>
+                <span v-else class="rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-bold text-brand-700">
+                  {{ t('adminDashboard.cmsPanel.uncategorized') }}
                 </span>
                 <span
                   class="rounded-full px-2 py-0.5 text-[10px] font-bold"
                   :class="item.is_visible ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'"
                 >
                   {{ item.is_visible ? t('adminDashboard.cmsPanel.publishedBadge') : t('adminDashboard.cmsPanel.draftBadge') }}
+                </span>
+                <span
+                  v-if="item.gallery_urls?.length"
+                  class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800"
+                >
+                  <Images class="h-3 w-3" aria-hidden="true" />
+                  <span>{{ item.gallery_urls.length }} {{ t('news.photosCountBadge') }}</span>
+                </span>
+                <span
+                  v-if="item.related_url && item.related_url !== '#'"
+                  class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-700"
+                >
+                  <Link2 class="h-3 w-3" aria-hidden="true" />
+                  <span>Link</span>
                 </span>
               </div>
               <h3 class="truncate text-sm font-bold text-brand-900">{{ item.name }}</h3>

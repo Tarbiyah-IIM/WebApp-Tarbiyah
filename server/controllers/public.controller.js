@@ -1,6 +1,6 @@
 import { getCache, setCache } from '../config/cache.js';
 import { AppError } from '../middlewares/error.middleware.js';
-import { createSubscriber, getLandingData } from '../models/landing.model.js';
+import { createSubscriber, getLandingData, getPublishedNewsById } from '../models/landing.model.js';
 import { findMediaFileById } from '../models/media.model.js';
 
 export async function getLanding(_req, res, next) {
@@ -12,6 +12,22 @@ export async function getLanding(_req, res, next) {
     const data = await getLandingData();
     setCache('landing_bundle', data, 60000);
     return res.json(data);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getPublicNewsDetail(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return next(new AppError(404, 'NEWS_NOT_FOUND', 'Berita tidak ditemukan'));
+    }
+    const news = await getPublishedNewsById(id);
+    if (!news) {
+      return next(new AppError(404, 'NEWS_NOT_FOUND', 'Berita tidak ditemukan'));
+    }
+    return res.json({ news });
   } catch (err) {
     return next(err);
   }

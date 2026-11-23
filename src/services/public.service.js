@@ -5,6 +5,10 @@ export const publicService = {
     const { data } = await api.get('/landing');
     return data;
   },
+  async getNewsById(id) {
+    const { data } = await api.get(`/news/${id}`);
+    return data;
+  },
   async getWorkPermitMeta() {
     const { data } = await api.get('/permits/work-permit/meta');
     return data;

@@ -32,16 +32,71 @@ export const subscribeSchema = z.object({
   source: z.string().trim().max(60).optional()
 });
 
-export const testimonialBodySchema = z.object({
-  name: z.string().trim().min(2).max(120),
-  jobTitle: z.string().trim().min(2).max(160),
-  quote: z.string().trim().min(5).max(2000),
-  rating: z.coerce.number().int().min(1).max(5).default(5),
-  avatarUrl: z.string().trim().max(500).nullable().optional(),
-  categoryId: z.coerce.number().int().positive(),
-  isVisible: z.boolean().default(true),
-  sortOrder: z.coerce.number().int().min(0).default(0)
-});
+function isSafeNewsLink(value) {
+  if (typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '#') return true;
+  if (trimmed.startsWith('/')) {
+    return !trimmed.startsWith('//');
+  }
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+export const testimonialBodySchema = z
+  .object({
+    name: z.string().trim().min(2).max(120),
+    jobTitle: z.string().trim().min(2).max(160),
+    quote: z.string().trim().min(5).max(2000),
+    fullContent: z.string().trim().max(100000).nullable().optional(),
+    rating: z.coerce.number().int().min(1).max(5).default(5),
+    avatarUrl: z
+      .string()
+      .trim()
+      .max(500)
+      .nullable()
+      .optional()
+      .refine((v) => !v || isSafeNewsLink(v), 'URL gambar cover tidak valid'),
+    galleryUrls: z
+      .array(
+        z
+          .string()
+          .trim()
+          .min(1)
+          .max(500)
+          .refine((v) => isSafeNewsLink(v), 'URL foto dokumentasi tidak valid')
+      )
+      .max(20)
+      .optional()
+      .default([]),
+    slideshowPosition: z.enum(['top', 'bottom', 'none']).default('bottom'),
+    relatedUrl: z
+      .string()
+      .trim()
+      .max(500)
+      .nullable()
+      .optional()
+      .refine((v) => !v || isSafeNewsLink(v), 'Tautan terkait tidak valid'),
+    categoryId: z.coerce.number().int().positive().optional(),
+    categoryIds: z.array(z.coerce.number().int().positive()).max(20).optional(),
+    isVisible: z.boolean().default(true),
+    sortOrder: z.coerce.number().int().min(0).default(0)
+  })
+  .superRefine((data, ctx) => {
+    const hasCategoryIds = Array.isArray(data.categoryIds) && data.categoryIds.length > 0;
+    const hasSingleCategory = Boolean(data.categoryId);
+    if (!hasCategoryIds && !hasSingleCategory) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['categoryIds'],
+        message: 'Pilih minimal satu kategori berita'
+      });
+    }
+  });
 
 export const newsCategoryBodySchema = z.object({
   name: z.string().trim().min(2).max(100)

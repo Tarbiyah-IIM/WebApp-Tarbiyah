@@ -94,9 +94,20 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     const mediaUrl = await imgInput.inputValue();
 
     const newsTitle = `E2E Berita MySQL ${Date.now()}`;
-    await dialog.getByLabel(/Judul Berita/).fill(newsTitle);
+    await dialog.getByLabel(/Nama Dokumen \/ Judul/).fill(newsTitle);
     await dialog.getByLabel(/Tanggal Berita/).fill('2026-11-23');
+
+    const galleryChooserPromise = page.waitForEvent('filechooser');
+    await dialog.getByRole('button', { name: 'Pilih Banyak Foto' }).click();
+    const galleryChooser = await galleryChooserPromise;
+    await galleryChooser.setFiles([
+      { name: 'e2e-gallery-1.png', mimeType: 'image/png', buffer: pngBuffer }
+    ]);
+    await expect(dialog.getByText(/1 foto dokumentasi terpasang/)).toBeVisible();
+
     await dialog.getByLabel(/Ringkasan Berita/).fill('Gambar berita tersimpan permanen di tabel MySQL media_files.');
+    await dialog.getByLabel(/Isi Berita Lengkap/).fill('Isi artikel lengkap terverifikasi dari E2E.');
+    await dialog.getByLabel(/Tautan Terkait/).fill('https://ft.iim.ac.id/e2e-doc');
     await dialog.getByRole('button', { name: 'Simpan', exact: true }).click();
     await expect(page.getByText('Berita fakultas disimpan & disinkronkan.')).toBeVisible();
     await expect(dialog).toHaveCount(0);
@@ -105,6 +116,7 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     const created = (await listRes.json()).items.find((item) => item.name === newsTitle);
     expect(created).toBeTruthy();
     expect(created.job_title).toBe('23 November 2026');
+    expect(created.gallery_urls.length).toBe(1);
     createdNewsId = created.id;
 
     await page.goto('/');
@@ -116,6 +128,13 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
 
     const mediaFetch = await page.request.get(mediaUrl);
     expect(mediaFetch.status()).toBe(200);
+    const galleryFetch = await page.request.get(created.gallery_urls[0]);
+    expect(galleryFetch.status()).toBe(200);
+
+    await page.getByRole('link', { name: new RegExp(newsTitle) }).click();
+    await expect(page).toHaveURL(new RegExp(`/berita/${created.id}$`));
+    await expect(page.getByText('Isi artikel lengkap terverifikasi dari E2E.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Dokumentasi Kegiatan' })).toBeVisible();
   } finally {
     if (createdNewsId) {
       await request.delete(`http://localhost:3001/api/v1/admin/testimonials/${createdNewsId}`, { headers });

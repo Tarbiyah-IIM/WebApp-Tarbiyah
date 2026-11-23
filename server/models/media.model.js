@@ -38,9 +38,32 @@ export async function findMediaFileById(id) {
   return rows[0] || null;
 }
 
-export async function findTestimonialAvatarUrl(testimonialId) {
-  const [rows] = await pool.execute('SELECT avatar_url FROM testimonials WHERE id = ? LIMIT 1', [testimonialId]);
-  return rows[0]?.avatar_url || null;
+function parseGalleryUrlsList(raw) {
+  if (Array.isArray(raw)) return raw.filter((item) => typeof item === 'string' && item.trim());
+  if (typeof raw !== 'string' || !raw.trim()) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((item) => typeof item === 'string' && item.trim())
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function findTestimonialMediaUrls(testimonialId) {
+  const [rows] = await pool.execute(
+    'SELECT avatar_url, gallery_urls FROM testimonials WHERE id = ? LIMIT 1',
+    [testimonialId]
+  );
+  const row = rows[0];
+  if (!row) return [];
+  const urls = [];
+  if (row.avatar_url) urls.push(row.avatar_url);
+  for (const galleryUrl of parseGalleryUrlsList(row.gallery_urls)) {
+    urls.push(galleryUrl);
+  }
+  return Array.from(new Set(urls));
 }
 
 export async function deleteMediaFileIfUnreferenced(mediaId) {
@@ -48,9 +71,9 @@ export async function deleteMediaFileIfUnreferenced(mediaId) {
   const pattern = `%/api/v1/media/${mediaId}%`;
   const [[usage]] = await pool.execute(
     `SELECT
-      (SELECT COUNT(*) FROM testimonials WHERE avatar_url LIKE ?) +
+      (SELECT COUNT(*) FROM testimonials WHERE avatar_url LIKE ? OR gallery_urls LIKE ?) +
       (SELECT COUNT(*) FROM site_settings WHERE setting_value LIKE ?) AS refCount`,
-    [pattern, pattern]
+    [pattern, pattern, pattern]
   );
   if (Number(usage?.refCount || 0) > 0) {
     return false;

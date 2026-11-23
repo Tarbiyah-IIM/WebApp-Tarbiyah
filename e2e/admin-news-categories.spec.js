@@ -58,6 +58,43 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(page.getByRole('button', { name: /Hapus kategori.*Akademik/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Hapus kategori.*Benchmarking/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /Hapus kategori.*Akreditasi/ })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Tambah Berita' }).first().click();
+    await expect(page.getByRole('heading', { name: 'Tambah Data Berita & Info' })).toBeVisible();
+    await expect(page.locator('#news-modal-category-trigger')).toBeVisible();
+    await expect(page.locator('#news-modal-slideshow-pos')).toBeVisible();
+    await expect(page.locator('#news-modal-full-content')).toBeVisible();
+    await expect(page.locator('#news-modal-related-url')).toBeVisible();
+    await page.getByRole('button', { name: 'Batal' }).click();
+
+    const firstCatId = initialCategories[0].id;
+    const secondCatId = initialCategories[1]?.id || firstCatId;
+    const fullNewsRes = await request.post('http://localhost:3001/api/v1/admin/testimonials', {
+      headers,
+      data: {
+        name: `E2E full article ${Date.now()}`,
+        jobTitle: '23 November 2026',
+        quote: 'Ringkasan singkat artikel uji coba E2E.',
+        fullContent: 'Isi paragraf lengkap artikel uji coba.\n\nParagraf lanjutan untuk verifikasi halaman detail.',
+        galleryUrls: [],
+        slideshowPosition: 'top',
+        relatedUrl: 'https://ft.iim.ac.id/berkas-uji',
+        categoryIds: firstCatId !== secondCatId ? [firstCatId, secondCatId] : [firstCatId],
+        isVisible: true,
+        sortOrder: 998
+      }
+    });
+    expect(fullNewsRes.status()).toBe(201);
+    const { testimonial: fullArticle } = await fullNewsRes.json();
+    newsIds.push(fullArticle.id);
+
+    await page.goto(`/berita/${fullArticle.id}`);
+    await expect(page.getByRole('heading', { name: fullArticle.name })).toBeVisible();
+    await expect(page.getByText('Isi paragraf lengkap artikel uji coba.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Buka Tautan / Dokumen Terkait' })).toHaveAttribute(
+      'href',
+      'https://ft.iim.ac.id/berkas-uji'
+    );
   } finally {
     for (const id of newsIds) {
       await request.delete(`http://localhost:3001/api/v1/admin/testimonials/${id}`, { headers });

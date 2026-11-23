@@ -46,6 +46,16 @@ const showTrailingEllipsis = computed(() => {
   return totalPages.value > 3 && lastVisible < totalPages.value;
 });
 
+function getCategories(item) {
+  if (Array.isArray(item.categories) && item.categories.length > 0) {
+    return item.categories;
+  }
+  if (item.category_name) {
+    return [{ id: item.category_id || 0, name: item.category_name }];
+  }
+  return [];
+}
+
 function goToPage(page) {
   const bounded = Math.min(Math.max(1, page), totalPages.value);
   currentPage.value = bounded;
@@ -70,29 +80,46 @@ function goToPage(page) {
           :key="item.id"
           class="group flex flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-float"
         >
-          <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
-            <img
-              :src="item.avatar_url || gedungIimFallback"
-              :alt="tr(item.name)"
-              loading="lazy"
-              class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-            />
-          </div>
-
-          <div class="flex flex-1 flex-col p-6">
-            <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700">
-              <Calendar class="h-3.5 w-3.5 shrink-0" />
-              <span>{{ tr(item.category_name || item.job_title) }}<template v-if="item.category_name && item.job_title"> · {{ tr(item.job_title) }}</template></span>
+          <router-link :to="'/berita/' + item.id" class="flex flex-1 flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
+              <img
+                :src="item.avatar_url || gedungIimFallback"
+                :alt="tr(item.name)"
+                loading="lazy"
+                class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              />
             </div>
 
-            <h3 class="mt-2.5 text-base font-bold leading-snug text-brand-900">
-              {{ tr(item.name) }}
-            </h3>
+            <div class="flex flex-1 flex-col p-6">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span
+                  v-for="cat in getCategories(item)"
+                  :key="cat.id + '-' + cat.name"
+                  class="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-bold text-brand-700"
+                >
+                  {{ tr(cat.name) }}
+                </span>
+              </div>
 
-            <p class="mt-2 text-sm leading-relaxed text-slate-600">
-              {{ tr(item.quote) }}
-            </p>
-          </div>
+              <div class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                <Calendar class="h-3.5 w-3.5 shrink-0 text-brand-600" aria-hidden="true" />
+                <span>{{ tr(item.job_title) }}</span>
+              </div>
+
+              <h3 class="mt-2 text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
+                {{ tr(item.name) }}
+              </h3>
+
+              <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
+                {{ tr(item.quote) }}
+              </p>
+
+              <span class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600">
+                <span>{{ t('news.readMore') }}</span>
+                <ChevronRight class="h-3.5 w-3.5 transition group-hover:translate-x-0.5" aria-hidden="true" />
+              </span>
+            </div>
+          </router-link>
         </article>
       </div>
 

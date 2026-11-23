@@ -198,6 +198,13 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .get('/api/v1/admin/news-categories')
       .set('Authorization', `Bearer ${adminToken}`);
     const firstCatId = categoriesRes.body.items[0].id;
+    const secondCatId = categoriesRes.body.items[1]?.id || firstCatId;
+
+    const galleryUploadRes = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', png1x1, { filename: 'gallery.png', contentType: 'image/png' });
+    expect(galleryUploadRes.status).toBe(201);
 
     const newsCreateRes = await request(app)
       .post('/api/v1/admin/testimonials')
@@ -206,12 +213,25 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
         name: 'Berita Media MySQL Test',
         jobTitle: '23 November 2026',
         quote: 'Pengujian penyimpanan permanen gambar berita di MySQL.',
+        fullContent: 'Paragraf pertama artikel lengkap.\n\nParagraf kedua untuk detail berita.',
         avatarUrl: uploadRes.body.url,
-        categoryId: firstCatId,
+        galleryUrls: [galleryUploadRes.body.url],
+        slideshowPosition: 'top',
+        relatedUrl: 'https://ft.iim.ac.id/dokumen-test',
+        categoryIds: firstCatId !== secondCatId ? [firstCatId, secondCatId] : [firstCatId],
         isVisible: true,
         sortOrder: 0
       });
     expect(newsCreateRes.status).toBe(201);
+    expect(newsCreateRes.body.testimonial.gallery_urls).toEqual([galleryUploadRes.body.url]);
+    expect(newsCreateRes.body.testimonial.slideshow_position).toBe('top');
+    expect(newsCreateRes.body.testimonial.related_url).toBe('https://ft.iim.ac.id/dokumen-test');
+
+    const detailRes = await request(app).get(`/api/v1/news/${newsCreateRes.body.testimonial.id}`);
+    expect(detailRes.status).toBe(200);
+    expect(detailRes.body.news.full_content).toContain('Paragraf pertama artikel lengkap.');
+    expect(detailRes.body.news.gallery_urls).toEqual([galleryUploadRes.body.url]);
+    expect(detailRes.body.news.categories.length).toBe(firstCatId !== secondCatId ? 2 : 1);
 
     const delNewsRes = await request(app)
       .delete(`/api/v1/admin/testimonials/${newsCreateRes.body.testimonial.id}`)
@@ -220,6 +240,8 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
 
     const removedMediaRes = await request(app).get(uploadRes.body.url);
     expect(removedMediaRes.status).toBe(404);
+    const removedGalleryRes = await request(app).get(galleryUploadRes.body.url);
+    expect(removedGalleryRes.status).toBe(404);
   });
 
   it('serves stateless PPL work-permit metadata and validates submit payload without SQL bloat', async () => {
