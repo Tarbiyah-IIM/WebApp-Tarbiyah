@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Waktu pembuatan: 23 Nov 2026 pada 06.14
+-- Waktu pembuatan: 23 Nov 2026 pada 07.36
 -- Versi server: 11.8.9-MariaDB-log
 -- Versi PHP: 7.2.34
 
@@ -679,12 +679,27 @@ CREATE TABLE `testimonials` (
   `job_title` varchar(160) NOT NULL,
   `category_id` bigint(20) UNSIGNED DEFAULT NULL,
   `quote` text NOT NULL,
+  `full_content` longtext DEFAULT NULL,
   `rating` tinyint(3) UNSIGNED NOT NULL DEFAULT 5,
   `avatar_url` varchar(500) DEFAULT NULL,
+  `gallery_urls` text DEFAULT NULL,
+  `slideshow_position` enum('top','bottom','none') NOT NULL DEFAULT 'bottom',
+  `related_url` varchar(500) DEFAULT NULL,
   `is_visible` tinyint(1) NOT NULL DEFAULT 1,
   `sort_order` int(11) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `testimonial_categories`
+--
+
+CREATE TABLE `testimonial_categories` (
+  `testimonial_id` bigint(20) UNSIGNED NOT NULL,
+  `category_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -929,6 +944,13 @@ ALTER TABLE `subscriptions`
 ALTER TABLE `testimonials`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_testimonials_category` (`category_id`);
+
+--
+-- Indeks untuk tabel `testimonial_categories`
+--
+ALTER TABLE `testimonial_categories`
+  ADD PRIMARY KEY (`testimonial_id`,`category_id`),
+  ADD KEY `idx_tc_category` (`category_id`);
 
 --
 -- Indeks untuk tabel `users`
@@ -1245,6 +1267,13 @@ ALTER TABLE `subscriptions`
 --
 ALTER TABLE `testimonials`
   ADD CONSTRAINT `fk_testimonials_news_category` FOREIGN KEY (`category_id`) REFERENCES `news_categories` (`id`);
+
+--
+-- Ketidakleluasaan untuk tabel `testimonial_categories`
+--
+ALTER TABLE `testimonial_categories`
+  ADD CONSTRAINT `fk_tc_category` FOREIGN KEY (`category_id`) REFERENCES `news_categories` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tc_testimonial` FOREIGN KEY (`testimonial_id`) REFERENCES `testimonials` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
