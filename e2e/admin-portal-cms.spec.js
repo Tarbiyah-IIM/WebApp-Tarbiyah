@@ -71,13 +71,17 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
   try {
     await page.goto('/admin');
     await page.getByRole('button', { name: 'Berita', exact: true }).click();
+    await page.getByRole('button', { name: 'Tambah Berita' }).first().click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
 
     const pngBuffer = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       'base64'
     );
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Unggah Gambar' }).click();
+    await dialog.getByRole('button', { name: 'Pilih Gambar' }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles({
       name: 'e2e-news.png',
@@ -85,20 +89,22 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
       buffer: pngBuffer
     });
 
-    const imgInput = page.getByPlaceholder('URL Gambar Berita (opsional atau unggah file)');
+    const imgInput = dialog.getByLabel('Atau Tempel URL Gambar (Opsional)');
     await expect(imgInput).toHaveValue(/^\/api\/v1\/media\/[0-9a-f-]{36}$/i);
     const mediaUrl = await imgInput.inputValue();
 
     const newsTitle = `E2E Berita MySQL ${Date.now()}`;
-    await page.getByPlaceholder('Judul Berita', { exact: true }).fill(newsTitle);
-    await page.getByPlaceholder('Tanggal berita (mis. 20 November 2026)', { exact: true }).fill('23 November 2026');
-    await page.getByPlaceholder('Ringkasan Berita', { exact: true }).fill('Gambar berita tersimpan permanen di tabel MySQL media_files.');
-    await page.getByRole('button', { name: 'Tambah Berita' }).click();
+    await dialog.getByLabel(/Judul Berita/).fill(newsTitle);
+    await dialog.getByLabel(/Tanggal Berita/).fill('2026-11-23');
+    await dialog.getByLabel(/Ringkasan Berita/).fill('Gambar berita tersimpan permanen di tabel MySQL media_files.');
+    await dialog.getByRole('button', { name: 'Simpan', exact: true }).click();
     await expect(page.getByText('Berita fakultas disimpan & disinkronkan.')).toBeVisible();
+    await expect(dialog).toHaveCount(0);
 
     const listRes = await request.get('http://localhost:3001/api/v1/admin/testimonials', { headers });
     const created = (await listRes.json()).items.find((item) => item.name === newsTitle);
     expect(created).toBeTruthy();
+    expect(created.job_title).toBe('23 November 2026');
     createdNewsId = created.id;
 
     await page.goto('/');
