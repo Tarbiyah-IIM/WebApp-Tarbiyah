@@ -1,10 +1,12 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { ExternalLink } from 'lucide-vue-next';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
-const formUrl = 'https://script.google.com/macros/s/AKfycbwjx4f_R-H4MXwGpjMyI8X-BpGKASOTfkuwqMWp1JkjcvPRYyhiI9C00gMQTp351LHo/exec';
 const { t } = useI18n();
+const { contacts } = usePortalContent();
+const formUrl = computed(() => contacts.value.guestLectureUrl);
 const loading = ref(true);
 const loadFailed = ref(false);
 const offline = ref(typeof navigator !== 'undefined' && !navigator.onLine);

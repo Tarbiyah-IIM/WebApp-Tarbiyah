@@ -6,16 +6,25 @@ import strukturOrganisasiImage from '../assets/struktur-organisasi.jpg';
 import ModalDialog from './ModalDialog.vue';
 import ScholarshipModal from './ScholarshipModal.vue';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
 
 const { t, tr } = useI18n();
+const { mergeProfile } = usePortalContent();
 const profilModalOpen = ref(false);
 const scholarshipModalOpen = ref(false);
 
-const missionItems = computed(() => t('hero.missions'));
+const profileData = computed(() =>
+  mergeProfile({
+    visionText: t('hero.visionText'),
+    missions: t('hero.missions'),
+    structureImageUrl: strukturOrganisasiImage
+  })
+);
+const missionItems = computed(() => profileData.value.missions);
 </script>
 
 <template>
@@ -82,7 +91,7 @@ const missionItems = computed(() => t('hero.missions'));
             {{ t('hero.visionBadge') }}
           </span>
           <p class="mt-3 text-sm leading-relaxed text-brand-900 sm:text-base font-medium">
-            {{ t('hero.visionText') }}
+            {{ profileData.visionText }}
           </p>
         </div>
 
@@ -105,7 +114,7 @@ const missionItems = computed(() => t('hero.missions'));
             {{ t('hero.structureTitle') }}
           </h3>
           <img
-            :src="strukturOrganisasiImage"
+            :src="profileData.structureImageUrl"
             :alt="t('hero.structureAlt')"
             loading="lazy"
             decoding="async"

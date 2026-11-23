@@ -1,168 +1,231 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { BarChart3, Globe, Handshake, HelpCircle, LayoutDashboard, Newspaper, Settings, Users, WandSparkles } from 'lucide-vue-next';
-import { adminService } from '../services/admin.service.js';
-import { extractApiError } from '../services/api.js';
-import { useAsyncState } from '../composables/useAsyncState.js';
-import { useToast } from '../composables/useToast.js';
+import { useRouter } from 'vue-router';
+import {
+  BarChart3,
+  FileText,
+  Handshake,
+  HelpCircle,
+  LayoutDashboard,
+  Link2,
+  Newspaper,
+  Settings,
+  Users,
+  WandSparkles
+} from 'lucide-vue-next';
+import { useAuthStore } from '../stores/auth.store.js';
+import { useAdminPortal } from '../composables/useAdminPortal.js';
 import { useI18n } from '../composables/useI18n.js';
 import StateFeedback from '../components/StateFeedback.vue';
-import AdminLandingCmsPanel from '../components/dashboard/AdminLandingCmsPanel.vue';
+import AdminShell from '../components/dashboard/AdminShell.vue';
+import AdminOverviewPanel from '../components/dashboard/AdminOverviewPanel.vue';
+import AdminCmsSettingsForm from '../components/dashboard/AdminCmsSettingsForm.vue';
 import AdminNewsPanel from '../components/dashboard/AdminNewsPanel.vue';
+import AdminFaqPanel from '../components/dashboard/AdminFaqPanel.vue';
+import AdminStatsPanel from '../components/dashboard/AdminStatsPanel.vue';
+import AdminPartnersPanel from '../components/dashboard/AdminPartnersPanel.vue';
+import AdminFeaturesPanel from '../components/dashboard/AdminFeaturesPanel.vue';
+import AdminPortalMenuPanel from '../components/dashboard/AdminPortalMenuPanel.vue';
+import AdminPortalPagesPanel from '../components/dashboard/AdminPortalPagesPanel.vue';
+import AdminUsersPanel from '../components/dashboard/AdminUsersPanel.vue';
 
-const toast = useToast();
+const router = useRouter();
+const auth = useAuthStore();
 const { t } = useI18n();
-const { loading, error, isOffline, run } = useAsyncState();
-
+const portal = useAdminPortal();
 const activeTab = ref('overview');
-const stats = ref({});
-const users = ref([]);
 
-const tabs = computed(() => [
-  { id: 'overview', label: t('adminDashboard.nav.overview'), icon: LayoutDashboard },
-  { id: 'settings', label: t('adminDashboard.nav.settings'), icon: Settings },
-  { id: 'news', label: t('adminDashboard.nav.news'), icon: Newspaper },
-  { id: 'faqs', label: t('adminDashboard.nav.faqs'), icon: HelpCircle },
-  { id: 'stats', label: t('adminDashboard.nav.stats'), icon: BarChart3 },
-  { id: 'partners', label: t('adminDashboard.nav.partners'), icon: Handshake },
-  { id: 'features', label: t('adminDashboard.nav.features'), icon: WandSparkles },
-  { id: 'users', label: t('adminDashboard.nav.users'), icon: Users }
+const navGroups = computed(() => [
+  {
+    id: 'main',
+    label: t('adminDashboard.groups.main'),
+    items: [{ id: 'overview', label: t('adminDashboard.nav.overview'), icon: LayoutDashboard }]
+  },
+  {
+    id: 'content',
+    label: t('adminDashboard.groups.content'),
+    items: [
+      { id: 'settings', label: t('adminDashboard.nav.settings'), icon: Settings },
+      { id: 'news', label: t('adminDashboard.nav.news'), icon: Newspaper, count: portal.badgeCounts.value.news },
+      { id: 'faqs', label: t('adminDashboard.nav.faqs'), icon: HelpCircle, count: portal.badgeCounts.value.faqs },
+      { id: 'stats', label: t('adminDashboard.nav.stats'), icon: BarChart3, count: portal.badgeCounts.value.stats },
+      { id: 'partners', label: t('adminDashboard.nav.partners'), icon: Handshake, count: portal.badgeCounts.value.partners },
+      { id: 'features', label: t('adminDashboard.nav.features'), icon: WandSparkles, count: portal.badgeCounts.value.features }
+    ]
+  },
+  {
+    id: 'portal',
+    label: t('adminDashboard.groups.portal'),
+    items: [
+      { id: 'menus', label: t('adminDashboard.nav.menus'), icon: Link2 },
+      { id: 'pages', label: t('adminDashboard.nav.pages'), icon: FileText }
+    ]
+  },
+  {
+    id: 'access',
+    label: t('adminDashboard.groups.access'),
+    items: [
+      { id: 'users', label: t('adminDashboard.nav.users'), icon: Users, count: portal.badgeCounts.value.users }
+    ]
+  }
 ]);
 
-async function fetchOverviewData() {
-  await run(async () => {
-    const [ov, uRes] = await Promise.all([
-      adminService.getOverview(),
-      adminService.listUsers()
-    ]);
-    stats.value = ov.stats;
-    users.value = uRes.items;
-  });
+async function handleSaveSettings(patch, customMessage) {
+  await portal.saveSettingsPatch(patch, customMessage || t('adminDashboard.cmsPanel.toasts.settingsSaved'));
 }
 
-async function updateUserRole(user, role) {
-  try {
-    await adminService.updateUser(user.id, { role, isActive: Boolean(user.is_active) });
-    toast.success(user.name + t('adminDashboard.toasts.roleUpdatedSuffix') + role + '.');
-    await fetchOverviewData();
-  } catch (err) {
-    toast.error(extractApiError(err));
-  }
+async function handleSaveNews(payload, onDone) {
+  await portal.saveNews(payload, t('adminDashboard.cmsPanel.toasts.newsSaved'));
+  if (onDone) onDone();
 }
 
-async function toggleUserActive(user) {
-  try {
-    await adminService.updateUser(user.id, { role: user.role, isActive: !user.is_active });
-    toast.success(t('adminDashboard.toasts.userStatusUpdated'));
-    await fetchOverviewData();
-  } catch (err) {
-    toast.error(extractApiError(err));
-  }
+async function handleAddCategory(name, onDone) {
+  const created = await portal.addCategory(name, t('adminDashboard.cmsPanel.toasts.categorySaved'));
+  if (onDone) onDone(created);
 }
 
-onMounted(fetchOverviewData);
+async function handleSaveFaq(payload, onDone) {
+  await portal.saveFaq(payload, t('adminDashboard.cmsPanel.toasts.faqSaved'));
+  if (onDone) onDone();
+}
+
+async function handleSaveStat(payload, onDone) {
+  await portal.saveStat(payload, t('adminDashboard.cmsPanel.toasts.statSaved'));
+  if (onDone) onDone();
+}
+
+async function handleSavePartner(payload, onDone) {
+  await portal.savePartner(payload, t('adminDashboard.cmsPanel.toasts.partnerSaved'));
+  if (onDone) onDone();
+}
+
+async function handleSaveFeature(payload, onDone) {
+  await portal.saveFeature(payload, t('adminDashboard.cmsPanel.toasts.featureSaved'));
+  if (onDone) onDone();
+}
+
+async function handleUpdateUserRole(user, role) {
+  await portal.updateUser(
+    user.id,
+    { role, isActive: Boolean(user.is_active) },
+    user.name + t('adminDashboard.toasts.roleUpdatedSuffix') + role + '.'
+  );
+}
+
+async function handleToggleUserActive(user) {
+  await portal.updateUser(
+    user.id,
+    { role: user.role, isActive: !user.is_active },
+    t('adminDashboard.toasts.userStatusUpdated')
+  );
+}
+
+async function handleLogout() {
+  await auth.logout();
+  router.push('/');
+}
+
+onMounted(() => {
+  portal.loadAll();
+});
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
-    <aside class="w-full shrink-0 rounded-2xl border border-surface-border bg-white p-3 shadow-card lg:w-64">
-      <div class="flex items-center gap-3 px-3 py-4">
-        <div class="rounded-xl bg-brand-50 p-2 text-brand-700"><Globe class="h-5 w-5" /></div>
-        <div>
-          <p class="text-sm font-extrabold text-brand-900">{{ t('adminDashboard.sidebarTitle') }}</p>
-          <p class="text-xs text-slate-500">{{ t('adminDashboard.sidebarSubtitle') }}</p>
-        </div>
-      </div>
-      <nav :aria-label="t('adminDashboard.navAria')" class="flex gap-1 overflow-x-auto lg:flex-col">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          type="button"
-          class="inline-flex min-h-[44px] shrink-0 items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold transition lg:w-full"
-          :class="activeTab === tab.id ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-surface-page hover:text-brand-700'"
-          :aria-current="activeTab === tab.id ? 'page' : undefined"
-          @click="activeTab = tab.id"
-        >
-          <component :is="tab.icon" class="h-4 w-4 shrink-0" />
-          {{ tab.label }}
-        </button>
-      </nav>
-    </aside>
+  <AdminShell
+    :nav-groups="navGroups"
+    :active-tab="activeTab"
+    :syncing="portal.syncing.value"
+    @select-tab="activeTab = $event"
+    @logout="handleLogout"
+  >
+    <StateFeedback
+      :loading="portal.loading.value"
+      :error="portal.error.value"
+      :offline="portal.isOffline.value"
+      @retry="portal.loadAll"
+    >
+      <AdminOverviewPanel
+        v-if="activeTab === 'overview'"
+        :stats="portal.overviewStats.value"
+        :settings="portal.settings.value"
+        :syncing="portal.syncing.value"
+        @navigate="activeTab = $event"
+        @save-settings="handleSaveSettings"
+      />
 
-    <main class="min-w-0 flex-1 space-y-6">
-      <header class="rounded-3xl bg-brand-900 p-6 text-white sm:p-8">
-        <p class="text-xs font-bold uppercase tracking-wider text-amber-300">{{ t('adminDashboard.badge') }}</p>
-        <h1 class="mt-1 text-2xl font-extrabold sm:text-3xl">{{ t('adminDashboard.heading') }}</h1>
-        <p class="mt-1 text-sm text-slate-300">{{ t('adminDashboard.subtitle') }}</p>
-      </header>
+      <AdminCmsSettingsForm
+        v-else-if="activeTab === 'settings'"
+        :settings="portal.settings.value"
+        :syncing="portal.syncing.value"
+        @submit="handleSaveSettings"
+      />
 
-      <StateFeedback :loading="loading" :error="error" :offline="isOffline" @retry="fetchOverviewData">
-        <section v-if="activeTab === 'overview'" class="space-y-6">
-          <div class="grid grid-cols-2 gap-4 xl:grid-cols-5">
-            <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
-              <p class="text-xs font-bold uppercase text-slate-500">{{ t('adminDashboard.stats.users') }}</p>
-              <p class="mt-1 text-2xl font-extrabold text-brand-900">{{ stats.totalUsers || 0 }}</p>
-            </div>
-            <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
-              <p class="text-xs font-bold uppercase text-slate-500">{{ t('adminDashboard.stats.news') }}</p>
-              <p class="mt-1 text-2xl font-extrabold text-brand-900">{{ stats.totalNews || 0 }}</p>
-            </div>
-            <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
-              <p class="text-xs font-bold uppercase text-slate-500">{{ t('adminDashboard.stats.faqs') }}</p>
-              <p class="mt-1 text-2xl font-extrabold text-brand-900">{{ stats.totalFaqs || 0 }}</p>
-            </div>
-            <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
-              <p class="text-xs font-bold uppercase text-slate-500">{{ t('adminDashboard.stats.services') }}</p>
-              <p class="mt-1 text-2xl font-extrabold text-brand-900">{{ stats.totalServices || 0 }}</p>
-            </div>
-            <div class="rounded-2xl border border-surface-border bg-white p-5 shadow-card">
-              <p class="text-xs font-bold uppercase text-slate-500">{{ t('adminDashboard.stats.features') }}</p>
-              <p class="mt-1 text-2xl font-extrabold text-brand-900">{{ stats.totalFeatures || 0 }}</p>
-            </div>
-          </div>
-          <AdminLandingCmsPanel section="settings" />
-        </section>
+      <AdminNewsPanel
+        v-else-if="activeTab === 'news'"
+        :news="portal.news.value"
+        :categories="portal.categories.value"
+        :syncing="portal.syncing.value"
+        :upload-handler="portal.uploadImage"
+        @save-news="handleSaveNews"
+        @delete-news="portal.removeNews($event, t('adminDashboard.cmsPanel.toasts.newsDeleted'))"
+        @add-category="handleAddCategory"
+        @delete-category="portal.removeCategory($event, t('adminDashboard.cmsPanel.toasts.categoryDeleted'))"
+      />
 
-        <AdminLandingCmsPanel v-else-if="['settings', 'faqs', 'stats', 'partners', 'features'].includes(activeTab)" :section="activeTab" />
+      <AdminFaqPanel
+        v-else-if="activeTab === 'faqs'"
+        :faqs="portal.faqs.value"
+        :syncing="portal.syncing.value"
+        @save="handleSaveFaq"
+        @delete="portal.removeFaq($event, t('adminDashboard.cmsPanel.toasts.faqDeleted'))"
+      />
 
-        <AdminNewsPanel v-else-if="activeTab === 'news'" />
+      <AdminStatsPanel
+        v-else-if="activeTab === 'stats'"
+        :stats="portal.stats.value"
+        :syncing="portal.syncing.value"
+        @save="handleSaveStat"
+        @delete="portal.removeStat($event, t('adminDashboard.cmsPanel.toasts.statDeleted'))"
+      />
 
-        <section v-else-if="activeTab === 'users'" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
-          <h2 class="text-lg font-extrabold text-brand-900">{{ t('adminDashboard.usersHeading') }}</h2>
-          <StateFeedback :loading="loading" :error="error" :offline="isOffline" @retry="fetchOverviewData">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm">
-                <thead class="border-b border-surface-border text-xs uppercase text-slate-500">
-                  <tr>
-                    <th class="py-3 pr-4">{{ t('adminDashboard.usersCols.user') }}</th>
-                    <th class="py-3 pr-4">{{ t('adminDashboard.usersCols.email') }}</th>
-                    <th class="py-3 pr-4">{{ t('adminDashboard.usersCols.role') }}</th>
-                    <th class="py-3 text-right">{{ t('adminDashboard.usersCols.status') }}</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-surface-border">
-                  <tr v-for="u in users" :key="u.id">
-                    <td class="py-3 pr-4 font-bold text-brand-900">{{ u.name }}</td>
-                    <td class="py-3 pr-4 text-xs">{{ u.email }}</td>
-                    <td class="py-3 pr-4">
-                      <select :value="u.role" class="rounded-lg border border-surface-border px-2.5 py-1 text-xs font-semibold" @change="updateUserRole(u, $event.target.value)">
-                        <option value="student">student</option>
-                        <option value="mentor">mentor</option>
-                        <option value="admin">admin</option>
-                      </select>
-                    </td>
-                    <td class="py-3 text-right">
-                      <button type="button" class="rounded-lg px-3 py-1 text-xs font-bold" :class="u.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'" @click="toggleUserActive(u)">
-                        {{ u.is_active ? t('adminDashboard.activeStatus') : t('adminDashboard.suspendedStatus') }}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </StateFeedback>
-        </section>
-      </StateFeedback>
-    </main>
-  </div>
+      <AdminPartnersPanel
+        v-else-if="activeTab === 'partners'"
+        :partners="portal.partners.value"
+        :syncing="portal.syncing.value"
+        @save="handleSavePartner"
+        @delete="portal.removePartner($event, t('adminDashboard.cmsPanel.toasts.partnerDeleted'))"
+      />
+
+      <AdminFeaturesPanel
+        v-else-if="activeTab === 'features'"
+        :features="portal.features.value"
+        :syncing="portal.syncing.value"
+        @save="handleSaveFeature"
+        @delete="portal.removeFeature($event, t('adminDashboard.cmsPanel.toasts.featureDeleted'))"
+      />
+
+      <AdminPortalMenuPanel
+        v-else-if="activeTab === 'menus'"
+        :settings="portal.settings.value"
+        :syncing="portal.syncing.value"
+        @save-settings="handleSaveSettings"
+      />
+
+      <AdminPortalPagesPanel
+        v-else-if="activeTab === 'pages'"
+        :settings="portal.settings.value"
+        :syncing="portal.syncing.value"
+        :upload-handler="portal.uploadImage"
+        @save-settings="handleSaveSettings"
+      />
+
+      <AdminUsersPanel
+        v-else-if="activeTab === 'users'"
+        :users="portal.users.value"
+        :syncing="portal.syncing.value"
+        @update-role="handleUpdateUserRole"
+        @toggle-active="handleToggleUserActive"
+      />
+    </StateFeedback>
+  </AdminShell>
 </template>

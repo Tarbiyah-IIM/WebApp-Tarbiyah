@@ -1,0 +1,254 @@
+import { computed, ref } from 'vue';
+import { adminService } from '../services/admin.service.js';
+import { extractApiError } from '../services/api.js';
+import { useLandingStore } from '../stores/landing.store.js';
+import { useAsyncState } from './useAsyncState.js';
+import { useToast } from './useToast.js';
+
+export function useAdminPortal() {
+  const landingStore = useLandingStore();
+  const toast = useToast();
+  const { loading, error, isOffline, run } = useAsyncState();
+
+  const overviewStats = ref({
+    totalUsers: 0,
+    totalNews: 0,
+    totalFaqs: 0,
+    totalServices: 0,
+    totalFeatures: 0
+  });
+  const users = ref([]);
+  const settings = ref({});
+  const faqs = ref([]);
+  const stats = ref([]);
+  const features = ref([]);
+  const partners = ref([]);
+  const news = ref([]);
+  const categories = ref([]);
+  const syncing = ref(false);
+  const lastSyncedAt = ref(null);
+
+  const badgeCounts = computed(() => ({
+    users: users.value.length || overviewStats.value.totalUsers || 0,
+    news: news.value.length || overviewStats.value.totalNews || 0,
+    faqs: faqs.value.length || overviewStats.value.totalFaqs || 0,
+    stats: stats.value.length || 0,
+    partners: partners.value.length || overviewStats.value.totalServices || 0,
+    features: features.value.length || overviewStats.value.totalFeatures || 0
+  }));
+
+  async function loadAll() {
+    await run(async () => {
+      const [ovRes, uRes, sRes, fRes, stRes, ftRes, pRes, nRes, cRes] = await Promise.all([
+        adminService.getOverview(),
+        adminService.listUsers(),
+        adminService.getSettings(),
+        adminService.listFaqs(),
+        adminService.listStats(),
+        adminService.listFeatures(),
+        adminService.listPartners(),
+        adminService.listTestimonials(),
+        adminService.listNewsCategories()
+      ]);
+      overviewStats.value = ovRes.stats;
+      users.value = uRes.items;
+      settings.value = sRes.settings;
+      faqs.value = fRes.items;
+      stats.value = stRes.items;
+      features.value = ftRes.items;
+      partners.value = pRes.items;
+      news.value = nRes.items;
+      categories.value = cRes.items;
+      lastSyncedAt.value = new Date();
+    });
+  }
+
+  async function refreshOverviewAndLanding() {
+    const [ovRes] = await Promise.all([
+      adminService.getOverview(),
+      landingStore.fetchLanding(true)
+    ]);
+    overviewStats.value = ovRes.stats;
+    lastSyncedAt.value = new Date();
+  }
+
+  async function withSync(action, successMessage) {
+    syncing.value = true;
+    try {
+      const result = await action();
+      if (successMessage) toast.success(successMessage);
+      return result;
+    } catch (err) {
+      toast.error(extractApiError(err));
+      throw err;
+    } finally {
+      syncing.value = false;
+    }
+  }
+
+  async function saveSettingsPatch(patch, successMessage) {
+    return withSync(async () => {
+      const res = await adminService.updateSettings(patch);
+      settings.value = res.settings;
+      await refreshOverviewAndLanding();
+      return res.settings;
+    }, successMessage);
+  }
+
+  async function saveFaq(payload, successMessage) {
+    return withSync(async () => {
+      if (payload.id) await adminService.updateFaq(payload.id, payload);
+      else await adminService.createFaq(payload);
+      const [res] = await Promise.all([adminService.listFaqs(), refreshOverviewAndLanding()]);
+      faqs.value = res.items;
+    }, successMessage);
+  }
+
+  async function removeFaq(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deleteFaq(id);
+      const [res] = await Promise.all([adminService.listFaqs(), refreshOverviewAndLanding()]);
+      faqs.value = res.items;
+    }, successMessage);
+  }
+
+  async function saveStat(payload, successMessage) {
+    return withSync(async () => {
+      if (payload.id) await adminService.updateStat(payload.id, payload);
+      else await adminService.createStat(payload);
+      const [res] = await Promise.all([adminService.listStats(), refreshOverviewAndLanding()]);
+      stats.value = res.items;
+    }, successMessage);
+  }
+
+  async function removeStat(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deleteStat(id);
+      const [res] = await Promise.all([adminService.listStats(), refreshOverviewAndLanding()]);
+      stats.value = res.items;
+    }, successMessage);
+  }
+
+  async function savePartner(payload, successMessage) {
+    return withSync(async () => {
+      if (payload.id) await adminService.updatePartner(payload.id, payload);
+      else await adminService.createPartner(payload);
+      const [res] = await Promise.all([adminService.listPartners(), refreshOverviewAndLanding()]);
+      partners.value = res.items;
+    }, successMessage);
+  }
+
+  async function removePartner(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deletePartner(id);
+      const [res] = await Promise.all([adminService.listPartners(), refreshOverviewAndLanding()]);
+      partners.value = res.items;
+    }, successMessage);
+  }
+
+  async function saveFeature(payload, successMessage) {
+    return withSync(async () => {
+      if (payload.id) await adminService.updateFeature(payload.id, payload);
+      else await adminService.createFeature(payload);
+      const [res] = await Promise.all([adminService.listFeatures(), refreshOverviewAndLanding()]);
+      features.value = res.items;
+    }, successMessage);
+  }
+
+  async function removeFeature(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deleteFeature(id);
+      const [res] = await Promise.all([adminService.listFeatures(), refreshOverviewAndLanding()]);
+      features.value = res.items;
+    }, successMessage);
+  }
+
+  async function saveNews(payload, successMessage) {
+    return withSync(async () => {
+      if (payload.id) await adminService.updateTestimonial(payload.id, payload);
+      else await adminService.createTestimonial(payload);
+      const [nRes, cRes] = await Promise.all([
+        adminService.listTestimonials(),
+        adminService.listNewsCategories(),
+        refreshOverviewAndLanding()
+      ]);
+      news.value = nRes.items;
+      categories.value = cRes.items;
+    }, successMessage);
+  }
+
+  async function removeNews(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deleteTestimonial(id);
+      const [nRes] = await Promise.all([adminService.listTestimonials(), refreshOverviewAndLanding()]);
+      news.value = nRes.items;
+    }, successMessage);
+  }
+
+  async function addCategory(name, successMessage) {
+    return withSync(async () => {
+      const response = await adminService.createNewsCategory({ name });
+      const cRes = await adminService.listNewsCategories();
+      categories.value = cRes.items;
+      return response.category;
+    }, successMessage);
+  }
+
+  async function removeCategory(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deleteNewsCategory(id);
+      const cRes = await adminService.listNewsCategories();
+      categories.value = cRes.items;
+    }, successMessage);
+  }
+
+  async function updateUser(id, payload, successMessage) {
+    return withSync(async () => {
+      await adminService.updateUser(id, payload);
+      const [uRes, ovRes] = await Promise.all([adminService.listUsers(), adminService.getOverview()]);
+      users.value = uRes.items;
+      overviewStats.value = ovRes.stats;
+    }, successMessage);
+  }
+
+  async function uploadImage(file) {
+    return withSync(async () => {
+      const res = await adminService.uploadImage(file);
+      return res.url;
+    });
+  }
+
+  return {
+    loading,
+    syncing,
+    error,
+    isOffline,
+    lastSyncedAt,
+    overviewStats,
+    badgeCounts,
+    users,
+    settings,
+    faqs,
+    stats,
+    features,
+    partners,
+    news,
+    categories,
+    loadAll,
+    saveSettingsPatch,
+    saveFaq,
+    removeFaq,
+    saveStat,
+    removeStat,
+    savePartner,
+    removePartner,
+    saveFeature,
+    removeFeature,
+    saveNews,
+    removeNews,
+    addCategory,
+    removeCategory,
+    updateUser,
+    uploadImage
+  };
+}

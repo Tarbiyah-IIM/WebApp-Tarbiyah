@@ -2,9 +2,11 @@
 import { computed } from 'vue';
 import { ArrowRight, BookOpen, GraduationCap, School, Sparkles } from 'lucide-vue-next';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 const { t } = useI18n();
-const studyPrograms = computed(() => t('courses.cards'));
+const { mergeProgramCard } = usePortalContent();
+const studyPrograms = computed(() => (t('courses.cards') || []).map(mergeProgramCard));
 
 const programIcons = {
   'book-open': BookOpen,

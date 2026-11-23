@@ -58,7 +58,7 @@ const routes = [
     path: '/admin',
     name: 'admin-dashboard',
     component: () => import('../views/AdminDashboardView.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { requiresAuth: true, roles: ['admin'], hidePublicNav: true }
   },
   {
     path: '/kuliah-tamu',

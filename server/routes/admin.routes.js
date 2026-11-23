@@ -34,6 +34,7 @@ import { authenticate, requireRole } from '../middlewares/auth.middleware.js';
 import { uploadImage } from '../middlewares/upload.middleware.js';
 import { validateBody } from '../middlewares/validate.middleware.js';
 import {
+  adminSettingsUpdateSchema,
   adminUserUpdateSchema,
   faqBodySchema,
   featureBodySchema,
@@ -81,7 +82,7 @@ router.patch('/partners/:id', validateBody(partnerBodySchema), adminUpdatePartne
 router.delete('/partners/:id', adminDeletePartner);
 
 router.get('/settings', adminGetSettings);
-router.patch('/settings', adminUpdateSettings);
+router.patch('/settings', validateBody(adminSettingsUpdateSchema), adminUpdateSettings);
 
 router.post('/uploads', uploadImage.single('file'), adminUploadImage);
 

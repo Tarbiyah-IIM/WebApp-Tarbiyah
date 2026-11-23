@@ -2,12 +2,14 @@
 import { computed } from 'vue';
 import { MapPin, ExternalLink, Phone, Building2 } from 'lucide-vue-next';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 defineProps({
   settings: { type: Object, default: () => ({}) }
 });
 
 const { t, tr } = useI18n();
+const { contacts } = usePortalContent();
 
 const journalLinks = computed(() => [
   {
@@ -27,19 +29,22 @@ const journalLinks = computed(() => [
 const footerCtas = computed(() => [
   {
     label: t('footer.pmbCenter'),
-    href: 'https://wa.link/agu1p5',
+    href: contacts.value.waPmbUrl,
     classes: 'bg-amber-400 font-bold text-slate-900 hover:bg-amber-300'
   },
   {
     label: t('footer.adminFaculty'),
-    href: 'https://wa.link/qrwv15',
+    href: contacts.value.waAdminUrl,
     classes: 'border border-white/30 bg-white/10 font-semibold text-white hover:bg-white/20'
   }
 ]);
 
 const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
 
-const mapsEmbedUrl = 'https://www.google.com/maps?q=-7.584322,110.81806&z=17&hl=id&output=embed';
+const mapsEmbedUrl = computed(() => contacts.value.mapsEmbedUrl);
+const campusBuilding = computed(() => contacts.value.campusBuilding || t('footer.campusBuilding'));
+const addressText = computed(() => contacts.value.addressText || t('footer.addressText'));
+const phoneText = computed(() => contacts.value.phoneText || t('footer.phoneText'));
 </script>
 
 <template>
@@ -101,15 +106,15 @@ const mapsEmbedUrl = 'https://www.google.com/maps?q=-7.584322,110.81806&z=17&hl=
           <ul class="space-y-2.5 text-sm text-slate-400">
             <li class="flex items-start gap-2">
               <Building2 class="h-4 w-4 text-brand-400 shrink-0 mt-0.5" />
-              <span class="font-semibold text-slate-200">{{ t('footer.campusBuilding') }}</span>
+              <span class="font-semibold text-slate-200">{{ campusBuilding }}</span>
             </li>
             <li class="flex items-start gap-2">
               <MapPin class="h-4 w-4 text-brand-400 shrink-0 mt-0.5" />
-              <span>{{ t('footer.addressText') }}</span>
+              <span>{{ addressText }}</span>
             </li>
             <li class="flex items-center gap-2">
               <Phone class="h-4 w-4 text-brand-400 shrink-0" />
-              <span>{{ t('footer.phoneText') }}</span>
+              <span>{{ phoneText }}</span>
             </li>
           </ul>
         </div>

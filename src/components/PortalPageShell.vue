@@ -5,6 +5,7 @@ import FooterSection from './FooterSection.vue';
 import StateFeedback from './StateFeedback.vue';
 import { useLandingStore } from '../stores/landing.store.js';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 defineProps({
   category: { type: String, required: true },
@@ -20,6 +21,7 @@ defineEmits(['pending-link']);
 
 const landingStore = useLandingStore();
 const { t } = useI18n();
+const { contacts } = usePortalContent();
 const isOffline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false);
 
 const settings = computed(() => landingStore.data?.settings || {});
@@ -114,7 +116,7 @@ onUnmounted(() => {
               <h2 class="text-base font-extrabold text-brand-900">{{ t('portalPages.common.contactHeading') }}</h2>
               <div class="space-y-2.5">
                 <a
-                  href="https://wa.link/qrwv15"
+                  :href="contacts.waAdminUrl"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="flex min-h-[44px] w-full items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 transition"
@@ -122,7 +124,7 @@ onUnmounted(() => {
                   {{ t('portalPages.common.waAdminLabel') }}
                 </a>
                 <a
-                  href="https://wa.link/agu1p5"
+                  :href="contacts.waPmbUrl"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="flex min-h-[44px] w-full items-center justify-center rounded-xl border border-surface-border bg-surface-page px-4 text-sm font-semibold text-brand-900 hover:bg-brand-50 transition"

@@ -134,6 +134,39 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .patch('/api/v1/admin/settings')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ hero_title: originalTitle });
+
+    const badJsonRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_nav_links: '{invalid-json' });
+    expect(badJsonRes.status).toBe(400);
+
+    const badUrlRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_nav_links: JSON.stringify({ calendar: 'javascript:alert(1)' }) });
+    expect(badUrlRes.status).toBe(400);
+
+    const badGuestUrlRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_contacts: JSON.stringify({ guestLectureUrl: 'https://evil.example.com/form' }) });
+    expect(badGuestUrlRes.status).toBe(400);
+
+    const originalNav = beforeLanding.body.settings.cms_nav_links ?? '';
+    const validCmsRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_nav_links: JSON.stringify({ calendar: 'https://ft.iim.ac.id/kalender-test' }) });
+    expect(validCmsRes.status).toBe(200);
+
+    const syncedLanding = await request(app).get('/api/v1/landing');
+    expect(syncedLanding.body.settings.cms_nav_links).toContain('https://ft.iim.ac.id/kalender-test');
+
+    await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_nav_links: originalNav });
   });
 
   it('serves stateless PPL work-permit metadata and validates submit payload without SQL bloat', async () => {

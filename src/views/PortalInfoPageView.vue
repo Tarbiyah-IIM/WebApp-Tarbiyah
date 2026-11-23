@@ -5,6 +5,7 @@ import PortalEmbedModal from '../components/PortalEmbedModal.vue';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import WorkPermitFormModal from '../components/WorkPermitFormModal.vue';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 import { useToast } from '../composables/useToast.js';
 
 const props = defineProps({
@@ -12,12 +13,13 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const { mergeInfoPage } = usePortalContent();
 const toast = useToast();
 const activePopupItem = ref(null);
 const workPermitModalOpen = ref(false);
 
 const infoPages = computed(() => t('portalPages.infoPages') || {});
-const pageData = computed(() => infoPages.value[props.pageKey] || null);
+const pageData = computed(() => mergeInfoPage(props.pageKey, infoPages.value[props.pageKey] || null));
 const categoryLabel = computed(() =>
   pageData.value ? t(`portalPages.common.${pageData.value.categoryKey}`) : t('portalPages.common.academicCategory')
 );
@@ -200,7 +202,18 @@ const relatedPages = computed(() =>
             {{ pageData.sidebarAction.badge }}
           </span>
         </div>
+        <a
+          v-if="pageData.sidebarAction.href"
+          :href="pageData.sidebarAction.href"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-bold text-white transition hover:bg-brand-700"
+        >
+          <span>{{ pageData.sidebarAction.buttonLabel }}</span>
+          <ExternalLink class="h-4 w-4" />
+        </a>
         <button
+          v-else
           type="button"
           class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 text-sm font-bold text-rose-700 transition hover:bg-rose-100"
           @click="handlePendingLink(pageData.sidebarAction)"

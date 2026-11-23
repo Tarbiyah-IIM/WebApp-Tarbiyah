@@ -4,9 +4,11 @@ import { useRoute } from 'vue-router';
 import { ArrowLeft, Award, BookOpen, Briefcase, CheckCircle2, ExternalLink, GraduationCap, School, Sparkles } from 'lucide-vue-next';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 const route = useRoute();
 const { t } = useI18n();
+const { mergeProgramCard, mergeProgramDetail } = usePortalContent();
 
 const programIcons = {
   'book-open': BookOpen,
@@ -15,9 +17,9 @@ const programIcons = {
 };
 
 const slug = computed(() => String(route.params.slug || '').toLowerCase());
-const allCards = computed(() => t('courses.cards') || []);
+const allCards = computed(() => (t('courses.cards') || []).map(mergeProgramCard));
 const prodiCard = computed(() => allCards.value.find((card) => card.id === slug.value) || null);
-const prodiDetail = computed(() => (t('portalPages.programs') || {})[slug.value] || null);
+const prodiDetail = computed(() => mergeProgramDetail(slug.value, (t('portalPages.programs') || {})[slug.value] || null));
 const prodiIcon = computed(() => programIcons[prodiCard.value?.icon] || GraduationCap);
 const isMissing = computed(() => !prodiCard.value || !prodiDetail.value);
 
