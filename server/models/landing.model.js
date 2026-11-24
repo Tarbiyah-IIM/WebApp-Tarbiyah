@@ -2,6 +2,98 @@ import { pool } from '../config/db.js';
 
 const VALID_SLIDESHOW_POSITIONS = new Set(['top', 'middle', 'bottom', 'none']);
 
+const NEWS_MONTH_MAP = {
+  januari: 1,
+  jan: 1,
+  january: 1,
+  februari: 2,
+  feb: 2,
+  february: 2,
+  pebruari: 2,
+  maret: 3,
+  mar: 3,
+  march: 3,
+  april: 4,
+  apr: 4,
+  mei: 5,
+  may: 5,
+  juni: 6,
+  jun: 6,
+  june: 6,
+  juli: 7,
+  jul: 7,
+  july: 7,
+  agustus: 8,
+  agt: 8,
+  aug: 8,
+  august: 8,
+  september: 9,
+  sep: 9,
+  sept: 9,
+  oktober: 10,
+  okt: 10,
+  oct: 10,
+  october: 10,
+  november: 11,
+  nopember: 11,
+  nov: 11,
+  desember: 12,
+  des: 12,
+  dec: 12,
+  december: 12
+};
+
+function toDateSortKey(year, month, day) {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return 0;
+  if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return 0;
+  return year * 10000 + month * 100 + day;
+}
+
+export function parseNewsDateSortKey(rawDate) {
+  if (!rawDate || typeof rawDate !== 'string') return 0;
+  const cleaned = rawDate.trim().replace(/,/g, ' ').replace(/\s+/g, ' ');
+
+  const isoMatch = cleaned.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (isoMatch) {
+    return toDateSortKey(Number(isoMatch[1]), Number(isoMatch[2]), Number(isoMatch[3]));
+  }
+
+  const dmySlashMatch = cleaned.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (dmySlashMatch) {
+    return toDateSortKey(Number(dmySlashMatch[3]), Number(dmySlashMatch[2]), Number(dmySlashMatch[1]));
+  }
+
+  const dmyTextMatch = cleaned.match(/(\d{1,2})[\s-]+([A-Za-z]+)[\s-]+(\d{4})/);
+  if (dmyTextMatch) {
+    const month = NEWS_MONTH_MAP[dmyTextMatch[2].toLowerCase()];
+    if (month) {
+      return toDateSortKey(Number(dmyTextMatch[3]), month, Number(dmyTextMatch[1]));
+    }
+  }
+
+  const mdyTextMatch = cleaned.match(/([A-Za-z]+)\s+(\d{1,2})\s+(\d{4})/);
+  if (mdyTextMatch) {
+    const month = NEWS_MONTH_MAP[mdyTextMatch[1].toLowerCase()];
+    if (month) {
+      return toDateSortKey(Number(mdyTextMatch[3]), month, Number(mdyTextMatch[2]));
+    }
+  }
+
+  return 0;
+}
+
+export function sortNewsByNewestDate(rows) {
+  return [...rows].sort((a, b) => {
+    const dateDiff = parseNewsDateSortKey(b.job_title) - parseNewsDateSortKey(a.job_title);
+    if (dateDiff !== 0) return dateDiff;
+
+    const createdDiff = (new Date(b.created_at || 0).getTime() || 0) - (new Date(a.created_at || 0).getTime() || 0);
+    if (createdDiff !== 0) return createdDiff;
+
+    return (Number(b.id) || 0) - (Number(a.id) || 0);
+  });
+}
+
 function normalizeSlideshowPosition(pos) {
   return VALID_SLIDESHOW_POSITIONS.has(pos) ? pos : 'bottom';
 }
@@ -121,7 +213,7 @@ export async function getLandingData() {
     },
     features: featuresRows,
     partners: partnersRows,
-    testimonials: await hydrateNewsRows(testimonialsRows),
+    testimonials: sortNewsByNewestDate(await hydrateNewsRows(testimonialsRows)),
     faqs: faqsRows
   };
 }
@@ -184,7 +276,7 @@ export async function listTestimonialsAdmin() {
     LEFT JOIN news_categories nc ON nc.id = t.category_id
     ORDER BY t.sort_order ASC, t.id ASC
   `);
-  return hydrateNewsRows(rows);
+  return sortNewsByNewestDate(await hydrateNewsRows(rows));
 }
 
 export async function createTestimonial({

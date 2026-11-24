@@ -261,4 +261,64 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .send({ kepada: '', nim: '1', program_studi: 'Invalid' });
     expect(invalidRes.status).toBe(400);
   });
+
+  it('orders news newest-first by year, month, and day on both landing and admin APIs', async () => {
+    const categoriesRes = await request(app)
+      .get('/api/v1/admin/news-categories')
+      .set('Authorization', `Bearer ${adminToken}`);
+    const catId = categoriesRes.body.items[0].id;
+    const createdIds = [];
+
+    const samples = [
+      { title: 'Sort Test Oldest 2021', date: '10 November 2021' },
+      { title: 'Sort Test Mid 2022', date: '14 Desember 2022' },
+      { title: 'Sort Test Early May 2023', date: '2 Mei 2023' },
+      { title: 'Sort Test Late May 2023', date: '20 Mei 2023' }
+    ];
+
+    try {
+      for (const sample of samples) {
+        const res = await request(app)
+          .post('/api/v1/admin/testimonials')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({
+            name: sample.title,
+            jobTitle: sample.date,
+            quote: `Ringkasan uji urutan tanggal untuk ${sample.title}.`,
+            categoryIds: [catId],
+            isVisible: true,
+            sortOrder: 0
+          });
+        expect(res.status).toBe(201);
+        createdIds.push(res.body.testimonial.id);
+      }
+
+      const [adminRes, landingRes] = await Promise.all([
+        request(app).get('/api/v1/admin/testimonials').set('Authorization', `Bearer ${adminToken}`),
+        request(app).get('/api/v1/landing')
+      ]);
+      expect(adminRes.status).toBe(200);
+      expect(landingRes.status).toBe(200);
+
+      const expectedOrder = [
+        'Sort Test Late May 2023',
+        'Sort Test Early May 2023',
+        'Sort Test Mid 2022',
+        'Sort Test Oldest 2021'
+      ];
+      const adminOrder = adminRes.body.items
+        .map((item) => item.name)
+        .filter((name) => expectedOrder.includes(name));
+      const landingOrder = landingRes.body.testimonials
+        .map((item) => item.name)
+        .filter((name) => expectedOrder.includes(name));
+
+      expect(adminOrder).toEqual(expectedOrder);
+      expect(landingOrder).toEqual(expectedOrder);
+    } finally {
+      for (const id of createdIds) {
+        await request(app).delete(`/api/v1/admin/testimonials/${id}`).set('Authorization', `Bearer ${adminToken}`);
+      }
+    }
+  });
 });
