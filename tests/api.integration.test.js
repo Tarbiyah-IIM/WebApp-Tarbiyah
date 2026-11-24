@@ -178,6 +178,22 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       });
     expect(spoofedRes.status).toBe(400);
 
+    const oversizedBuffer = Buffer.alloc(10 * 1024 * 1024 + 1024, 0);
+    oversizedBuffer[0] = 0x89;
+    oversizedBuffer[1] = 0x50;
+    oversizedBuffer[2] = 0x4e;
+    oversizedBuffer[3] = 0x47;
+    const oversizedRes = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', oversizedBuffer, {
+        filename: 'oversized.png',
+        contentType: 'image/png'
+      });
+    expect(oversizedRes.status).toBe(400);
+    expect(oversizedRes.body.error.code).toBe('UPLOAD_ERROR');
+    expect(oversizedRes.body.error.message).toContain('10 MB');
+
     const png1x1 = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       'base64'

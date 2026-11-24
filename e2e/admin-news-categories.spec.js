@@ -69,6 +69,49 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(page.locator('#news-modal-summary')).toHaveCount(0);
     await expect(page.locator('#news-modal-full-content')).toBeVisible();
     await expect(page.locator('#news-modal-related-url')).toHaveCount(0);
+
+    const highResPngBase64 = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 2400;
+      canvas.height = 1800;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 2400, 1800);
+      grad.addColorStop(0, '#0f3d2e');
+      grad.addColorStop(0.5, '#1f6f54');
+      grad.addColorStop(1, '#d97706');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 2400, 1800);
+      for (let i = 0; i < 60; i += 1) {
+        ctx.fillStyle = `rgba(${(i * 37) % 255}, ${(i * 73) % 255}, ${(i * 19) % 255}, 0.45)`;
+        ctx.fillRect((i * 83) % 2200, (i * 59) % 1600, 240, 180);
+      }
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
+    const highResBuffer = Buffer.from(highResPngBase64, 'base64');
+
+    const newsUploadWait = page.waitForResponse(
+      (res) => res.url().includes('/api/v1/admin/uploads') && res.request().method() === 'POST'
+    );
+    await page.locator('#news-modal-cover').setInputFiles({
+      name: 'camera-highres-news.png',
+      mimeType: 'image/png',
+      buffer: highResBuffer
+    });
+    const newsUploadResp = await newsUploadWait;
+    expect(newsUploadResp.status()).toBe(201);
+    const newsUploadBody = await newsUploadResp.json();
+    expect(newsUploadBody.filename).toMatch(/\.webp$/i);
+    expect(newsUploadBody.sizeBytes).toBeLessThan(highResBuffer.length);
+    const newsMediaMeta = await page.evaluate(async (mediaUrl) => {
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = mediaUrl;
+      });
+      return { width: img.naturalWidth, height: img.naturalHeight };
+    }, newsUploadBody.url);
+    expect(Math.max(newsMediaMeta.width, newsMediaMeta.height)).toBeLessThanOrEqual(1600);
     await page.getByRole('button', { name: 'Batal' }).click();
 
     const firstCatId = initialCategories[0].id;
@@ -79,6 +122,7 @@ test('admin manages news categories; refuses deletion while category is assigned
         name: `E2E full article ${Date.now()}`,
         jobTitle: '23 November 2026',
         fullContent: 'Isi paragraf lengkap artikel uji coba.\n\nParagraf lanjutan untuk verifikasi pop-up.',
+        avatarUrl: newsUploadBody.url,
         galleryUrls: [],
         slideshowPosition: 'middle',
         categoryIds: firstCatId !== secondCatId ? [firstCatId, secondCatId] : [firstCatId],
@@ -137,6 +181,19 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(page.locator('#agenda-modal-location')).toHaveCount(0);
     await expect(page.locator('#agenda-modal-gallery')).toHaveCount(0);
     await expect(page.locator('#agenda-modal-slideshow-pos')).toHaveCount(0);
+    const agendaUploadWait = page.waitForResponse(
+      (res) => res.url().includes('/api/v1/admin/uploads') && res.request().method() === 'POST'
+    );
+    await page.locator('#agenda-modal-cover').setInputFiles({
+      name: 'camera-highres-agenda.png',
+      mimeType: 'image/png',
+      buffer: highResBuffer
+    });
+    const agendaUploadResp = await agendaUploadWait;
+    expect(agendaUploadResp.status()).toBe(201);
+    const agendaUploadBody = await agendaUploadResp.json();
+    expect(agendaUploadBody.filename).toMatch(/\.webp$/i);
+    expect(agendaUploadBody.sizeBytes).toBeLessThan(highResBuffer.length);
     await page.getByRole('button', { name: 'Batal' }).click();
 
     const agendaTitles = [];
@@ -149,6 +206,7 @@ test('admin manages news categories; refuses deletion while category is assigned
           title: agendaTitle,
           eventDate: `${20 + idx} November 2026`,
           eventTime: '08.00 - 11.00 WIB',
+          coverUrl: idx === 1 ? agendaUploadBody.url : null,
           description: `Rincian kegiatan agenda E2E nomor ${idx}.`,
           isVisible: true
         }
