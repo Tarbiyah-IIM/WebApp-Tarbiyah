@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Waktu pembuatan: 24 Nov 2026 pada 01.38
+-- Waktu pembuatan: 24 Nov 2026 pada 02.03
 -- Versi server: 11.8.9-MariaDB-log
 -- Versi PHP: 7.2.34
 
@@ -286,7 +286,8 @@ INSERT INTO `refresh_tokens` (`id`, `user_id`, `token_hash`, `expires_at`, `revo
 (12, 5, '1ac8b5bf71871ffd41db240684a4bbc96316c11dfa11bb2fe5545fbe57fea836', '2026-11-30 12:10:53', '2026-11-23 14:11:44', '2026-11-23 12:10:53', '2026-11-23 14:11:44'),
 (13, 5, 'fd3d34f82b251f22bf3d56f4fdda9c44512b7cc323d061ca19cec91616528bbc', '2026-12-01 00:43:07', '2026-11-24 00:58:08', '2026-11-24 00:43:07', '2026-11-24 00:58:08'),
 (14, 5, 'cc0fa3ecc59bb564ce6c091263bdeab893c533ef4ab6cbdd1cc2ffce5dfbe1cb', '2026-12-01 00:58:08', '2026-11-24 01:18:40', '2026-11-24 00:58:08', '2026-11-24 01:18:40'),
-(15, 5, '7fd7aa09aacf19a70da9935695cde851af70e963202fb1fec0710d5fd46f3d42', '2026-12-01 01:18:40', NULL, '2026-11-24 01:18:40', '2026-11-24 01:18:40');
+(15, 5, '7fd7aa09aacf19a70da9935695cde851af70e963202fb1fec0710d5fd46f3d42', '2026-12-01 01:18:40', '2026-11-24 01:52:47', '2026-11-24 01:18:40', '2026-11-24 01:52:47'),
+(16, 5, '72c52cfd0aa7ee174a3e2bc8028909a92f4cd9089a18ee267d8a1449e538e70c', '2026-12-01 01:52:47', NULL, '2026-11-24 01:52:47', '2026-11-24 01:52:47');
 
 -- --------------------------------------------------------
 
@@ -605,7 +606,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT untuk tabel `refresh_tokens`
 --
 ALTER TABLE `refresh_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT untuk tabel `site_settings`
