@@ -5,15 +5,18 @@ import {
   createMediaFile,
   deleteMediaFileIfUnreferenced,
   extractMediaId,
+  findAgendaMediaUrls,
   findTestimonialMediaUrls
 } from '../models/media.model.js';
 import {
+  createAgenda,
   createFaq,
   createFeature,
   createNewsCategory,
   createPartner,
   createStat,
   createTestimonial,
+  deleteAgenda,
   deleteFaq,
   deleteFeature,
   deleteNewsCategory,
@@ -22,12 +25,14 @@ import {
   deleteTestimonial,
   getPortalOverviewStats,
   getSettingsMap,
+  listAgendasAdmin,
   listFaqsAdmin,
   listFeaturesAdmin,
   listNewsCategoriesAdmin,
   listPartnersAdmin,
   listStatsAdmin,
   listTestimonialsAdmin,
+  updateAgenda,
   updateFaq,
   updateFeature,
   updatePartner,
@@ -173,6 +178,59 @@ export async function adminDeleteNewsCategory(req, res, next) {
     if (err?.code === 'ER_ROW_IS_REFERENCED_2') {
       return next(new AppError(409, 'CATEGORY_IN_USE', 'Kategori masih dipakai berita'));
     }
+    return next(err);
+  }
+}
+
+export async function adminListAgendas(_req, res, next) {
+  try {
+    return res.json({ items: await listAgendasAdmin() });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminCreateAgenda(req, res, next) {
+  try {
+    const item = await createAgenda(req.body);
+    invalidateLandingCache();
+    return res.status(201).json({ agenda: item });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminUpdateAgenda(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+    const oldUrls = await findAgendaMediaUrls(id);
+    const item = await updateAgenda(id, req.body);
+    if (!item) return next(new AppError(404, 'NOT_FOUND', 'Agenda tidak ditemukan'));
+    const nextUrlSet = new Set([
+      ...(item.cover_url ? [item.cover_url] : []),
+      ...(Array.isArray(item.gallery_urls) ? item.gallery_urls : [])
+    ]);
+    const removedUrls = oldUrls.filter((url) => !nextUrlSet.has(url));
+    if (removedUrls.length > 0) {
+      await cleanupUnusedMediaList(removedUrls);
+    }
+    invalidateLandingCache();
+    return res.json({ agenda: item });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminDeleteAgenda(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+    const oldUrls = await findAgendaMediaUrls(id);
+    const ok = await deleteAgenda(id);
+    if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Agenda tidak ditemukan'));
+    await cleanupUnusedMediaList(oldUrls);
+    invalidateLandingCache();
+    return res.json({ message: 'Agenda dihapus' });
+  } catch (err) {
     return next(err);
   }
 }

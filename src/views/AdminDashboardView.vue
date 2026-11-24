@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   BarChart3,
+  CalendarDays,
   FileText,
   Handshake,
   HelpCircle,
@@ -21,6 +22,7 @@ import AdminShell from '../components/dashboard/AdminShell.vue';
 import AdminOverviewPanel from '../components/dashboard/AdminOverviewPanel.vue';
 import AdminCmsSettingsForm from '../components/dashboard/AdminCmsSettingsForm.vue';
 import AdminNewsPanel from '../components/dashboard/AdminNewsPanel.vue';
+import AdminAgendaPanel from '../components/dashboard/AdminAgendaPanel.vue';
 import AdminFaqPanel from '../components/dashboard/AdminFaqPanel.vue';
 import AdminStatsPanel from '../components/dashboard/AdminStatsPanel.vue';
 import AdminPartnersPanel from '../components/dashboard/AdminPartnersPanel.vue';
@@ -47,6 +49,7 @@ const navGroups = computed(() => [
     items: [
       { id: 'settings', label: t('adminDashboard.nav.settings'), icon: Settings },
       { id: 'news', label: t('adminDashboard.nav.news'), icon: Newspaper, count: portal.badgeCounts.value.news },
+      { id: 'agendas', label: t('adminDashboard.nav.agendas'), icon: CalendarDays, count: portal.badgeCounts.value.agendas },
       { id: 'faqs', label: t('adminDashboard.nav.faqs'), icon: HelpCircle, count: portal.badgeCounts.value.faqs },
       { id: 'stats', label: t('adminDashboard.nav.stats'), icon: BarChart3, count: portal.badgeCounts.value.stats },
       { id: 'partners', label: t('adminDashboard.nav.partners'), icon: Handshake, count: portal.badgeCounts.value.partners },
@@ -76,6 +79,11 @@ async function handleSaveSettings(patch, customMessage) {
 
 async function handleSaveNews(payload, onDone) {
   await portal.saveNews(payload, t('adminDashboard.cmsPanel.toasts.newsSaved'));
+  if (onDone) onDone();
+}
+
+async function handleSaveAgenda(payload, onDone) {
+  await portal.saveAgenda(payload, t('adminDashboard.cmsPanel.toasts.agendaSaved'));
   if (onDone) onDone();
 }
 
@@ -170,6 +178,15 @@ onMounted(() => {
         @delete-news="portal.removeNews($event, t('adminDashboard.cmsPanel.toasts.newsDeleted'))"
         @add-category="handleAddCategory"
         @delete-category="portal.removeCategory($event, t('adminDashboard.cmsPanel.toasts.categoryDeleted'))"
+      />
+
+      <AdminAgendaPanel
+        v-else-if="activeTab === 'agendas'"
+        :agendas="portal.agendas.value"
+        :syncing="portal.syncing.value"
+        :upload-handler="portal.uploadImage"
+        @save-agenda="handleSaveAgenda"
+        @delete-agenda="portal.removeAgenda($event, t('adminDashboard.cmsPanel.toasts.agendaDeleted'))"
       />
 
       <AdminFaqPanel

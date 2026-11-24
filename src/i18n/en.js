@@ -154,6 +154,13 @@ export default {
     galleryHeading: 'Event Documentation',
     photosCountBadge: 'Photos'
   },
+  agenda: {
+    badge: 'Schedules & Events',
+    heading: 'Faculty Agenda',
+    pillLabel: 'Agenda',
+    empty: 'No faculty agenda has been scheduled yet.',
+    navAria: 'Agenda Pagination'
+  },
   faq: {
     heading: 'FAQ',
     subheading: 'Frequently asked academic and administrative questions include'
@@ -227,13 +234,14 @@ export default {
   search: {
     openLabel: 'Open global search',
     modalTitle: 'Quick Search — Tarbiyah',
-    placeholder: 'Search faculty news or FAQ...',
+    placeholder: 'Search faculty news, agenda, or FAQ...',
     inputLabel: 'Search keyword',
     clearBtn: 'Clear',
     newsSection: 'Faculty News',
+    agendaSection: 'Faculty Agenda',
     faqSection: 'Frequently Asked Questions',
     emptyTitle: 'No matching results found on the home page.',
-    emptyHint: 'Try another keyword matching news titles or FAQs.'
+    emptyHint: 'Try another keyword matching news titles, agenda, or FAQs.'
   },
   feedback: {
     noDataTitle: 'No data found',
@@ -256,6 +264,7 @@ export default {
       overview: 'Overview',
       settings: 'Landing Page CMS',
       news: 'News',
+      agendas: 'Agenda',
       faqs: 'FAQs',
       stats: 'Statistics',
       partners: 'Services & Partners',
@@ -286,6 +295,7 @@ export default {
     stats: {
       users: 'Total Users',
       news: 'Faculty News',
+      agendas: 'Faculty Agenda',
       faqs: 'FAQ Items',
       services: 'Campus Services',
       features: 'Reasons Items'
@@ -384,6 +394,22 @@ export default {
       removeCoverBtn: 'Remove Image',
       updateNewsBtn: 'Update News',
       addNewsBtn: 'Add News',
+      agendaListHeading: 'Agenda List',
+      agendaSearchPlaceholder: 'Search agenda title, location, or details...',
+      addAgendaBtn: 'Add Agenda',
+      noAgendas: 'No agenda yet.',
+      confirmDeleteAgenda: 'Delete this agenda? This cannot be undone.',
+      agendaModalTitleAdd: 'Add Agenda',
+      agendaModalTitleEdit: 'Edit Agenda',
+      agendaTitleLabel: 'Agenda Name / Title',
+      agendaTitlePlaceholder: 'Agenda Title',
+      agendaDateLabel: 'Event Date',
+      agendaTimeLabel: 'Time (Optional)',
+      agendaTimePlaceholder: 'e.g. 08:00 - 12:00 WIB',
+      agendaLocationLabel: 'Location (Optional)',
+      agendaLocationPlaceholder: 'e.g. IIM Surakarta Auditorium',
+      agendaDescLabel: 'Full Agenda Description',
+      agendaDescPlaceholder: 'Write full agenda details or schedule here...',
       faqsHeading: 'FAQs',
       faqQuestionPlaceholder: 'Question',
       faqAnswerPlaceholder: 'Answer',
@@ -470,6 +496,8 @@ export default {
         faqDeleted: 'FAQ deleted.',
         newsSaved: 'Faculty news saved & synced.',
         newsDeleted: 'Faculty news deleted.',
+        agendaSaved: 'Faculty agenda saved & synced.',
+        agendaDeleted: 'Faculty agenda deleted.',
         categorySaved: 'News category added.',
         categoryDeleted: 'News category deleted.',
         statSaved: 'Statistic saved & synced.',

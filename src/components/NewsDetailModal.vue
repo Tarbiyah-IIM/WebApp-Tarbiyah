@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { Calendar } from 'lucide-vue-next';
+import { Calendar, Clock, MapPin } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.jpg';
 import ModalDialog from './ModalDialog.vue';
 import NewsGallerySlideshow from './NewsGallerySlideshow.vue';
@@ -8,11 +8,18 @@ import { useI18n } from '../composables/useI18n.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
-  item: { type: Object, default: null }
+  item: { type: Object, default: null },
+  badgeFallback: { type: String, default: '' }
 });
 
 const emit = defineEmits(['close']);
 const { t, tr } = useI18n();
+
+const displayTitle = computed(() => (props.item ? tr(props.item.name || props.item.title || '') : ''));
+const displayDate = computed(() => (props.item ? tr(props.item.job_title || props.item.event_date || '') : ''));
+const displayTime = computed(() => (props.item?.event_time ? tr(props.item.event_time) : ''));
+const displayLocation = computed(() => (props.item?.location ? tr(props.item.location) : ''));
+const displayCover = computed(() => props.item?.avatar_url || props.item?.cover_url || gedungIimFallback);
 
 const gallery = computed(() => (Array.isArray(props.item?.gallery_urls) ? props.item.gallery_urls : []));
 const slideshowPos = computed(() => props.item?.slideshow_position || 'bottom');
@@ -26,12 +33,17 @@ const categories = computed(() => {
   if (props.item.category_name) {
     return [{ id: props.item.category_id || 0, name: props.item.category_name }];
   }
+  if (props.badgeFallback) {
+    return [{ id: 0, name: props.badgeFallback }];
+  }
   return [];
 });
 
 const contentParagraphs = computed(() => {
   if (!props.item) return [];
-  const raw = tr(props.item.full_content || props.item.quote || '');
+  const raw = tr(
+    props.item.full_content || props.item.description || props.item.quote || props.item.excerpt || ''
+  );
   return String(raw)
     .split(/\r?\n\s*\r?\n/)
     .map((p) => p.trim())
@@ -58,7 +70,7 @@ const splitParagraphs = computed(() => {
 <template>
   <ModalDialog
     :open="open"
-    :title="item ? tr(item.name) : ''"
+    :title="displayTitle"
     header-variant="macos"
     @close="emit('close')"
   >
@@ -72,16 +84,24 @@ const splitParagraphs = computed(() => {
           >
             {{ tr(cat.name) }}
           </span>
-          <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+          <span v-if="displayDate" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
             <Calendar class="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
-            <span>{{ tr(item.job_title) }}</span>
+            <span>{{ displayDate }}</span>
+          </span>
+          <span v-if="displayTime" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+            <Clock class="h-3.5 w-3.5 text-amber-600" aria-hidden="true" />
+            <span>{{ displayTime }}</span>
+          </span>
+          <span v-if="displayLocation" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+            <MapPin class="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+            <span>{{ displayLocation }}</span>
           </span>
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-surface-border bg-slate-100">
           <img
-            :src="item.avatar_url || gedungIimFallback"
-            :alt="tr(item.name)"
+            :src="displayCover"
+            :alt="displayTitle"
             class="aspect-[16/9] w-full object-cover"
           />
         </div>
@@ -90,7 +110,7 @@ const splitParagraphs = computed(() => {
       <NewsGallerySlideshow
         v-if="showSlideshow && slideshowPos === 'top'"
         :images="gallery"
-        :title="tr(item.name)"
+        :title="displayTitle"
         :heading="t('news.galleryHeading')"
       />
 
@@ -106,7 +126,7 @@ const splitParagraphs = computed(() => {
         <NewsGallerySlideshow
           v-if="splitParagraphs.middleSlideshow"
           :images="gallery"
-          :title="tr(item.name)"
+          :title="displayTitle"
           :heading="t('news.galleryHeading')"
         />
 
@@ -122,7 +142,7 @@ const splitParagraphs = computed(() => {
       <NewsGallerySlideshow
         v-if="showSlideshow && slideshowPos === 'bottom'"
         :images="gallery"
-        :title="tr(item.name)"
+        :title="displayTitle"
         :heading="t('news.galleryHeading')"
       />
     </article>

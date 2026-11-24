@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { Search, ArrowRight, Newspaper, HelpCircle } from 'lucide-vue-next';
+import { Search, ArrowRight, CalendarDays, Newspaper, HelpCircle } from 'lucide-vue-next';
 import ModalDialog from './ModalDialog.vue';
 import { useLandingStore } from '../stores/landing.store.js';
 import { useI18n } from '../composables/useI18n.js';
@@ -41,6 +41,14 @@ const newsMatches = computed(() => {
     .slice(0, 4);
 });
 
+const agendaMatches = computed(() => {
+  const list = landingStore.data?.agendas || [];
+  if (!normalizedQuery.value) return [];
+  return list
+    .filter((a) => `${a.title} ${tr(a.title)} ${a.event_date || ''} ${a.location || ''} ${a.excerpt || ''} ${a.description || ''}`.toLowerCase().includes(normalizedQuery.value))
+    .slice(0, 4);
+});
+
 const faqMatches = computed(() => {
   const list = landingStore.data?.faqs || [];
   if (!normalizedQuery.value) return [];
@@ -50,7 +58,7 @@ const faqMatches = computed(() => {
 });
 
 const hasAnySectionMatch = computed(
-  () => newsMatches.value.length > 0 || faqMatches.value.length > 0
+  () => newsMatches.value.length > 0 || agendaMatches.value.length > 0 || faqMatches.value.length > 0
 );
 
 function closeAndNavigate(target) {
@@ -62,6 +70,10 @@ function closeAndNavigate(target) {
 function handleFormSubmit() {
   if (newsMatches.value.length > 0) {
     closeAndNavigate('/#testimonials');
+    return;
+  }
+  if (agendaMatches.value.length > 0) {
+    closeAndNavigate('/#agendas');
     return;
   }
   if (faqMatches.value.length > 0) {
@@ -113,6 +125,28 @@ function handleFormSubmit() {
               <div class="min-w-0">
                 <p class="text-xs font-bold text-brand-900">{{ tr(item.name) }}</p>
                 <p class="mt-0.5 line-clamp-1 text-[11px] text-slate-500">{{ tr(item.quote) }}</p>
+              </div>
+              <ArrowRight class="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
+            </button>
+          </div>
+        </div>
+
+        <div v-if="agendaMatches.length > 0" class="space-y-2">
+          <p class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+            <CalendarDays class="h-3.5 w-3.5 text-emerald-600" />
+            <span>{{ t('search.agendaSection') }}</span>
+          </p>
+          <div class="space-y-1.5">
+            <button
+              v-for="item in agendaMatches"
+              :key="item.id"
+              type="button"
+              class="flex w-full items-start justify-between gap-3 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50"
+              @click="closeAndNavigate('/#agendas')"
+            >
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-brand-900">{{ tr(item.title) }}</p>
+                <p class="mt-0.5 line-clamp-1 text-[11px] text-slate-500">{{ tr(item.event_date) }}</p>
               </div>
               <ArrowRight class="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
             </button>

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import {
   AlertCircle,
   ArrowRight,
+  CalendarDays,
   ExternalLink,
   FileCode2,
   Handshake,
@@ -41,6 +42,13 @@ const kpiCards = computed(() => [
     accent: 'bg-amber-50 text-amber-700'
   },
   {
+    id: 'agendas',
+    label: t('adminDashboard.stats.agendas'),
+    value: props.stats.totalAgendas || 0,
+    icon: CalendarDays,
+    accent: 'bg-emerald-50 text-emerald-700'
+  },
+  {
     id: 'faqs',
     label: t('adminDashboard.stats.faqs'),
     value: props.stats.totalFaqs || 0,
@@ -66,7 +74,7 @@ const kpiCards = computed(() => [
 
 <template>
   <div class="space-y-6">
-    <div class="grid grid-cols-2 gap-4 xl:grid-cols-5">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
       <button
         v-for="card in kpiCards"
         :key="card.id"

@@ -10,6 +10,7 @@ import FeaturesSection from '../components/FeaturesSection.vue';
 import JourneySection from '../components/JourneySection.vue';
 import PartnersGrid from '../components/PartnersGrid.vue';
 import TestimonialsSection from '../components/TestimonialsSection.vue';
+import AgendaSection from '../components/AgendaSection.vue';
 import FaqAccordion from '../components/FaqAccordion.vue';
 import FooterSection from '../components/FooterSection.vue';
 
@@ -43,6 +44,7 @@ onMounted(() => {
       <JourneySection :stats="landingStore.data.stats.journey" />
       <PartnersGrid :partners="landingStore.data.partners" />
       <TestimonialsSection :testimonials="landingStore.data.testimonials" />
+      <AgendaSection :agendas="landingStore.data.agendas" />
       <FaqAccordion :faqs="landingStore.data.faqs" />
       <FooterSection :settings="landingStore.data.settings" />
     </template>

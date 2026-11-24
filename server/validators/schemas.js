@@ -103,6 +103,36 @@ export const newsCategoryBodySchema = z.object({
   name: z.string().trim().min(2).max(100)
 });
 
+export const agendaBodySchema = z.object({
+  title: z.string().trim().min(2).max(160),
+  eventDate: z.string().trim().min(2).max(100),
+  eventTime: z.string().trim().max(80).nullable().optional(),
+  location: z.string().trim().max(180).nullable().optional(),
+  description: z.string().trim().min(5).max(100000),
+  coverUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .refine((v) => !v || isSafeNewsLink(v), 'URL gambar cover agenda tidak valid'),
+  galleryUrls: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1)
+        .max(500)
+        .refine((v) => isSafeNewsLink(v), 'URL foto dokumentasi agenda tidak valid')
+    )
+    .max(20)
+    .optional()
+    .default([]),
+  slideshowPosition: z.enum(['top', 'middle', 'bottom', 'none']).default('bottom'),
+  isVisible: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0).default(0)
+});
+
 export const faqBodySchema = z.object({
   question: z.string().trim().min(5).max(255),
   answer: z.string().trim().min(5).max(5000),

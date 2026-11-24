@@ -41,6 +41,22 @@ export const adminService = {
     const { data } = await api.delete(`/admin/news-categories/${id}`);
     return data;
   },
+  async listAgendas() {
+    const { data } = await api.get('/admin/agendas');
+    return data;
+  },
+  async createAgenda(payload) {
+    const { data } = await api.post('/admin/agendas', payload);
+    return data;
+  },
+  async updateAgenda(id, payload) {
+    const { data } = await api.patch(`/admin/agendas/${id}`, payload);
+    return data;
+  },
+  async deleteAgenda(id) {
+    const { data } = await api.delete(`/admin/agendas/${id}`);
+    return data;
+  },
   async listFaqs() {
     const { data } = await api.get('/admin/faqs');
     return data;

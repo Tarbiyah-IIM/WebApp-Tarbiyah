@@ -66,14 +66,30 @@ export async function findTestimonialMediaUrls(testimonialId) {
   return Array.from(new Set(urls));
 }
 
+export async function findAgendaMediaUrls(agendaId) {
+  const [rows] = await pool.execute(
+    'SELECT cover_url, gallery_urls FROM agendas WHERE id = ? LIMIT 1',
+    [agendaId]
+  );
+  const row = rows[0];
+  if (!row) return [];
+  const urls = [];
+  if (row.cover_url) urls.push(row.cover_url);
+  for (const galleryUrl of parseGalleryUrlsList(row.gallery_urls)) {
+    urls.push(galleryUrl);
+  }
+  return Array.from(new Set(urls));
+}
+
 export async function deleteMediaFileIfUnreferenced(mediaId) {
   if (!isValidMediaId(mediaId)) return false;
   const pattern = `%/api/v1/media/${mediaId}%`;
   const [[usage]] = await pool.execute(
     `SELECT
       (SELECT COUNT(*) FROM testimonials WHERE avatar_url LIKE ? OR gallery_urls LIKE ?) +
+      (SELECT COUNT(*) FROM agendas WHERE cover_url LIKE ? OR gallery_urls LIKE ?) +
       (SELECT COUNT(*) FROM site_settings WHERE setting_value LIKE ?) AS refCount`,
-    [pattern, pattern, pattern]
+    [pattern, pattern, pattern, pattern, pattern]
   );
   if (Number(usage?.refCount || 0) > 0) {
     return false;

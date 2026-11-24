@@ -82,9 +82,9 @@ export function parseNewsDateSortKey(rawDate) {
   return 0;
 }
 
-export function sortNewsByNewestDate(rows) {
+export function sortItemsByNewestDate(rows, dateField = 'job_title') {
   return [...rows].sort((a, b) => {
-    const dateDiff = parseNewsDateSortKey(b.job_title) - parseNewsDateSortKey(a.job_title);
+    const dateDiff = parseNewsDateSortKey(b[dateField]) - parseNewsDateSortKey(a[dateField]);
     if (dateDiff !== 0) return dateDiff;
 
     const createdDiff = (new Date(b.created_at || 0).getTime() || 0) - (new Date(a.created_at || 0).getTime() || 0);
@@ -92,6 +92,10 @@ export function sortNewsByNewestDate(rows) {
 
     return (Number(b.id) || 0) - (Number(a.id) || 0);
   });
+}
+
+export function sortNewsByNewestDate(rows) {
+  return sortItemsByNewestDate(rows, 'job_title');
 }
 
 function normalizeSlideshowPosition(pos) {
@@ -182,12 +186,25 @@ async function hydrateNewsRows(rows) {
   });
 }
 
+function hydrateAgendaRows(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return [];
+  return rows.map((row) => ({
+    ...row,
+    event_time: row.event_time ?? null,
+    location: row.location ?? null,
+    cover_url: row.cover_url ?? null,
+    gallery_urls: parseGalleryUrls(row.gallery_urls),
+    slideshow_position: normalizeSlideshowPosition(row.slideshow_position)
+  }));
+}
+
 export async function getLandingData() {
   const [
     [statsRows],
     [featuresRows],
     [partnersRows],
     [testimonialsRows],
+    [agendasRows],
     [faqsRows],
     [settingsRows]
   ] = await Promise.all([
@@ -202,6 +219,13 @@ export async function getLandingData() {
       LEFT JOIN news_categories nc ON nc.id = t.category_id
       WHERE t.is_visible = 1
       ORDER BY t.sort_order ASC, t.id ASC
+    `),
+    pool.execute(`
+      SELECT id, title, event_date, event_time, location, excerpt, description,
+             cover_url, gallery_urls, slideshow_position, sort_order, created_at, updated_at
+      FROM agendas
+      WHERE is_visible = 1
+      ORDER BY sort_order ASC, id ASC
     `),
     pool.execute('SELECT id, question, answer, sort_order FROM faqs ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT setting_key, setting_value FROM site_settings')
@@ -221,6 +245,7 @@ export async function getLandingData() {
     features: featuresRows,
     partners: partnersRows,
     testimonials: sortNewsByNewestDate(await hydrateNewsRows(testimonialsRows)),
+    agendas: sortItemsByNewestDate(hydrateAgendaRows(agendasRows), 'event_date'),
     faqs: faqsRows
   };
 }
@@ -246,6 +271,7 @@ export async function getPortalOverviewStats() {
     `SELECT
       (SELECT COUNT(*) FROM users) AS totalUsers,
       (SELECT COUNT(*) FROM testimonials) AS totalNews,
+      (SELECT COUNT(*) FROM agendas) AS totalAgendas,
       (SELECT COUNT(*) FROM faqs) AS totalFaqs,
       (SELECT COUNT(*) FROM partners) AS totalServices,
       (SELECT COUNT(*) FROM features) AS totalFeatures`
@@ -442,6 +468,106 @@ export async function deleteNewsCategory(id) {
     }
     throw err;
   }
+}
+
+export async function listAgendasAdmin() {
+  const [rows] = await pool.execute('SELECT * FROM agendas ORDER BY sort_order ASC, id ASC');
+  return sortItemsByNewestDate(hydrateAgendaRows(rows), 'event_date');
+}
+
+export async function createAgenda({
+  title,
+  eventDate,
+  eventTime = null,
+  location = null,
+  description,
+  coverUrl = null,
+  galleryUrls = [],
+  slideshowPosition = 'bottom',
+  isVisible = true,
+  sortOrder = 0
+}) {
+  const cleanDescription = description.trim();
+  const excerpt = buildNewsExcerpt(cleanDescription);
+  const serializedGallery = serializeGalleryUrls(galleryUrls);
+  const cleanPosition = normalizeSlideshowPosition(slideshowPosition);
+  const cleanTime = eventTime?.trim() ? eventTime.trim() : null;
+  const cleanLocation = location?.trim() ? location.trim() : null;
+  const cleanCover = coverUrl?.trim() ? coverUrl.trim() : null;
+
+  const [result] = await pool.execute(
+    `INSERT INTO agendas
+      (title, event_date, event_time, location, excerpt, description, cover_url, gallery_urls, slideshow_position, is_visible, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      title,
+      eventDate,
+      cleanTime,
+      cleanLocation,
+      excerpt,
+      cleanDescription,
+      cleanCover,
+      serializedGallery,
+      cleanPosition,
+      isVisible ? 1 : 0,
+      sortOrder
+    ]
+  );
+  const [rows] = await pool.execute('SELECT * FROM agendas WHERE id = ? LIMIT 1', [result.insertId]);
+  return hydrateAgendaRows(rows)[0] || null;
+}
+
+export async function updateAgenda(
+  id,
+  {
+    title,
+    eventDate,
+    eventTime = null,
+    location = null,
+    description,
+    coverUrl = null,
+    galleryUrls = [],
+    slideshowPosition = 'bottom',
+    isVisible = true,
+    sortOrder = 0
+  }
+) {
+  const cleanDescription = description.trim();
+  const excerpt = buildNewsExcerpt(cleanDescription);
+  const serializedGallery = serializeGalleryUrls(galleryUrls);
+  const cleanPosition = normalizeSlideshowPosition(slideshowPosition);
+  const cleanTime = eventTime?.trim() ? eventTime.trim() : null;
+  const cleanLocation = location?.trim() ? location.trim() : null;
+  const cleanCover = coverUrl?.trim() ? coverUrl.trim() : null;
+
+  const [res] = await pool.execute(
+    `UPDATE agendas
+     SET title = ?, event_date = ?, event_time = ?, location = ?, excerpt = ?, description = ?,
+         cover_url = ?, gallery_urls = ?, slideshow_position = ?, is_visible = ?, sort_order = ?
+     WHERE id = ?`,
+    [
+      title,
+      eventDate,
+      cleanTime,
+      cleanLocation,
+      excerpt,
+      cleanDescription,
+      cleanCover,
+      serializedGallery,
+      cleanPosition,
+      isVisible ? 1 : 0,
+      sortOrder,
+      id
+    ]
+  );
+  if (res.affectedRows === 0) return null;
+  const [rows] = await pool.execute('SELECT * FROM agendas WHERE id = ? LIMIT 1', [id]);
+  return hydrateAgendaRows(rows)[0] || null;
+}
+
+export async function deleteAgenda(id) {
+  const [result] = await pool.execute('DELETE FROM agendas WHERE id = ?', [id]);
+  return result.affectedRows > 0;
 }
 
 export async function listFaqsAdmin() {

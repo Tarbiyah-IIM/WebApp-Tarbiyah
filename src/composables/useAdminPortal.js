@@ -13,6 +13,7 @@ export function useAdminPortal() {
   const overviewStats = ref({
     totalUsers: 0,
     totalNews: 0,
+    totalAgendas: 0,
     totalFaqs: 0,
     totalServices: 0,
     totalFeatures: 0
@@ -24,6 +25,7 @@ export function useAdminPortal() {
   const features = ref([]);
   const partners = ref([]);
   const news = ref([]);
+  const agendas = ref([]);
   const categories = ref([]);
   const syncing = ref(false);
   const lastSyncedAt = ref(null);
@@ -31,6 +33,7 @@ export function useAdminPortal() {
   const badgeCounts = computed(() => ({
     users: users.value.length || overviewStats.value.totalUsers || 0,
     news: news.value.length || overviewStats.value.totalNews || 0,
+    agendas: agendas.value.length || overviewStats.value.totalAgendas || 0,
     faqs: faqs.value.length || overviewStats.value.totalFaqs || 0,
     stats: stats.value.length || 0,
     partners: partners.value.length || overviewStats.value.totalServices || 0,
@@ -39,7 +42,7 @@ export function useAdminPortal() {
 
   async function loadAll() {
     await run(async () => {
-      const [ovRes, uRes, sRes, fRes, stRes, ftRes, pRes, nRes, cRes] = await Promise.all([
+      const [ovRes, uRes, sRes, fRes, stRes, ftRes, pRes, nRes, aRes, cRes] = await Promise.all([
         adminService.getOverview(),
         adminService.listUsers(),
         adminService.getSettings(),
@@ -48,6 +51,7 @@ export function useAdminPortal() {
         adminService.listFeatures(),
         adminService.listPartners(),
         adminService.listTestimonials(),
+        adminService.listAgendas(),
         adminService.listNewsCategories()
       ]);
       overviewStats.value = ovRes.stats;
@@ -58,6 +62,7 @@ export function useAdminPortal() {
       features.value = ftRes.items;
       partners.value = pRes.items;
       news.value = nRes.items;
+      agendas.value = aRes.items;
       categories.value = cRes.items;
       lastSyncedAt.value = new Date();
     });
@@ -185,6 +190,23 @@ export function useAdminPortal() {
     }, successMessage);
   }
 
+  async function saveAgenda(payload, successMessage) {
+    return withSync(async () => {
+      if (payload.id) await adminService.updateAgenda(payload.id, payload);
+      else await adminService.createAgenda(payload);
+      const [aRes] = await Promise.all([adminService.listAgendas(), refreshOverviewAndLanding()]);
+      agendas.value = aRes.items;
+    }, successMessage);
+  }
+
+  async function removeAgenda(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deleteAgenda(id);
+      const [aRes] = await Promise.all([adminService.listAgendas(), refreshOverviewAndLanding()]);
+      agendas.value = aRes.items;
+    }, successMessage);
+  }
+
   async function addCategory(name, successMessage) {
     return withSync(async () => {
       const response = await adminService.createNewsCategory({ name });
@@ -233,6 +255,7 @@ export function useAdminPortal() {
     features,
     partners,
     news,
+    agendas,
     categories,
     loadAll,
     saveSettingsPatch,
@@ -246,6 +269,8 @@ export function useAdminPortal() {
     removeFeature,
     saveNews,
     removeNews,
+    saveAgenda,
+    removeAgenda,
     addCategory,
     removeCategory,
     updateUser,

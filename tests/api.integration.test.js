@@ -29,6 +29,7 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
     expect(res.body.stats.hero.some((s) => s.label === 'Academic System')).toBe(true);
     expect(res.body.stats.journey.some((s) => s.label === 'Dosen')).toBe(true);
     expect(Array.isArray(res.body.testimonials)).toBe(true);
+    expect(Array.isArray(res.body.agendas)).toBe(true);
     expect(res.body.faqs.length).toBeGreaterThanOrEqual(5);
 
     const removedCourses = await request(app).get('/api/v1/courses');
@@ -316,6 +317,82 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
     } finally {
       for (const id of createdIds) {
         await request(app).delete(`/api/v1/admin/testimonials/${id}`).set('Authorization', `Bearer ${adminToken}`);
+      }
+    }
+  });
+
+  it('supports Agenda CRUD, newest-first ordering, and automatic MySQL media cleanup', async () => {
+    const png1x1 = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    const coverUpload = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', png1x1, { filename: 'agenda-cover.png', contentType: 'image/png' });
+    expect(coverUpload.status).toBe(201);
+
+    const createdAgendaIds = [];
+    try {
+      const oldAgenda = await request(app)
+        .post('/api/v1/admin/agendas')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          title: 'Agenda Lama 2024',
+          eventDate: '12 Januari 2024',
+          eventTime: '08.00 - 11.00 WIB',
+          location: 'Aula Fakultas',
+          description: 'Deskripsi lengkap agenda tahun 2024 untuk pengujian urutan.',
+          isVisible: true
+        });
+      expect(oldAgenda.status).toBe(201);
+      createdAgendaIds.push(oldAgenda.body.agenda.id);
+
+      const newAgenda = await request(app)
+        .post('/api/v1/admin/agendas')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          title: 'Agenda Terbaru 2026',
+          eventDate: '25 November 2026',
+          eventTime: '09.00 - 12.00 WIB',
+          location: 'Auditorium IIM Surakarta',
+          description: 'Deskripsi lengkap agenda terbaru tahun 2026 dengan gambar cover MySQL.',
+          coverUrl: coverUpload.body.url,
+          galleryUrls: [],
+          slideshowPosition: 'middle',
+          isVisible: true
+        });
+      expect(newAgenda.status).toBe(201);
+      createdAgendaIds.push(newAgenda.body.agenda.id);
+
+      const [adminRes, landingRes] = await Promise.all([
+        request(app).get('/api/v1/admin/agendas').set('Authorization', `Bearer ${adminToken}`),
+        request(app).get('/api/v1/landing')
+      ]);
+      expect(adminRes.status).toBe(200);
+      expect(landingRes.status).toBe(200);
+
+      const expectedTitles = ['Agenda Terbaru 2026', 'Agenda Lama 2024'];
+      const adminOrder = adminRes.body.items
+        .map((item) => item.title)
+        .filter((title) => expectedTitles.includes(title));
+      const landingOrder = landingRes.body.agendas
+        .map((item) => item.title)
+        .filter((title) => expectedTitles.includes(title));
+      expect(adminOrder).toEqual(expectedTitles);
+      expect(landingOrder).toEqual(expectedTitles);
+
+      const delNew = await request(app)
+        .delete(`/api/v1/admin/agendas/${newAgenda.body.agenda.id}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(delNew.status).toBe(200);
+      createdAgendaIds.splice(createdAgendaIds.indexOf(newAgenda.body.agenda.id), 1);
+
+      const removedCover = await request(app).get(coverUpload.body.url);
+      expect(removedCover.status).toBe(404);
+    } finally {
+      for (const id of createdAgendaIds) {
+        await request(app).delete(`/api/v1/admin/agendas/${id}`).set('Authorization', `Bearer ${adminToken}`);
       }
     }
   });

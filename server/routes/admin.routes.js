@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import {
+  adminCreateAgenda,
   adminCreateFaq,
   adminCreateFeature,
   adminCreateNewsCategory,
   adminCreatePartner,
   adminCreateStat,
   adminCreateTestimonial,
+  adminDeleteAgenda,
   adminDeleteFaq,
   adminDeleteFeature,
   adminDeleteNewsCategory,
@@ -13,6 +15,7 @@ import {
   adminDeleteStat,
   adminDeleteTestimonial,
   adminGetSettings,
+  adminListAgendas,
   adminListFaqs,
   adminListFeatures,
   adminListNewsCategories,
@@ -20,6 +23,7 @@ import {
   adminListStats,
   adminListTestimonials,
   adminListUsers,
+  adminUpdateAgenda,
   adminUpdateFaq,
   adminUpdateFeature,
   adminUpdatePartner,
@@ -36,6 +40,7 @@ import { validateBody } from '../middlewares/validate.middleware.js';
 import {
   adminSettingsUpdateSchema,
   adminUserUpdateSchema,
+  agendaBodySchema,
   faqBodySchema,
   featureBodySchema,
   newsCategoryBodySchema,
@@ -60,6 +65,11 @@ router.delete('/testimonials/:id', adminDeleteTestimonial);
 router.get('/news-categories', adminListNewsCategories);
 router.post('/news-categories', validateBody(newsCategoryBodySchema), adminCreateNewsCategory);
 router.delete('/news-categories/:id', adminDeleteNewsCategory);
+
+router.get('/agendas', adminListAgendas);
+router.post('/agendas', validateBody(agendaBodySchema), adminCreateAgenda);
+router.patch('/agendas/:id', validateBody(agendaBodySchema), adminUpdateAgenda);
+router.delete('/agendas/:id', adminDeleteAgenda);
 
 router.get('/faqs', adminListFaqs);
 router.post('/faqs', validateBody(faqBodySchema), adminCreateFaq);

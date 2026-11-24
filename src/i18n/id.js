@@ -154,6 +154,13 @@ export default {
     galleryHeading: 'Dokumentasi Kegiatan',
     photosCountBadge: 'Foto'
   },
+  agenda: {
+    badge: 'Jadwal & Kegiatan',
+    heading: 'Agenda Fakultas',
+    pillLabel: 'Agenda',
+    empty: 'Belum ada agenda fakultas yang dijadwalkan.',
+    navAria: 'Navigasi Halaman Agenda'
+  },
   faq: {
     heading: 'FAQ',
     subheading: 'Berbagai macam pertanyaan yang sering ditanyakan antara lain'
@@ -227,13 +234,14 @@ export default {
   search: {
     openLabel: 'Buka pencarian global',
     modalTitle: 'Pencarian Cepat Tarbiyah',
-    placeholder: 'Cari berita fakultas atau FAQ...',
+    placeholder: 'Cari berita, agenda fakultas, atau FAQ...',
     inputLabel: 'Kata kunci pencarian',
     clearBtn: 'Bersihkan',
     newsSection: 'Berita Fakultas',
+    agendaSection: 'Agenda Fakultas',
     faqSection: 'Pertanyaan Umum (FAQ)',
     emptyTitle: 'Tidak ada hasil yang cocok pada halaman beranda.',
-    emptyHint: 'Coba kata kunci lain sesuai judul berita atau FAQ.'
+    emptyHint: 'Coba kata kunci lain sesuai judul berita, agenda, atau FAQ.'
   },
   feedback: {
     noDataTitle: 'Data tidak ditemukan',
@@ -256,6 +264,7 @@ export default {
       overview: 'Ringkasan',
       settings: 'CMS Halaman Utama',
       news: 'Berita',
+      agendas: 'Agenda',
       faqs: 'FAQ',
       stats: 'Statistik',
       partners: 'Layanan & Mitra',
@@ -286,6 +295,7 @@ export default {
     stats: {
       users: 'Total Pengguna',
       news: 'Berita Fakultas',
+      agendas: 'Agenda Fakultas',
       faqs: 'Item FAQ',
       services: 'Layanan Kampus',
       features: 'Alasan Kuliah'
@@ -384,6 +394,22 @@ export default {
       removeCoverBtn: 'Hapus Gambar',
       updateNewsBtn: 'Perbarui Berita',
       addNewsBtn: 'Tambah Berita',
+      agendaListHeading: 'Daftar Agenda',
+      agendaSearchPlaceholder: 'Cari judul, lokasi, atau isi agenda...',
+      addAgendaBtn: 'Tambah Agenda',
+      noAgendas: 'Belum ada agenda.',
+      confirmDeleteAgenda: 'Hapus agenda ini? Tindakan tidak dapat dibatalkan.',
+      agendaModalTitleAdd: 'Tambah Data Agenda',
+      agendaModalTitleEdit: 'Ubah Data Agenda',
+      agendaTitleLabel: 'Nama / Judul Agenda',
+      agendaTitlePlaceholder: 'Judul Agenda',
+      agendaDateLabel: 'Tanggal Agenda',
+      agendaTimeLabel: 'Waktu (Opsional)',
+      agendaTimePlaceholder: 'mis. 08.00 - 12.00 WIB',
+      agendaLocationLabel: 'Lokasi (Opsional)',
+      agendaLocationPlaceholder: 'mis. Auditorium IIM Surakarta',
+      agendaDescLabel: 'Deskripsi Lengkap Agenda',
+      agendaDescPlaceholder: 'Tulis rincian agenda atau jadwal kegiatan di sini...',
       faqsHeading: 'FAQ',
       faqQuestionPlaceholder: 'Pertanyaan',
       faqAnswerPlaceholder: 'Jawaban',
@@ -470,6 +496,8 @@ export default {
         faqDeleted: 'FAQ dihapus.',
         newsSaved: 'Berita fakultas disimpan & disinkronkan.',
         newsDeleted: 'Berita fakultas dihapus.',
+        agendaSaved: 'Agenda fakultas disimpan & disinkronkan.',
+        agendaDeleted: 'Agenda fakultas dihapus.',
         categorySaved: 'Kategori berita ditambahkan.',
         categoryDeleted: 'Kategori berita dihapus.',
         statSaved: 'Statistik disimpan & disinkronkan.',

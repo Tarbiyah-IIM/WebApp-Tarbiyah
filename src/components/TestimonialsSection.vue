@@ -12,7 +12,7 @@ const props = defineProps({
 
 const { t, tr } = useI18n();
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 3;
 const currentPage = ref(1);
 const selectedNews = ref(null);
 
@@ -52,7 +52,7 @@ function getCategories(item) {
         </h2>
       </div>
 
-      <div v-if="paginatedNews.length" class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div v-if="paginatedNews.length" data-testid="landing-news-grid" class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <article
           v-for="item in paginatedNews"
           :key="item.id"

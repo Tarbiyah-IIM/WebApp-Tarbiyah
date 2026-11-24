@@ -5,6 +5,7 @@ test('admin manages news categories; refuses deletion while category is assigned
   const headers = { Authorization: `Bearer ${admin.accessToken}` };
   const categoryNames = [];
   const newsIds = [];
+  const agendaIds = [];
 
   try {
     const categoryList = await request.get('http://localhost:3001/api/v1/admin/news-categories', { headers });
@@ -128,7 +129,47 @@ test('admin manages news categories; refuses deletion while category is assigned
     await adminNav.getByRole('button', { name: '2', exact: true }).click();
     await expect(page.locator('[data-testid="admin-news-grid"] article').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: createdBulkNames[0] })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Agenda', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Daftar Agenda' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Tambah Agenda' })).toHaveCount(1);
+
+    const agendaTitles = [];
+    for (let idx = 1; idx <= 4; idx += 1) {
+      const agendaTitle = `E2E Agenda ${idx} ${Date.now()}`;
+      agendaTitles.push(agendaTitle);
+      const aRes = await request.post('http://localhost:3001/api/v1/admin/agendas', {
+        headers,
+        data: {
+          title: agendaTitle,
+          eventDate: `${20 + idx} November 2026`,
+          eventTime: '08.00 - 11.00 WIB',
+          location: 'Auditorium IIM Surakarta',
+          description: `Rincian kegiatan agenda E2E nomor ${idx}.`,
+          isVisible: true
+        }
+      });
+      expect(aRes.status()).toBe(201);
+      agendaIds.push((await aRes.json()).agenda.id);
+    }
+
+    await page.goto('/');
+    await expect(page.locator('[data-testid="landing-news-grid"] article')).toHaveCount(3);
+    await expect(page.locator('[data-testid="landing-agenda-grid"] article')).toHaveCount(3);
+
+    const newestAgendaTitle = agendaTitles[3];
+    await page.getByRole('button', { name: new RegExp(newestAgendaTitle) }).click();
+    const agendaDialog = page.getByRole('dialog');
+    await expect(agendaDialog).toBeVisible();
+    await expect(agendaDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
+    await expect(agendaDialog.getByText('08.00 - 11.00 WIB')).toBeVisible();
+    await expect(agendaDialog.getByText('Auditorium IIM Surakarta')).toBeVisible();
+    await agendaDialog.getByRole('button', { name: 'Close modal' }).click();
+    await expect(agendaDialog).toHaveCount(0);
   } finally {
+    for (const id of agendaIds) {
+      await request.delete(`http://localhost:3001/api/v1/admin/agendas/${id}`, { headers });
+    }
     for (const id of newsIds) {
       await request.delete(`http://localhost:3001/api/v1/admin/testimonials/${id}`, { headers });
     }
