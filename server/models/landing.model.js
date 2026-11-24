@@ -98,6 +98,14 @@ function normalizeSlideshowPosition(pos) {
   return VALID_SLIDESHOW_POSITIONS.has(pos) ? pos : 'bottom';
 }
 
+function buildNewsExcerpt(fullContent, maxLength = 200) {
+  const normalized = String(fullContent || '').replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  if (normalized.length <= maxLength) return normalized;
+  const sliced = normalized.slice(0, maxLength - 3).replace(/\s+\S*$/, '');
+  return `${sliced || normalized.slice(0, maxLength - 3)}...`;
+}
+
 function parseGalleryUrls(raw) {
   if (Array.isArray(raw)) {
     return raw.map((item) => String(item || '').trim()).filter(Boolean);
@@ -166,7 +174,6 @@ async function hydrateNewsRows(rows) {
       full_content: row.full_content ?? null,
       gallery_urls: parseGalleryUrls(row.gallery_urls),
       slideshow_position: normalizeSlideshowPosition(row.slideshow_position),
-      related_url: row.related_url ?? null,
       categories,
       category_ids: categoryIds,
       category_names: categoryNames,
@@ -189,7 +196,7 @@ export async function getLandingData() {
     pool.execute('SELECT id, name, logo_url, url, sort_order FROM partners ORDER BY sort_order ASC, id ASC'),
     pool.execute(`
       SELECT t.id, t.name, t.job_title, t.quote, t.full_content, t.rating, t.avatar_url,
-             t.gallery_urls, t.slideshow_position, t.related_url, t.sort_order,
+             t.gallery_urls, t.slideshow_position, t.sort_order,
              t.category_id, nc.name AS category_name, t.created_at, t.updated_at
       FROM testimonials t
       LEFT JOIN news_categories nc ON nc.id = t.category_id
@@ -221,7 +228,7 @@ export async function getLandingData() {
 export async function getPublishedNewsById(id) {
   const [rows] = await pool.execute(
     `SELECT t.id, t.name, t.job_title, t.quote, t.full_content, t.rating, t.avatar_url,
-            t.gallery_urls, t.slideshow_position, t.related_url, t.sort_order,
+            t.gallery_urls, t.slideshow_position, t.sort_order,
             t.category_id, nc.name AS category_name, t.created_at, t.updated_at
      FROM testimonials t
      LEFT JOIN news_categories nc ON nc.id = t.category_id
@@ -282,13 +289,12 @@ export async function listTestimonialsAdmin() {
 export async function createTestimonial({
   name,
   jobTitle,
-  quote,
+  quote = null,
   fullContent = null,
   rating,
   avatarUrl = null,
   galleryUrls = [],
   slideshowPosition = 'bottom',
-  relatedUrl = null,
   categoryId,
   categoryIds,
   isVisible,
@@ -298,7 +304,7 @@ export async function createTestimonial({
   const primaryCategoryId = normalizedCategoryIds[0] || null;
   const serializedGallery = serializeGalleryUrls(galleryUrls);
   const cleanFullContent = fullContent?.trim() ? fullContent.trim() : null;
-  const cleanRelatedUrl = relatedUrl?.trim() ? relatedUrl.trim() : null;
+  const cleanQuote = quote?.trim() ? quote.trim() : buildNewsExcerpt(cleanFullContent);
   const cleanPosition = normalizeSlideshowPosition(slideshowPosition);
 
   const conn = await pool.getConnection();
@@ -307,18 +313,17 @@ export async function createTestimonial({
     await conn.beginTransaction();
     const [result] = await conn.execute(
       `INSERT INTO testimonials
-        (name, job_title, quote, full_content, rating, avatar_url, gallery_urls, slideshow_position, related_url, category_id, is_visible, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (name, job_title, quote, full_content, rating, avatar_url, gallery_urls, slideshow_position, category_id, is_visible, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
         jobTitle,
-        quote,
+        cleanQuote,
         cleanFullContent,
         rating,
         avatarUrl,
         serializedGallery,
         cleanPosition,
-        cleanRelatedUrl,
         primaryCategoryId,
         isVisible ? 1 : 0,
         sortOrder
@@ -347,13 +352,12 @@ export async function updateTestimonial(
   {
     name,
     jobTitle,
-    quote,
+    quote = null,
     fullContent = null,
     rating,
     avatarUrl = null,
     galleryUrls = [],
     slideshowPosition = 'bottom',
-    relatedUrl = null,
     categoryId,
     categoryIds,
     isVisible,
@@ -364,7 +368,7 @@ export async function updateTestimonial(
   const primaryCategoryId = normalizedCategoryIds[0] || null;
   const serializedGallery = serializeGalleryUrls(galleryUrls);
   const cleanFullContent = fullContent?.trim() ? fullContent.trim() : null;
-  const cleanRelatedUrl = relatedUrl?.trim() ? relatedUrl.trim() : null;
+  const cleanQuote = quote?.trim() ? quote.trim() : buildNewsExcerpt(cleanFullContent);
   const cleanPosition = normalizeSlideshowPosition(slideshowPosition);
 
   const conn = await pool.getConnection();
@@ -373,18 +377,17 @@ export async function updateTestimonial(
     const [updateRes] = await conn.execute(
       `UPDATE testimonials
        SET name = ?, job_title = ?, quote = ?, full_content = ?, rating = ?, avatar_url = ?,
-           gallery_urls = ?, slideshow_position = ?, related_url = ?, category_id = ?, is_visible = ?, sort_order = ?
+           gallery_urls = ?, slideshow_position = ?, category_id = ?, is_visible = ?, sort_order = ?
        WHERE id = ?`,
       [
         name,
         jobTitle,
-        quote,
+        cleanQuote,
         cleanFullContent,
         rating,
         avatarUrl,
         serializedGallery,
         cleanPosition,
-        cleanRelatedUrl,
         primaryCategoryId,
         isVisible ? 1 : 0,
         sortOrder,

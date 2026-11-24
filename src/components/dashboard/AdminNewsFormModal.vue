@@ -4,10 +4,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Globe,
   ImagePlus,
   Images,
-  Info,
   Trash2,
   X
 } from 'lucide-vue-next';
@@ -48,9 +46,7 @@ const form = reactive({
   avatarUrl: '',
   galleryUrls: [],
   slideshowPosition: 'bottom',
-  quote: '',
   fullContent: '',
-  relatedUrl: '',
   rating: 5,
   isVisible: true,
   sortOrder: 0
@@ -109,9 +105,7 @@ function hydrateForm() {
     form.slideshowPosition = ['top', 'middle', 'bottom', 'none'].includes(item.slideshow_position)
       ? item.slideshow_position
       : 'bottom';
-    form.quote = item.quote || '';
-    form.fullContent = item.full_content || '';
-    form.relatedUrl = item.related_url || '';
+    form.fullContent = item.full_content || item.quote || '';
     form.rating = item.rating || 5;
     form.isVisible = Boolean(item.is_visible);
     form.sortOrder = item.sort_order || 0;
@@ -125,9 +119,7 @@ function hydrateForm() {
   form.avatarUrl = '';
   form.galleryUrls = [];
   form.slideshowPosition = 'bottom';
-  form.quote = '';
   form.fullContent = '';
-  form.relatedUrl = '';
   form.rating = 5;
   form.isVisible = true;
   form.sortOrder = 0;
@@ -236,12 +228,10 @@ function submit() {
     id: form.id,
     name: form.name.trim(),
     jobTitle: finalDate,
-    quote: form.quote.trim(),
-    fullContent: form.fullContent.trim() || null,
+    fullContent: form.fullContent.trim(),
     avatarUrl: form.avatarUrl?.trim() || null,
     galleryUrls: form.galleryUrls.filter(Boolean),
     slideshowPosition: form.slideshowPosition,
-    relatedUrl: form.relatedUrl?.trim() || null,
     rating: form.rating,
     categoryId: form.categoryIds[0],
     categoryIds: [...form.categoryIds],
@@ -511,58 +501,20 @@ function submit() {
       </div>
 
       <div>
-        <label for="news-modal-summary" class="mb-1.5 block text-xs font-bold text-brand-900">
-          {{ t('adminDashboard.cmsPanel.newsSummaryLabel') }}
-          <span class="text-rose-500" aria-hidden="true">*</span>
-        </label>
-        <textarea
-          id="news-modal-summary"
-          v-model="form.quote"
-          rows="3"
-          required
-          minlength="5"
-          maxlength="2000"
-          :placeholder="t('adminDashboard.cmsPanel.newsSummaryPlaceholder')"
-          class="w-full rounded-xl border border-surface-border p-3.5 text-sm leading-relaxed"
-        />
-      </div>
-
-      <div>
         <label for="news-modal-full-content" class="mb-1.5 block text-xs font-bold text-brand-900">
           {{ t('adminDashboard.cmsPanel.newsFullContentLabel') }}
+          <span class="text-rose-500" aria-hidden="true">*</span>
         </label>
         <textarea
           id="news-modal-full-content"
           v-model="form.fullContent"
-          rows="5"
+          rows="6"
+          required
+          minlength="5"
           maxlength="100000"
           :placeholder="t('adminDashboard.cmsPanel.newsFullContentPlaceholder')"
           class="w-full rounded-xl border border-surface-border p-3.5 text-sm leading-relaxed"
         />
-      </div>
-
-      <div>
-        <label for="news-modal-related-url" class="mb-1.5 block text-xs font-bold text-brand-900">
-          {{ t('adminDashboard.cmsPanel.newsRelatedUrlLabel') }}
-        </label>
-        <div class="relative">
-          <input
-            id="news-modal-related-url"
-            v-model="form.relatedUrl"
-            type="text"
-            maxlength="500"
-            :placeholder="t('adminDashboard.cmsPanel.newsRelatedUrlPlaceholder')"
-            class="min-h-[44px] w-full rounded-xl border border-surface-border pl-3.5 pr-10 text-sm"
-          />
-          <Globe
-            class="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-            aria-hidden="true"
-          />
-        </div>
-        <p class="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500">
-          <Info class="h-3.5 w-3.5 shrink-0 text-sky-600" aria-hidden="true" />
-          <span>{{ t('adminDashboard.cmsPanel.newsRelatedUrlHint') }}</span>
-        </p>
       </div>
 
       <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-xs font-semibold text-brand-900">

@@ -51,8 +51,8 @@ export const testimonialBodySchema = z
   .object({
     name: z.string().trim().min(2).max(120),
     jobTitle: z.string().trim().min(2).max(160),
-    quote: z.string().trim().min(5).max(2000),
-    fullContent: z.string().trim().max(100000).nullable().optional(),
+    quote: z.string().trim().min(5).max(2000).optional(),
+    fullContent: z.string().trim().min(5).max(100000).nullable().optional(),
     rating: z.coerce.number().int().min(1).max(5).default(5),
     avatarUrl: z
       .string()
@@ -74,13 +74,6 @@ export const testimonialBodySchema = z
       .optional()
       .default([]),
     slideshowPosition: z.enum(['top', 'middle', 'bottom', 'none']).default('bottom'),
-    relatedUrl: z
-      .string()
-      .trim()
-      .max(500)
-      .nullable()
-      .optional()
-      .refine((v) => !v || isSafeNewsLink(v), 'Tautan terkait tidak valid'),
     categoryId: z.coerce.number().int().positive().optional(),
     categoryIds: z.array(z.coerce.number().int().positive()).max(20).optional(),
     isVisible: z.boolean().default(true),
@@ -94,6 +87,14 @@ export const testimonialBodySchema = z
         code: 'custom',
         path: ['categoryIds'],
         message: 'Pilih minimal satu kategori berita'
+      });
+    }
+    const hasContent = Boolean(data.fullContent?.trim()) || Boolean(data.quote?.trim());
+    if (!hasContent) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['fullContent'],
+        message: 'Isi berita lengkap wajib diisi'
       });
     }
   });

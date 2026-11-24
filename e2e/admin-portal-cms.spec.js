@@ -105,10 +105,8 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     ]);
     await expect(dialog.getByText(/1 foto dokumentasi terpasang/)).toBeVisible();
 
-    await dialog.getByLabel(/Ringkasan Berita/).fill('Gambar berita tersimpan permanen di tabel MySQL media_files.');
     await dialog.getByLabel(/Isi Berita Lengkap/).fill('Paragraf pembuka artikel E2E.\n\nParagraf penutup artikel E2E.');
     await dialog.getByLabel(/Posisi Slideshow Foto di Artikel/).selectOption('middle');
-    await dialog.getByLabel(/Tautan Terkait/).fill('https://ft.iim.ac.id/e2e-doc');
     await dialog.getByRole('button', { name: 'Simpan', exact: true }).click();
     await expect(page.getByText('Berita fakultas disimpan & disinkronkan.')).toBeVisible();
     await expect(dialog).toHaveCount(0);

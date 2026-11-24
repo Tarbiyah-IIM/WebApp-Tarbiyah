@@ -212,20 +212,18 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .send({
         name: 'Berita Media MySQL Test',
         jobTitle: '23 November 2026',
-        quote: 'Pengujian penyimpanan permanen gambar berita di MySQL.',
         fullContent: 'Paragraf pertama artikel lengkap.\n\nParagraf kedua untuk detail berita.',
         avatarUrl: uploadRes.body.url,
         galleryUrls: [galleryUploadRes.body.url],
         slideshowPosition: 'middle',
-        relatedUrl: 'https://ft.iim.ac.id/dokumen-test',
         categoryIds: firstCatId !== secondCatId ? [firstCatId, secondCatId] : [firstCatId],
         isVisible: true,
         sortOrder: 0
       });
     expect(newsCreateRes.status).toBe(201);
+    expect(newsCreateRes.body.testimonial.quote).toContain('Paragraf pertama artikel lengkap.');
     expect(newsCreateRes.body.testimonial.gallery_urls).toEqual([galleryUploadRes.body.url]);
     expect(newsCreateRes.body.testimonial.slideshow_position).toBe('middle');
-    expect(newsCreateRes.body.testimonial.related_url).toBe('https://ft.iim.ac.id/dokumen-test');
 
     const landingRes = await request(app).get('/api/v1/landing');
     expect(landingRes.status).toBe(200);

@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { Calendar, ExternalLink, Info } from 'lucide-vue-next';
+import { Calendar } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.jpg';
 import ModalDialog from './ModalDialog.vue';
 import NewsGallerySlideshow from './NewsGallerySlideshow.vue';
@@ -85,10 +85,6 @@ const splitParagraphs = computed(() => {
             class="aspect-[16/9] w-full object-cover"
           />
         </div>
-
-        <p class="rounded-xl border border-surface-border bg-surface-page px-4 py-3 text-sm font-medium leading-relaxed text-slate-600">
-          {{ tr(item.quote) }}
-        </p>
       </header>
 
       <NewsGallerySlideshow
@@ -129,23 +125,6 @@ const splitParagraphs = computed(() => {
         :title="tr(item.name)"
         :heading="t('news.galleryHeading')"
       />
-
-      <div v-if="item.related_url" class="border-t border-surface-border pt-4">
-        <a
-          v-if="item.related_url !== '#'"
-          :href="item.related_url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-600 px-5 text-sm font-bold text-white transition hover:bg-brand-700"
-        >
-          <span>{{ t('news.relatedDocBtn') }}</span>
-          <ExternalLink class="h-4 w-4" aria-hidden="true" />
-        </a>
-        <p v-else class="inline-flex items-center gap-2 text-xs font-medium text-slate-500">
-          <Info class="h-4 w-4 shrink-0 text-sky-600" aria-hidden="true" />
-          <span>{{ t('news.relatedDocPending') }}</span>
-        </p>
-      </div>
     </article>
   </ModalDialog>
 </template>

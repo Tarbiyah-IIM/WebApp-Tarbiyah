@@ -65,8 +65,9 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(page.locator('#news-modal-category-trigger')).toBeVisible();
     await expect(page.locator('#news-modal-slideshow-pos')).toBeVisible();
     await expect(page.locator('#news-modal-slideshow-pos option[value="middle"]')).toHaveText('Tengah Berita');
+    await expect(page.locator('#news-modal-summary')).toHaveCount(0);
     await expect(page.locator('#news-modal-full-content')).toBeVisible();
-    await expect(page.locator('#news-modal-related-url')).toBeVisible();
+    await expect(page.locator('#news-modal-related-url')).toHaveCount(0);
     await page.getByRole('button', { name: 'Batal' }).click();
 
     const firstCatId = initialCategories[0].id;
@@ -76,11 +77,9 @@ test('admin manages news categories; refuses deletion while category is assigned
       data: {
         name: `E2E full article ${Date.now()}`,
         jobTitle: '23 November 2026',
-        quote: 'Ringkasan singkat artikel uji coba E2E.',
         fullContent: 'Isi paragraf lengkap artikel uji coba.\n\nParagraf lanjutan untuk verifikasi pop-up.',
         galleryUrls: [],
         slideshowPosition: 'middle',
-        relatedUrl: 'https://ft.iim.ac.id/berkas-uji',
         categoryIds: firstCatId !== secondCatId ? [firstCatId, secondCatId] : [firstCatId],
         isVisible: true,
         sortOrder: 998
@@ -98,10 +97,6 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(articleDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
     await expect(articleDialog.getByRole('heading', { name: fullArticle.name })).toBeVisible();
     await expect(articleDialog.getByText('Isi paragraf lengkap artikel uji coba.')).toBeVisible();
-    await expect(articleDialog.getByRole('link', { name: 'Buka Tautan / Dokumen Terkait' })).toHaveAttribute(
-      'href',
-      'https://ft.iim.ac.id/berkas-uji'
-    );
     await articleDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(articleDialog).toHaveCount(0);
   } finally {

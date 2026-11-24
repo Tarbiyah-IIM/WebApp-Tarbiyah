@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Calendar, Images, Link2, Plus, Search, Trash2 } from 'lucide-vue-next';
+import { Calendar, Images, Plus, Search, Trash2 } from 'lucide-vue-next';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import AdminNewsFormModal from './AdminNewsFormModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
@@ -242,13 +242,6 @@ function confirmDelete() {
                 >
                   <Images class="h-3 w-3" aria-hidden="true" />
                   <span>{{ item.gallery_urls.length }} {{ t('news.photosCountBadge') }}</span>
-                </span>
-                <span
-                  v-if="item.related_url && item.related_url !== '#'"
-                  class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-700"
-                >
-                  <Link2 class="h-3 w-3" aria-hidden="true" />
-                  <span>Link</span>
                 </span>
               </div>
               <h3 class="truncate text-sm font-bold text-brand-900">{{ item.name }}</h3>
