@@ -207,7 +207,7 @@ test('admin manages news categories; refuses deletion while category is assigned
           eventDate: `${20 + idx} November 2026`,
           eventTime: '08.00 - 11.00 WIB',
           coverUrl: idx === 1 ? agendaUploadBody.url : null,
-          description: `Rincian kegiatan agenda E2E nomor ${idx}.`,
+          description: `Rincian kegiatan agenda E2E nomor ${idx}. Gabung via https://zoom.us/j/9988776655?pwd=test.`,
           isVisible: true
         }
       });
@@ -218,6 +218,9 @@ test('admin manages news categories; refuses deletion while category is assigned
     await page.goto('/');
     await expect(page.locator('[data-testid="landing-news-grid"] article')).toHaveCount(3);
     await expect(page.locator('[data-testid="landing-agenda-grid"] article')).toHaveCount(3);
+    await expect(
+      page.locator('[data-testid="landing-agenda-grid"]').getByText('Rincian kegiatan agenda E2E nomor 4')
+    ).toHaveCount(0);
 
     const newestAgendaTitle = agendaTitles[3];
     await page.getByRole('button', { name: new RegExp(newestAgendaTitle) }).click();
@@ -225,6 +228,11 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(agendaDialog).toBeVisible();
     await expect(agendaDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
     await expect(agendaDialog.getByText('08.00 - 11.00 WIB')).toBeVisible();
+    await expect(agendaDialog.getByText(/Rincian kegiatan agenda E2E nomor 4/)).toBeVisible();
+    const agendaLink = agendaDialog.getByRole('link', { name: 'https://zoom.us/j/9988776655?pwd=test' });
+    await expect(agendaLink).toBeVisible();
+    await expect(agendaLink).toHaveAttribute('href', 'https://zoom.us/j/9988776655?pwd=test');
+    await expect(agendaLink).toHaveAttribute('target', '_blank');
     await agendaDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(agendaDialog).toHaveCount(0);
   } finally {
