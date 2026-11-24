@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { adminService } from '../services/admin.service.js';
 import { extractApiError } from '../services/api.js';
+import { optimizeImageForUpload } from '../services/imageOptimizer.service.js';
 import { useLandingStore } from '../stores/landing.store.js';
 import { useAsyncState } from './useAsyncState.js';
 import { useToast } from './useToast.js';
@@ -235,7 +236,8 @@ export function useAdminPortal() {
 
   async function uploadImage(file) {
     return withSync(async () => {
-      const res = await adminService.uploadImage(file);
+      const optimizedFile = await optimizeImageForUpload(file);
+      const res = await adminService.uploadImage(optimizedFile);
       return res.url;
     });
   }

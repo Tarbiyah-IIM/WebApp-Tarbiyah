@@ -1,6 +1,8 @@
 import multer from 'multer';
 import { AppError } from './error.middleware.js';
 
+export const MAX_UPLOAD_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+
 export const ALLOWED_IMAGE_MIME_TO_EXT = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
@@ -42,7 +44,7 @@ export function detectImageMimeFromBuffer(buffer) {
 export const uploadImage = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024
+    fileSize: MAX_UPLOAD_FILE_SIZE_BYTES
   },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_IMAGE_MIME_TO_EXT[file.mimetype]) {

@@ -39,10 +39,14 @@ export function errorHandler(err, req, res, _next) {
   }
 
   if (err && err.name === 'MulterError') {
+    const message =
+      err.code === 'LIMIT_FILE_SIZE'
+        ? 'Ukuran file terlalu besar. Maksimal ukuran file adalah 10 MB.'
+        : err.message;
     return res.status(400).json({
       error: {
         code: 'UPLOAD_ERROR',
-        message: err.message,
+        message,
         details: []
       }
     });
