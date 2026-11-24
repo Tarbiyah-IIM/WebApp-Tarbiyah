@@ -1,9 +1,12 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Calendar, Images, Plus, Search, Trash2 } from 'lucide-vue-next';
+import PaginationControls from '../PaginationControls.vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import AdminNewsFormModal from './AdminNewsFormModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
+
+const PAGE_SIZE = 6;
 
 const props = defineProps({
   news: { type: Array, required: true },
@@ -18,6 +21,7 @@ const { t } = useI18n();
 const categoryName = ref('');
 const searchQuery = ref('');
 const filterCategoryId = ref('all');
+const currentPage = ref(1);
 const modalOpen = ref(false);
 const editingItem = ref(null);
 const confirmState = ref({ open: false, type: '', payload: null, description: '' });
@@ -52,6 +56,23 @@ const filteredNews = computed(() => {
       String(item.job_title || '').toLowerCase().includes(q)
     );
   });
+});
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredNews.value.length / PAGE_SIZE)));
+
+watch([searchQuery, filterCategoryId], () => {
+  currentPage.value = 1;
+});
+
+watch(totalPages, (nextTotal) => {
+  if (currentPage.value > nextTotal) {
+    currentPage.value = nextTotal;
+  }
+});
+
+const paginatedNews = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return filteredNews.value.slice(start, start + PAGE_SIZE);
 });
 
 function openAddModal() {
@@ -203,9 +224,9 @@ function confirmDelete() {
         <p class="text-sm text-slate-500">{{ t('adminDashboard.cmsPanel.noNews') }}</p>
       </div>
 
-      <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2" data-testid="admin-news-grid">
         <article
-          v-for="item in filteredNews"
+          v-for="item in paginatedNews"
           :key="item.id"
           class="flex flex-col justify-between gap-4 rounded-2xl border border-surface-border bg-surface-page p-4"
         >
@@ -272,6 +293,14 @@ function confirmDelete() {
           </div>
         </article>
       </div>
+
+      <PaginationControls
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :aria-label="t('news.navAria')"
+        :next-label="t('news.nextLabel')"
+        @update:page="currentPage = $event"
+      />
     </section>
 
     <AdminNewsFormModal

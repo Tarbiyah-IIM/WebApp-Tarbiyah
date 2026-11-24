@@ -99,6 +99,35 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(articleDialog.getByText('Isi paragraf lengkap artikel uji coba.')).toBeVisible();
     await articleDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(articleDialog).toHaveCount(0);
+
+    const createdBulkNames = [];
+    for (let idx = 1; idx <= 6; idx += 1) {
+      const bulkTitle = `E2E Page Item ${idx} ${Date.now()}`;
+      createdBulkNames.push(bulkTitle);
+      const bulkRes = await request.post('http://localhost:3001/api/v1/admin/testimonials', {
+        headers,
+        data: {
+          name: bulkTitle,
+          jobTitle: `${10 + idx} November 2026`,
+          fullContent: `Konten uji pagination admin nomor ${idx}.`,
+          categoryIds: [firstCatId],
+          isVisible: true,
+          sortOrder: 0
+        }
+      });
+      expect(bulkRes.status()).toBe(201);
+      newsIds.push((await bulkRes.json()).testimonial.id);
+    }
+
+    await page.goto('/admin');
+    await page.getByRole('button', { name: 'Berita', exact: true }).click();
+    await expect(page.locator('[data-testid="admin-news-grid"] article')).toHaveCount(6);
+    await expect(page.getByRole('heading', { name: fullArticle.name })).toBeVisible();
+    const adminNav = page.getByRole('navigation', { name: 'Navigasi Halaman Berita' });
+    await expect(adminNav).toBeVisible();
+    await adminNav.getByRole('button', { name: '2', exact: true }).click();
+    await expect(page.locator('[data-testid="admin-news-grid"] article').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: createdBulkNames[0] })).toBeVisible();
   } finally {
     for (const id of newsIds) {
       await request.delete(`http://localhost:3001/api/v1/admin/testimonials/${id}`, { headers });
