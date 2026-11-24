@@ -20,7 +20,13 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         imgSrc: ["'self'", 'data:', 'https:'],
-        frameSrc: ["'self'", 'https://script.google.com', 'https://*.googleusercontent.com', 'https://www.google.com/maps']
+        frameSrc: [
+          "'self'",
+          'https://drive.google.com',
+          'https://script.google.com',
+          'https://*.googleusercontent.com',
+          'https://www.google.com/maps'
+        ]
       }
     }
   })
