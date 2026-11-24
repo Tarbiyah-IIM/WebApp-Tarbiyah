@@ -5,6 +5,7 @@ import gedungIimFallback from '../assets/gedung-iim.jpg';
 import ModalDialog from './ModalDialog.vue';
 import NewsGallerySlideshow from './NewsGallerySlideshow.vue';
 import { useI18n } from '../composables/useI18n.js';
+import { tokenizeLinkSegments } from '../services/linkify.service.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -50,7 +51,7 @@ const contentParagraphs = computed(() => {
 });
 
 const splitParagraphs = computed(() => {
-  const list = contentParagraphs.value;
+  const list = contentParagraphs.value.map((paragraph) => tokenizeLinkSegments(paragraph));
   if (slideshowPos.value !== 'middle' || !showSlideshow.value) {
     return { before: list, middleSlideshow: false, after: [] };
   }
@@ -111,11 +112,20 @@ const splitParagraphs = computed(() => {
 
       <div class="space-y-4">
         <p
-          v-for="(paragraph, idx) in splitParagraphs.before"
+          v-for="(segments, idx) in splitParagraphs.before"
           :key="'before-' + idx"
           class="whitespace-pre-line text-sm leading-relaxed text-slate-700 sm:text-base"
         >
-          {{ paragraph }}
+          <template v-for="(part, partIdx) in segments" :key="'before-' + idx + '-' + partIdx">
+            <a
+              v-if="part.type === 'link'"
+              :href="part.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="break-all font-medium text-brand-600 underline decoration-brand-600/40 underline-offset-2 transition hover:text-brand-700 hover:decoration-brand-700"
+            >{{ part.text }}</a>
+            <template v-else>{{ part.text }}</template>
+          </template>
         </p>
 
         <NewsGallerySlideshow
@@ -126,11 +136,20 @@ const splitParagraphs = computed(() => {
         />
 
         <p
-          v-for="(paragraph, idx) in splitParagraphs.after"
+          v-for="(segments, idx) in splitParagraphs.after"
           :key="'after-' + idx"
           class="whitespace-pre-line text-sm leading-relaxed text-slate-700 sm:text-base"
         >
-          {{ paragraph }}
+          <template v-for="(part, partIdx) in segments" :key="'after-' + idx + '-' + partIdx">
+            <a
+              v-if="part.type === 'link'"
+              :href="part.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="break-all font-medium text-brand-600 underline decoration-brand-600/40 underline-offset-2 transition hover:text-brand-700 hover:decoration-brand-700"
+            >{{ part.text }}</a>
+            <template v-else>{{ part.text }}</template>
+          </template>
         </p>
       </div>
 

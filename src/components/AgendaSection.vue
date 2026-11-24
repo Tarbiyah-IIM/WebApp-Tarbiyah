@@ -84,13 +84,9 @@ const paginatedAgendas = computed(() => {
                 </span>
               </div>
 
-              <h3 class="mt-2.5 text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
+              <h3 class="mt-2.5 flex-1 text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
                 {{ tr(item.title) }}
               </h3>
-
-              <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
-                {{ tr(item.excerpt) }}
-              </p>
 
               <span class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600">
                 <span>{{ t('news.readMore') }}</span>
