@@ -341,7 +341,6 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
           title: 'Agenda Lama 2024',
           eventDate: '12 Januari 2024',
           eventTime: '08.00 - 11.00 WIB',
-          location: 'Aula Fakultas',
           description: 'Deskripsi lengkap agenda tahun 2024 untuk pengujian urutan.',
           isVisible: true
         });
@@ -355,11 +354,8 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
           title: 'Agenda Terbaru 2026',
           eventDate: '25 November 2026',
           eventTime: '09.00 - 12.00 WIB',
-          location: 'Auditorium IIM Surakarta',
           description: 'Deskripsi lengkap agenda terbaru tahun 2026 dengan gambar cover MySQL.',
           coverUrl: coverUpload.body.url,
-          galleryUrls: [],
-          slideshowPosition: 'middle',
           isVisible: true
         });
       expect(newAgenda.status).toBe(201);

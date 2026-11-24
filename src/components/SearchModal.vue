@@ -45,7 +45,7 @@ const agendaMatches = computed(() => {
   const list = landingStore.data?.agendas || [];
   if (!normalizedQuery.value) return [];
   return list
-    .filter((a) => `${a.title} ${tr(a.title)} ${a.event_date || ''} ${a.location || ''} ${a.excerpt || ''} ${a.description || ''}`.toLowerCase().includes(normalizedQuery.value))
+    .filter((a) => `${a.title} ${tr(a.title)} ${a.event_date || ''} ${a.excerpt || ''} ${a.description || ''}`.toLowerCase().includes(normalizedQuery.value))
     .slice(0, 4);
 });
 

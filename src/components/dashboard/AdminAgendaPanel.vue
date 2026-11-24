@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { Calendar, Clock, Images, MapPin, Plus, Search, Trash2 } from 'lucide-vue-next';
+import { Calendar, Clock, Plus, Search, Trash2 } from 'lucide-vue-next';
 import PaginationControls from '../PaginationControls.vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import AdminAgendaFormModal from './AdminAgendaFormModal.vue';
@@ -29,7 +29,6 @@ const filteredAgendas = computed(() => {
   return props.agendas.filter((item) =>
     String(item.title || '').toLowerCase().includes(q) ||
     String(item.event_date || '').toLowerCase().includes(q) ||
-    String(item.location || '').toLowerCase().includes(q) ||
     String(item.description || '').toLowerCase().includes(q)
   );
 });
@@ -152,13 +151,6 @@ function confirmDelete() {
                 >
                   {{ item.is_visible ? t('adminDashboard.cmsPanel.publishedBadge') : t('adminDashboard.cmsPanel.draftBadge') }}
                 </span>
-                <span
-                  v-if="item.gallery_urls?.length"
-                  class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800"
-                >
-                  <Images class="h-3 w-3" aria-hidden="true" />
-                  <span>{{ item.gallery_urls.length }} {{ t('news.photosCountBadge') }}</span>
-                </span>
               </div>
               <h3 class="truncate text-sm font-bold text-brand-900">{{ item.title }}</h3>
               <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] font-medium text-slate-500">
@@ -169,10 +161,6 @@ function confirmDelete() {
                 <span v-if="item.event_time" class="inline-flex items-center gap-1">
                   <Clock class="h-3 w-3 shrink-0" aria-hidden="true" />
                   <span>{{ item.event_time }}</span>
-                </span>
-                <span v-if="item.location" class="inline-flex items-center gap-1">
-                  <MapPin class="h-3 w-3 shrink-0" aria-hidden="true" />
-                  <span class="truncate">{{ item.location }}</span>
                 </span>
               </div>
               <p class="line-clamp-2 text-xs leading-relaxed text-slate-600">{{ item.excerpt }}</p>

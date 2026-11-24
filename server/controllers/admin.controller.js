@@ -206,10 +206,7 @@ export async function adminUpdateAgenda(req, res, next) {
     const oldUrls = await findAgendaMediaUrls(id);
     const item = await updateAgenda(id, req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Agenda tidak ditemukan'));
-    const nextUrlSet = new Set([
-      ...(item.cover_url ? [item.cover_url] : []),
-      ...(Array.isArray(item.gallery_urls) ? item.gallery_urls : [])
-    ]);
+    const nextUrlSet = new Set(item.cover_url ? [item.cover_url] : []);
     const removedUrls = oldUrls.filter((url) => !nextUrlSet.has(url));
     if (removedUrls.length > 0) {
       await cleanupUnusedMediaList(removedUrls);

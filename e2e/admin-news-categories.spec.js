@@ -133,6 +133,11 @@ test('admin manages news categories; refuses deletion while category is assigned
     await page.getByRole('button', { name: 'Agenda', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Daftar Agenda' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Tambah Agenda' })).toHaveCount(1);
+    await page.getByRole('button', { name: 'Tambah Agenda' }).click();
+    await expect(page.locator('#agenda-modal-location')).toHaveCount(0);
+    await expect(page.locator('#agenda-modal-gallery')).toHaveCount(0);
+    await expect(page.locator('#agenda-modal-slideshow-pos')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Batal' }).click();
 
     const agendaTitles = [];
     for (let idx = 1; idx <= 4; idx += 1) {
@@ -144,7 +149,6 @@ test('admin manages news categories; refuses deletion while category is assigned
           title: agendaTitle,
           eventDate: `${20 + idx} November 2026`,
           eventTime: '08.00 - 11.00 WIB',
-          location: 'Auditorium IIM Surakarta',
           description: `Rincian kegiatan agenda E2E nomor ${idx}.`,
           isVisible: true
         }
@@ -163,7 +167,6 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(agendaDialog).toBeVisible();
     await expect(agendaDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
     await expect(agendaDialog.getByText('08.00 - 11.00 WIB')).toBeVisible();
-    await expect(agendaDialog.getByText('Auditorium IIM Surakarta')).toBeVisible();
     await agendaDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(agendaDialog).toHaveCount(0);
   } finally {

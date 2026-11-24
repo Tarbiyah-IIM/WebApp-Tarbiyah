@@ -1,12 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
-import {
-  ChevronLeft,
-  ChevronRight,
-  ImagePlus,
-  Images,
-  Trash2
-} from 'lucide-vue-next';
+import { ImagePlus, Trash2 } from 'lucide-vue-next';
 import ModalDialog from '../ModalDialog.vue';
 import { useI18n } from '../../composables/useI18n.js';
 
@@ -26,9 +20,7 @@ const MONTHS_ID = [
 ];
 
 const uploadingCover = ref(false);
-const uploadingGallery = ref(false);
 const coverInputRef = ref(null);
-const galleryInputRef = ref(null);
 const selectedCoverName = ref('');
 const dateValue = ref('');
 
@@ -37,16 +29,13 @@ const form = reactive({
   title: '',
   eventDate: '',
   eventTime: '',
-  location: '',
   coverUrl: '',
-  galleryUrls: [],
-  slideshowPosition: 'bottom',
   description: '',
   isVisible: true,
   sortOrder: 0
 });
 
-const isBusy = computed(() => props.syncing || uploadingCover.value || uploadingGallery.value);
+const isBusy = computed(() => props.syncing || uploadingCover.value);
 
 function formatIsoToReadableDate(iso) {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
@@ -78,12 +67,7 @@ function hydrateForm() {
     form.title = item.title || '';
     form.eventDate = item.event_date || '';
     form.eventTime = item.event_time || '';
-    form.location = item.location || '';
     form.coverUrl = item.cover_url || '';
-    form.galleryUrls = Array.isArray(item.gallery_urls) ? [...item.gallery_urls] : [];
-    form.slideshowPosition = ['top', 'middle', 'bottom', 'none'].includes(item.slideshow_position)
-      ? item.slideshow_position
-      : 'bottom';
     form.description = item.description || item.excerpt || '';
     form.isVisible = Boolean(item.is_visible);
     form.sortOrder = item.sort_order || 0;
@@ -94,10 +78,7 @@ function hydrateForm() {
   form.title = '';
   form.eventDate = '';
   form.eventTime = '';
-  form.location = '';
   form.coverUrl = '';
-  form.galleryUrls = [];
-  form.slideshowPosition = 'bottom';
   form.description = '';
   form.isVisible = true;
   form.sortOrder = 0;
@@ -128,37 +109,6 @@ async function handleCoverFile(event) {
   }
 }
 
-async function handleGalleryFiles(event) {
-  const files = Array.from(event.target.files || []);
-  if (files.length === 0) return;
-  uploadingGallery.value = true;
-  try {
-    for (const file of files) {
-      if (form.galleryUrls.length >= 20) break;
-      const uploadedUrl = await props.uploadHandler(file);
-      if (uploadedUrl && !form.galleryUrls.includes(uploadedUrl)) {
-        form.galleryUrls.push(uploadedUrl);
-      }
-    }
-  } finally {
-    uploadingGallery.value = false;
-    if (galleryInputRef.value) galleryInputRef.value.value = '';
-  }
-}
-
-function moveGalleryPhoto(index, delta) {
-  const target = index + delta;
-  if (target < 0 || target >= form.galleryUrls.length) return;
-  const copy = [...form.galleryUrls];
-  const [moved] = copy.splice(index, 1);
-  copy.splice(target, 0, moved);
-  form.galleryUrls = copy;
-}
-
-function removeGalleryPhoto(index) {
-  form.galleryUrls.splice(index, 1);
-}
-
 function clearCover() {
   form.coverUrl = '';
   selectedCoverName.value = '';
@@ -171,11 +121,8 @@ function submit() {
     title: form.title.trim(),
     eventDate: finalDate,
     eventTime: form.eventTime.trim() || null,
-    location: form.location.trim() || null,
     description: form.description.trim(),
     coverUrl: form.coverUrl?.trim() || null,
-    galleryUrls: form.galleryUrls.filter(Boolean),
-    slideshowPosition: form.slideshowPosition,
     isVisible: Boolean(form.isVisible),
     sortOrder: form.sortOrder
   });
@@ -239,20 +186,6 @@ function submit() {
         </div>
       </div>
 
-      <div>
-        <label for="agenda-modal-location" class="mb-1.5 block text-xs font-bold text-brand-900">
-          {{ t('adminDashboard.cmsPanel.agendaLocationLabel') }}
-        </label>
-        <input
-          id="agenda-modal-location"
-          v-model="form.location"
-          type="text"
-          maxlength="180"
-          :placeholder="t('adminDashboard.cmsPanel.agendaLocationPlaceholder')"
-          class="min-h-[44px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
-        />
-      </div>
-
       <div class="space-y-2.5">
         <label for="agenda-modal-cover" class="block text-xs font-bold text-brand-900">
           {{ t('adminDashboard.cmsPanel.newsCoverLabel') }}
@@ -310,97 +243,6 @@ function submit() {
             :placeholder="t('adminDashboard.cmsPanel.newsImgPlaceholder')"
             class="min-h-[40px] w-full rounded-xl border border-surface-border px-3.5 text-xs"
           />
-        </div>
-      </div>
-
-      <div class="space-y-3 rounded-2xl border border-surface-border bg-surface-page p-4">
-        <div class="space-y-2">
-          <label for="agenda-modal-gallery" class="block text-xs font-bold text-brand-900">
-            {{ t('adminDashboard.cmsPanel.newsGalleryLabel') }}
-          </label>
-          <div class="flex flex-wrap items-center gap-3 rounded-xl border border-surface-border bg-white p-2.5">
-            <input
-              id="agenda-modal-gallery"
-              ref="galleryInputRef"
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              class="sr-only"
-              @change="handleGalleryFiles"
-            />
-            <button
-              type="button"
-              :disabled="isBusy || form.galleryUrls.length >= 20"
-              class="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-lg bg-amber-600 px-3.5 text-xs font-bold text-white transition hover:bg-amber-700 disabled:opacity-50"
-              @click="galleryInputRef?.click()"
-            >
-              <Images class="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{{ uploadingGallery ? t('adminDashboard.cmsPanel.uploadingGalleryBtn') : t('adminDashboard.cmsPanel.chooseMultipleFilesBtn') }}</span>
-            </button>
-            <span class="text-xs text-slate-600">
-              {{
-                form.galleryUrls.length > 0
-                  ? `${form.galleryUrls.length} ${t('adminDashboard.cmsPanel.galleryCountSuffix')}`
-                  : t('adminDashboard.cmsPanel.noFileChosen')
-              }}
-            </span>
-          </div>
-
-          <div v-if="form.galleryUrls.length > 0" class="grid grid-cols-2 gap-2.5 pt-1 sm:grid-cols-3">
-            <div
-              v-for="(url, idx) in form.galleryUrls"
-              :key="url + '-' + idx"
-              class="group relative overflow-hidden rounded-xl border border-surface-border bg-white"
-            >
-              <img :src="url" :alt="`Dokumentasi ${idx + 1}`" class="h-20 w-full object-cover" />
-              <div class="flex items-center justify-between gap-1 px-1.5 py-1 text-[10px]">
-                <div class="flex items-center gap-0.5">
-                  <button
-                    type="button"
-                    :disabled="idx === 0"
-                    aria-label="Geser kiri"
-                    class="rounded p-0.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
-                    @click="moveGalleryPhoto(idx, -1)"
-                  >
-                    <ChevronLeft class="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    :disabled="idx === form.galleryUrls.length - 1"
-                    aria-label="Geser kanan"
-                    class="rounded p-0.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
-                    @click="moveGalleryPhoto(idx, 1)"
-                  >
-                    <ChevronRight class="h-3.5 w-3.5" />
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  aria-label="Hapus foto dokumentasi"
-                  class="rounded p-0.5 text-rose-600 hover:bg-rose-50"
-                  @click="removeGalleryPhoto(idx)"
-                >
-                  <Trash2 class="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label for="agenda-modal-slideshow-pos" class="mb-1.5 block text-xs font-bold text-brand-900">
-            {{ t('adminDashboard.cmsPanel.slideshowPosLabel') }}
-          </label>
-          <select
-            id="agenda-modal-slideshow-pos"
-            v-model="form.slideshowPosition"
-            class="min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm font-medium"
-          >
-            <option value="bottom">{{ t('adminDashboard.cmsPanel.slideshowPosBottom') }}</option>
-            <option value="middle">{{ t('adminDashboard.cmsPanel.slideshowPosMiddle') }}</option>
-            <option value="top">{{ t('adminDashboard.cmsPanel.slideshowPosTop') }}</option>
-            <option value="none">{{ t('adminDashboard.cmsPanel.slideshowPosNone') }}</option>
-          </select>
         </div>
       </div>
 

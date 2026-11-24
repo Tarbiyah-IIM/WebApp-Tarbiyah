@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { Calendar, Clock, MapPin } from 'lucide-vue-next';
+import { Calendar, Clock } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.jpg';
 import ModalDialog from './ModalDialog.vue';
 import NewsGallerySlideshow from './NewsGallerySlideshow.vue';
@@ -18,7 +18,6 @@ const { t, tr } = useI18n();
 const displayTitle = computed(() => (props.item ? tr(props.item.name || props.item.title || '') : ''));
 const displayDate = computed(() => (props.item ? tr(props.item.job_title || props.item.event_date || '') : ''));
 const displayTime = computed(() => (props.item?.event_time ? tr(props.item.event_time) : ''));
-const displayLocation = computed(() => (props.item?.location ? tr(props.item.location) : ''));
 const displayCover = computed(() => props.item?.avatar_url || props.item?.cover_url || gedungIimFallback);
 
 const gallery = computed(() => (Array.isArray(props.item?.gallery_urls) ? props.item.gallery_urls : []));
@@ -91,10 +90,6 @@ const splitParagraphs = computed(() => {
           <span v-if="displayTime" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
             <Clock class="h-3.5 w-3.5 text-amber-600" aria-hidden="true" />
             <span>{{ displayTime }}</span>
-          </span>
-          <span v-if="displayLocation" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-            <MapPin class="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-            <span>{{ displayLocation }}</span>
           </span>
         </div>
 

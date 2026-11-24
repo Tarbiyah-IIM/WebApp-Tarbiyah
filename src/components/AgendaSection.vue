@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { Calendar, ChevronRight, Clock, MapPin } from 'lucide-vue-next';
+import { Calendar, ChevronRight, Clock } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.jpg';
 import NewsDetailModal from './NewsDetailModal.vue';
 import PaginationControls from './PaginationControls.vue';
@@ -83,14 +83,6 @@ const paginatedAgendas = computed(() => {
                   <span>{{ tr(item.event_time) }}</span>
                 </span>
               </div>
-
-              <p
-                v-if="item.location"
-                class="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500"
-              >
-                <MapPin class="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" />
-                <span class="line-clamp-1">{{ tr(item.location) }}</span>
-              </p>
 
               <h3 class="mt-2.5 text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
                 {{ tr(item.title) }}
