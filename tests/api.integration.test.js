@@ -20,6 +20,10 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
   it('returns complete synchronized landing page bundle and excludes removed course endpoints', async () => {
     const res = await request(app).get('/api/v1/landing');
     expect(res.status).toBe(200);
+    const cspHeader = String(res.headers['content-security-policy'] || '');
+    expect(cspHeader).toContain('https://drive.google.com');
+    expect(cspHeader).toContain('https://script.google.com');
+    expect(cspHeader).toContain('https://www.google.com/maps');
     expect(res.body.settings.hero_title).toBeTruthy();
     expect(res.body.stats.hero.length).toBeGreaterThanOrEqual(4);
     expect(res.body.stats.journey.length).toBeGreaterThanOrEqual(4);
