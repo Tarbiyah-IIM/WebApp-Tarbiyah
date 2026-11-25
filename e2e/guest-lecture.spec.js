@@ -177,7 +177,7 @@ test('guest lecture page gracefully falls back when Apps Script JSON is not depl
     route.fulfill({
       status: 200,
       contentType: 'text/html',
-      body: '<!doctype html><html><body>Apps Script compatibility iframe</body></html>'
+      body: `<!doctype html><html><body style="margin:0"><div style="height:1850px">Apps Script compatibility iframe</div><script>window.parent.postMessage({type:'TARBIYAH_GUEST_LECTURE_HEIGHT',height:1850},'*');</script></body></html>`
     })
   );
 
@@ -186,13 +186,15 @@ test('guest lecture page gracefully falls back when Apps Script JSON is not depl
   const iframe = region.locator('iframe[title="Formulir Kuliah Tamu Fakultas Tarbiyah"]');
   await expect(iframe).toBeVisible();
   await expect(iframe.contentFrame().locator('body')).toContainText('Apps Script compatibility iframe');
+  await expect(region.getByRole('link', { name: 'Buka formulir Kuliah Tamu' })).toHaveCount(0);
+  await expect(region.getByText(/Deploy versi terbaru Code\.js/)).toHaveCount(0);
+  await expect(iframe).toHaveAttribute('scrolling', 'no');
+  await expect.poll(async () => (await iframe.boundingBox())?.height || 0).toBeGreaterThanOrEqual(1800);
 
   await page.context().setOffline(true);
   const alert = region.getByRole('alert');
-  await expect(alert).toContainText('Formulir tidak dapat dimuat');
-  await expect(alert.getByRole('link', { name: 'Buka formulir Kuliah Tamu' })).toHaveAttribute(
-    'href',
-    defaultScriptUrl
-  );
+  await expect(alert).toContainText('Perangkat sedang offline');
+  await expect(alert.getByRole('link', { name: 'Buka formulir Kuliah Tamu' })).toHaveCount(0);
+  await expect(alert.getByRole('button', { name: 'Coba Lagi' })).toBeVisible();
   await page.context().setOffline(false);
 });
