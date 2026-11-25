@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import {
   BarChart3,
   CalendarDays,
@@ -30,12 +30,63 @@ import AdminFeaturesPanel from '../components/dashboard/AdminFeaturesPanel.vue';
 import AdminPortalMenuPanel from '../components/dashboard/AdminPortalMenuPanel.vue';
 import AdminPortalPagesPanel from '../components/dashboard/AdminPortalPagesPanel.vue';
 import AdminUsersPanel from '../components/dashboard/AdminUsersPanel.vue';
+import AdminConfirmModal from '../components/dashboard/AdminConfirmModal.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
 const { t } = useI18n();
 const portal = useAdminPortal();
 const activeTab = ref('overview');
+const pendingTab = ref(null);
+const pendingRoute = ref(null);
+const pendingLogout = ref(false);
+const unsavedConfirmOpen = ref(false);
+const dirtyTabs = ref(new Set());
+
+function setTabDirty(tabId, isDirty) {
+  const next = new Set(dirtyTabs.value);
+  if (isDirty) next.add(tabId);
+  else next.delete(tabId);
+  dirtyTabs.value = next;
+}
+
+function selectTab(tabId) {
+  if (tabId === activeTab.value) return;
+  if (dirtyTabs.value.has(activeTab.value)) {
+    pendingTab.value = tabId;
+    unsavedConfirmOpen.value = true;
+    return;
+  }
+  activeTab.value = tabId;
+}
+
+function discardAndContinue() {
+  const target = pendingTab.value;
+  const route = pendingRoute.value;
+  const logout = pendingLogout.value;
+  dirtyTabs.value = new Set();
+  pendingTab.value = null;
+  pendingRoute.value = null;
+  pendingLogout.value = false;
+  unsavedConfirmOpen.value = false;
+  if (target) activeTab.value = target;
+  if (route) router.push(route);
+  if (logout) void performLogout();
+}
+
+function cancelUnsavedNavigation() {
+  pendingTab.value = null;
+  pendingRoute.value = null;
+  pendingLogout.value = false;
+  unsavedConfirmOpen.value = false;
+}
+
+onBeforeRouteLeave((to) => {
+  if (dirtyTabs.value.size === 0 || pendingRoute.value === to.fullPath) return true;
+  pendingRoute.value = to.fullPath;
+  unsavedConfirmOpen.value = true;
+  return false;
+});
 
 const navGroups = computed(() => [
   {
@@ -98,6 +149,21 @@ async function handleSaveAgenda(payload, onDone) {
   if (res.ok && onDone) onDone();
 }
 
+async function handleDeleteNews(id, onDone) {
+  const res = await runSafeAction(() => portal.removeNews(id, t('adminDashboard.cmsPanel.toasts.newsDeleted')));
+  if (onDone) onDone(res.ok);
+}
+
+async function handleDeleteNewsCategory(id, onDone) {
+  const res = await runSafeAction(() => portal.removeCategory(id, t('adminDashboard.cmsPanel.toasts.categoryDeleted')));
+  if (onDone) onDone(res.ok);
+}
+
+async function handleDeleteAgenda(id, onDone) {
+  const res = await runSafeAction(() => portal.removeAgenda(id, t('adminDashboard.cmsPanel.toasts.agendaDeleted')));
+  if (onDone) onDone(res.ok);
+}
+
 async function handleAddCategory(name, onDone) {
   const res = await runSafeAction(() => portal.addCategory(name, t('adminDashboard.cmsPanel.toasts.categorySaved')));
   if (res.ok && res.data && onDone) onDone(res.data);
@@ -146,9 +212,19 @@ async function handleToggleUserActive(user) {
   );
 }
 
-async function handleLogout() {
+async function performLogout() {
+  dirtyTabs.value = new Set();
   await auth.logout();
   router.push('/');
+}
+
+function handleLogout() {
+  if (dirtyTabs.value.size > 0) {
+    pendingLogout.value = true;
+    unsavedConfirmOpen.value = true;
+    return;
+  }
+  void performLogout();
 }
 
 onMounted(() => {
@@ -161,7 +237,7 @@ onMounted(() => {
     :nav-groups="navGroups"
     :active-tab="activeTab"
     :syncing="portal.syncing.value"
-    @select-tab="activeTab = $event"
+    @select-tab="selectTab"
     @logout="handleLogout"
   >
     <StateFeedback
@@ -175,7 +251,7 @@ onMounted(() => {
         :stats="portal.overviewStats.value"
         :settings="portal.settings.value"
         :syncing="portal.syncing.value"
-        @navigate="activeTab = $event"
+        @navigate="selectTab"
         @save-settings="handleSaveSettings"
       />
 
@@ -193,9 +269,10 @@ onMounted(() => {
         :syncing="portal.syncing.value"
         :upload-handler="portal.uploadImage"
         @save-news="handleSaveNews"
-        @delete-news="runSafeAction(() => portal.removeNews($event, t('adminDashboard.cmsPanel.toasts.newsDeleted')))"
+        @delete-news="handleDeleteNews"
         @add-category="handleAddCategory"
-        @delete-category="runSafeAction(() => portal.removeCategory($event, t('adminDashboard.cmsPanel.toasts.categoryDeleted')))"
+        @delete-category="handleDeleteNewsCategory"
+        @dirty-change="setTabDirty('news', $event)"
       />
 
       <AdminAgendaPanel
@@ -204,7 +281,8 @@ onMounted(() => {
         :syncing="portal.syncing.value"
         :upload-handler="portal.uploadImage"
         @save-agenda="handleSaveAgenda"
-        @delete-agenda="runSafeAction(() => portal.removeAgenda($event, t('adminDashboard.cmsPanel.toasts.agendaDeleted')))"
+        @delete-agenda="handleDeleteAgenda"
+        @dirty-change="setTabDirty('agendas', $event)"
       />
 
       <AdminFaqPanel
@@ -262,5 +340,15 @@ onMounted(() => {
         @toggle-active="handleToggleUserActive"
       />
     </StateFeedback>
+
+    <AdminConfirmModal
+      :open="unsavedConfirmOpen"
+      title="Ada perubahan belum disimpan"
+      description="Perubahan yang belum disimpan akan hilang. Lanjutkan?"
+      confirm-label="Ya, Buang Perubahan"
+      :cancel-label="t('adminDashboard.cancelBtn')"
+      @confirm="discardAndContinue"
+      @cancel="cancelUnsavedNavigation"
+    />
   </AdminShell>
 </template>

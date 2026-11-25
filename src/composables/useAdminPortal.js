@@ -74,7 +74,9 @@ export function useAdminPortal() {
       const ovRes = await adminService.getOverview();
       overviewStats.value = ovRes.stats;
       lastSyncedAt.value = new Date();
-    } catch {}
+    } catch (err) {
+      notifyRefreshFailure(err);
+    }
     try {
       await landingStore.fetchLanding(true);
     } catch {
@@ -82,10 +84,15 @@ export function useAdminPortal() {
     }
   }
 
+  function notifyRefreshFailure(err) {
+    toast.error(extractApiError(err));
+  }
+
   async function withSync(action, successMessage) {
     syncing.value = true;
     try {
       const result = await action();
+      landingStore.notifyLandingUpdated();
       if (successMessage) toast.success(successMessage);
       return result;
     } catch (err) {
@@ -112,7 +119,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listFaqs();
         faqs.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -123,7 +132,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listFaqs();
         faqs.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -135,7 +146,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listStats();
         stats.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -146,7 +159,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listStats();
         stats.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -158,7 +173,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listPartners();
         partners.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -169,7 +186,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listPartners();
         partners.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -181,7 +200,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listFeatures();
         features.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -192,7 +213,9 @@ export function useAdminPortal() {
       try {
         const res = await adminService.listFeatures();
         features.value = res.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -208,7 +231,9 @@ export function useAdminPortal() {
         ]);
         news.value = nRes.items;
         categories.value = cRes.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -219,7 +244,9 @@ export function useAdminPortal() {
       try {
         const nRes = await adminService.listTestimonials();
         news.value = nRes.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -231,7 +258,9 @@ export function useAdminPortal() {
       try {
         const aRes = await adminService.listAgendas();
         agendas.value = aRes.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }
@@ -242,7 +271,9 @@ export function useAdminPortal() {
       try {
         const aRes = await adminService.listAgendas();
         agendas.value = aRes.items;
-      } catch {}
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
       await refreshOverviewAndLanding();
     }, successMessage);
   }

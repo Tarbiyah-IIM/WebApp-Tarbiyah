@@ -15,7 +15,7 @@ const props = defineProps({
   uploadHandler: { type: Function, required: true }
 });
 
-const emit = defineEmits(['save-news', 'delete-news', 'add-category', 'delete-category']);
+const emit = defineEmits(['save-news', 'delete-news', 'add-category', 'delete-category', 'dirty-change']);
 const { t } = useI18n();
 
 const categoryName = ref('');
@@ -24,6 +24,7 @@ const filterCategoryId = ref('all');
 const currentPage = ref(1);
 const modalOpen = ref(false);
 const editingItem = ref(null);
+const confirmBusy = ref(false);
 const confirmState = ref({ open: false, type: '', payload: null, description: '' });
 
 watch(
@@ -137,12 +138,24 @@ function requestDeleteNews(item) {
 
 function confirmDelete() {
   const { type, payload } = confirmState.value;
-  confirmState.value.open = false;
-  if (type === 'category' && payload) {
-    emit('delete-category', payload.id);
-  } else if (type === 'news' && payload) {
-    emit('delete-news', payload.id);
+  if (!payload || confirmBusy.value) return;
+  const finish = (ok) => {
+    confirmBusy.value = false;
+    if (ok) {
+      confirmState.value = { open: false, type: '', payload: null, description: '' };
+    }
+  };
+  confirmBusy.value = true;
+  if (type === 'category') {
+    emit('delete-category', payload.id, finish);
+  } else if (type === 'news') {
+    emit('delete-news', payload.id, finish);
   }
+}
+
+function cancelConfirm() {
+  if (confirmBusy.value) return;
+  confirmState.value = { open: false, type: '', payload: null, description: '' };
 }
 </script>
 
@@ -157,6 +170,7 @@ function confirmDelete() {
           required
           minlength="2"
           maxlength="100"
+          :aria-label="t('adminDashboard.cmsPanel.categoryPlaceholder')"
           :placeholder="t('adminDashboard.cmsPanel.categoryPlaceholder')"
           class="min-h-[42px] flex-1 rounded-xl border border-surface-border px-3.5 text-sm"
         />
@@ -177,7 +191,8 @@ function confirmDelete() {
           {{ category.name }}
           <button
             type="button"
-            class="rounded-full px-1 text-rose-600 transition hover:bg-rose-50"
+            class="rounded-full px-1 text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+            :disabled="syncing || confirmBusy"
             :aria-label="t('adminDashboard.cmsPanel.deleteCategoryAria') + ' ' + category.name"
             @click="requestDeleteCategory(category)"
           >
@@ -205,6 +220,7 @@ function confirmDelete() {
             <input
               v-model="searchQuery"
               type="search"
+              :aria-label="t('adminDashboard.cmsPanel.newsSearchPlaceholder')"
               :placeholder="t('adminDashboard.cmsPanel.newsSearchPlaceholder')"
               class="min-h-[40px] w-full rounded-xl border border-surface-border pl-9 pr-3 text-xs"
             />
@@ -220,7 +236,7 @@ function confirmDelete() {
           </select>
           <button
             type="button"
-            :disabled="categories.length === 0"
+            :disabled="categories.length === 0 || syncing || confirmBusy"
             class="inline-flex min-h-[40px] shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
             @click="openAddModal"
           >
@@ -290,14 +306,16 @@ function confirmDelete() {
           <div class="flex items-center justify-end gap-2 border-t border-surface-border pt-3 text-xs">
             <button
               type="button"
-              class="rounded-lg border border-surface-border bg-white px-3.5 py-1.5 font-semibold text-brand-600 hover:bg-brand-50"
+              :disabled="syncing || confirmBusy"
+              class="rounded-lg border border-surface-border bg-white px-3.5 py-1.5 font-semibold text-brand-600 hover:bg-brand-50 disabled:opacity-50"
               @click="openEditModal(item)"
             >
               {{ t('adminDashboard.cmsPanel.editBtn') }}
             </button>
             <button
               type="button"
-              class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-1.5 font-semibold text-rose-600 hover:bg-rose-100"
+              :disabled="syncing || confirmBusy"
+              class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-1.5 font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50"
               @click="requestDeleteNews(item)"
             >
               <Trash2 class="h-3.5 w-3.5" aria-hidden="true" />
@@ -325,6 +343,7 @@ function confirmDelete() {
       :upload-handler="uploadHandler"
       @close="closeModal"
       @save="handleSaveNews"
+      @dirty-change="emit('dirty-change', $event)"
     />
 
     <AdminConfirmModal
@@ -333,9 +352,9 @@ function confirmDelete() {
       :description="confirmState.description"
       :confirm-label="t('adminDashboard.confirmDeleteBtn')"
       :cancel-label="t('adminDashboard.cancelBtn')"
-      :busy="syncing"
+      :busy="confirmBusy"
       @confirm="confirmDelete"
-      @cancel="confirmState.open = false"
+      @cancel="cancelConfirm"
     />
   </div>
 </template>

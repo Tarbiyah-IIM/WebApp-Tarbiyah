@@ -83,12 +83,12 @@ export async function deleteMediaFileIfUnreferenced(mediaId) {
   const pattern = `%/api/v1/media/${mediaId}%`;
   const [[usage]] = await pool.execute(
     `SELECT
-      (SELECT COUNT(*) FROM testimonials WHERE avatar_url LIKE ? OR gallery_urls LIKE ?) +
-      (SELECT COUNT(*) FROM agendas WHERE cover_url LIKE ?) +
+      (SELECT COUNT(*) FROM testimonials WHERE avatar_url LIKE ? OR gallery_urls LIKE ? OR full_content LIKE ? OR quote LIKE ?) +
+      (SELECT COUNT(*) FROM agendas WHERE cover_url LIKE ? OR description LIKE ? OR excerpt LIKE ?) +
       (SELECT COUNT(*) FROM partners WHERE logo_url LIKE ?) +
       (SELECT COUNT(*) FROM users WHERE avatar_url LIKE ?) +
       (SELECT COUNT(*) FROM site_settings WHERE setting_value LIKE ?) AS refCount`,
-    [pattern, pattern, pattern, pattern, pattern, pattern]
+    [pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern]
   );
   if (Number(usage?.refCount || 0) > 0) {
     return false;

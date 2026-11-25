@@ -35,6 +35,7 @@ useFocusTrap(dialogRef, () => props.open, {
         role="dialog"
         aria-modal="true"
         :aria-label="title"
+        :aria-busy="busy"
         class="w-full max-w-md rounded-2xl border border-surface-border bg-white p-6 shadow-float focus:outline-none"
       >
         <div class="flex items-start justify-between gap-3">

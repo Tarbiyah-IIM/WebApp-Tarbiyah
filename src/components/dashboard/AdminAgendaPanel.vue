@@ -14,7 +14,7 @@ const props = defineProps({
   uploadHandler: { type: Function, required: true }
 });
 
-const emit = defineEmits(['save-agenda', 'delete-agenda']);
+const emit = defineEmits(['save-agenda', 'delete-agenda', 'dirty-change']);
 const { t } = useI18n();
 
 const searchQuery = ref('');
@@ -22,6 +22,7 @@ const currentPage = ref(1);
 const modalOpen = ref(false);
 const editingItem = ref(null);
 const confirmState = ref({ open: false, payload: null, description: '' });
+const confirmBusy = ref(false);
 
 const filteredAgendas = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
@@ -81,10 +82,17 @@ function requestDeleteAgenda(item) {
 
 function confirmDelete() {
   const target = confirmState.value.payload;
-  confirmState.value.open = false;
-  if (target) {
-    emit('delete-agenda', target.id);
-  }
+  if (!target || confirmBusy.value) return;
+  confirmBusy.value = true;
+  emit('delete-agenda', target.id, (ok) => {
+    confirmBusy.value = false;
+    if (ok) confirmState.value = { open: false, payload: null, description: '' };
+  });
+}
+
+function cancelConfirm() {
+  if (confirmBusy.value) return;
+  confirmState.value = { open: false, payload: null, description: '' };
 }
 </script>
 
@@ -105,13 +113,15 @@ function confirmDelete() {
             <input
               v-model="searchQuery"
               type="search"
+              :aria-label="t('adminDashboard.cmsPanel.agendaSearchPlaceholder')"
               :placeholder="t('adminDashboard.cmsPanel.agendaSearchPlaceholder')"
               class="min-h-[40px] w-full rounded-xl border border-surface-border pl-9 pr-3 text-xs"
             />
           </div>
           <button
             type="button"
-            class="inline-flex min-h-[40px] shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white transition hover:bg-brand-700"
+            :disabled="syncing || confirmBusy"
+            class="inline-flex min-h-[40px] shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
             @click="openAddModal"
           >
             <Plus class="h-4 w-4" aria-hidden="true" />
@@ -170,14 +180,16 @@ function confirmDelete() {
           <div class="flex items-center justify-end gap-2 border-t border-surface-border pt-3 text-xs">
             <button
               type="button"
-              class="rounded-lg border border-surface-border bg-white px-3.5 py-1.5 font-semibold text-brand-600 hover:bg-brand-50"
+              :disabled="syncing || confirmBusy"
+              class="rounded-lg border border-surface-border bg-white px-3.5 py-1.5 font-semibold text-brand-600 hover:bg-brand-50 disabled:opacity-50"
               @click="openEditModal(item)"
             >
               {{ t('adminDashboard.cmsPanel.editBtn') }}
             </button>
             <button
               type="button"
-              class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-1.5 font-semibold text-rose-600 hover:bg-rose-100"
+              :disabled="syncing || confirmBusy"
+              class="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-1.5 font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50"
               @click="requestDeleteAgenda(item)"
             >
               <Trash2 class="h-3.5 w-3.5" aria-hidden="true" />
@@ -204,6 +216,7 @@ function confirmDelete() {
       :upload-handler="uploadHandler"
       @close="closeModal"
       @save="handleSaveAgenda"
+      @dirty-change="emit('dirty-change', $event)"
     />
 
     <AdminConfirmModal
@@ -212,9 +225,9 @@ function confirmDelete() {
       :description="confirmState.description"
       :confirm-label="t('adminDashboard.confirmDeleteBtn')"
       :cancel-label="t('adminDashboard.cancelBtn')"
-      :busy="syncing"
+      :busy="confirmBusy"
       @confirm="confirmDelete"
-      @cancel="confirmState.open = false"
+      @cancel="cancelConfirm"
     />
   </div>
 </template>

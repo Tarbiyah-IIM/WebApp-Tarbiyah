@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { ImagePlus, Trash2 } from 'lucide-vue-next';
 import ModalDialog from '../ModalDialog.vue';
+import AdminConfirmModal from './AdminConfirmModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
 import { adminService } from '../../services/admin.service.js';
 
@@ -12,7 +13,7 @@ const props = defineProps({
   uploadHandler: { type: Function, required: true }
 });
 
-const emit = defineEmits(['close', 'save']);
+const emit = defineEmits(['close', 'save', 'dirty-change']);
 const { t } = useI18n();
 
 const MONTHS_ID = [
@@ -25,6 +26,9 @@ const coverInputRef = ref(null);
 const selectedCoverName = ref('');
 const dateValue = ref('');
 const pendingUploads = new Set();
+const baselineSnapshot = ref('');
+const sessionToken = ref(0);
+const closeConfirmOpen = ref(false);
 
 const form = reactive({
   id: null,
@@ -38,6 +42,30 @@ const form = reactive({
 });
 
 const isBusy = computed(() => props.syncing || uploadingCover.value);
+
+function formSnapshot() {
+  return JSON.stringify({
+    title: form.title,
+    eventDate: form.eventDate,
+    eventTime: form.eventTime,
+    dateValue: dateValue.value,
+    coverUrl: form.coverUrl,
+    description: form.description,
+    isVisible: form.isVisible,
+    sortOrder: form.sortOrder
+  });
+}
+
+const isDirty = computed(() => Boolean(props.open) && baselineSnapshot.value !== formSnapshot());
+
+watch(isDirty, (value) => emit('dirty-change', value));
+
+watch(
+  () => form.coverUrl,
+  (nextUrl, prevUrl) => {
+    if (prevUrl && prevUrl !== nextUrl) cleanupPendingUrl(prevUrl);
+  }
+);
 
 function formatIsoToReadableDate(iso) {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
@@ -90,7 +118,18 @@ function hydrateForm() {
 watch(
   [() => props.open, () => props.initialItem],
   ([isOpen]) => {
-    if (isOpen) hydrateForm();
+    if (isOpen) {
+      sessionToken.value += 1;
+      uploadingCover.value = false;
+      closeConfirmOpen.value = false;
+      hydrateForm();
+      baselineSnapshot.value = formSnapshot();
+      return;
+    }
+    sessionToken.value += 1;
+    uploadingCover.value = false;
+    closeConfirmOpen.value = false;
+    pendingUploads.clear();
   },
   { immediate: true }
 );
@@ -108,26 +147,39 @@ function cleanupAllPendingUploads() {
   }
 }
 
-function handleClose() {
+function requestClose() {
   if (isBusy.value) return;
+  if (isDirty.value) {
+    closeConfirmOpen.value = true;
+    return;
+  }
+  cleanupAllPendingUploads();
+  emit('close');
+}
+
+function confirmDiscard() {
+  closeConfirmOpen.value = false;
   cleanupAllPendingUploads();
   emit('close');
 }
 
 onBeforeUnmount(() => {
+  sessionToken.value += 1;
   cleanupAllPendingUploads();
 });
 
 async function handleCoverFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
+  const token = sessionToken.value;
   uploadingCover.value = true;
   try {
     const uploadedUrl = await props.uploadHandler(file);
+    if (uploadedUrl && token !== sessionToken.value) {
+      adminService.cleanupMediaByUrl(uploadedUrl);
+      return;
+    }
     if (uploadedUrl) {
-      if (form.coverUrl && form.coverUrl !== uploadedUrl) {
-        cleanupPendingUrl(form.coverUrl);
-      }
       pendingUploads.add(uploadedUrl);
       form.coverUrl = uploadedUrl;
       selectedCoverName.value = file.name;
@@ -137,7 +189,7 @@ async function handleCoverFile(event) {
       selectedCoverName.value = '';
     }
   } finally {
-    uploadingCover.value = false;
+    if (token === sessionToken.value) uploadingCover.value = false;
     if (coverInputRef.value) coverInputRef.value.value = '';
   }
 }
@@ -150,7 +202,6 @@ function clearCover() {
 
 function submit() {
   const finalDate = dateValue.value ? formatIsoToReadableDate(dateValue.value) : form.eventDate.trim();
-  pendingUploads.clear();
   emit('save', {
     id: form.id,
     title: form.title.trim(),
@@ -168,7 +219,7 @@ function submit() {
   <ModalDialog
     :open="open"
     :title="form.id ? t('adminDashboard.cmsPanel.agendaModalTitleEdit') : t('adminDashboard.cmsPanel.agendaModalTitleAdd')"
-    @close="handleClose"
+    @close="requestClose"
   >
     <form class="space-y-4" @submit.prevent="submit">
       <div>
@@ -231,6 +282,7 @@ function submit() {
               id="agenda-modal-cover"
               ref="coverInputRef"
               type="file"
+              tabindex="-1"
               accept="image/jpeg,image/png,image/webp,image/gif"
               class="sr-only"
               @change="handleCoverFile"
@@ -312,7 +364,7 @@ function submit() {
           type="button"
           :disabled="isBusy"
           class="min-h-[42px] rounded-xl border border-surface-border bg-white px-5 text-xs font-bold text-slate-700 transition hover:bg-surface-muted disabled:opacity-50"
-          @click="handleClose"
+          @click="requestClose"
         >
           {{ t('adminDashboard.cancelBtn') }}
         </button>
@@ -326,4 +378,14 @@ function submit() {
       </div>
     </form>
   </ModalDialog>
+
+  <AdminConfirmModal
+    :open="closeConfirmOpen"
+    title="Buang perubahan agenda?"
+    description="Perubahan dan gambar yang belum disimpan akan dibuang."
+    confirm-label="Ya, Buang"
+    :cancel-label="t('adminDashboard.cancelBtn')"
+    @confirm="confirmDiscard"
+    @cancel="closeConfirmOpen = false"
+  />
 </template>

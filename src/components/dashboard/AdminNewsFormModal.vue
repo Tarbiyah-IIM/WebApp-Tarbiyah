@@ -10,6 +10,7 @@ import {
   X
 } from 'lucide-vue-next';
 import ModalDialog from '../ModalDialog.vue';
+import AdminConfirmModal from './AdminConfirmModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
 import { adminService } from '../../services/admin.service.js';
 
@@ -21,7 +22,7 @@ const props = defineProps({
   uploadHandler: { type: Function, required: true }
 });
 
-const emit = defineEmits(['close', 'save']);
+const emit = defineEmits(['close', 'save', 'dirty-change']);
 const { t } = useI18n();
 
 const MONTHS_ID = [
@@ -39,6 +40,9 @@ const categoryError = ref(false);
 const selectedCoverName = ref('');
 const dateValue = ref('');
 const pendingUploads = new Set();
+const baselineSnapshot = ref('');
+const sessionToken = ref(0);
+const closeConfirmOpen = ref(false);
 
 const form = reactive({
   id: null,
@@ -58,6 +62,33 @@ const isBusy = computed(() => props.syncing || uploadingCover.value || uploading
 
 const selectedCategories = computed(() =>
   props.categories.filter((cat) => form.categoryIds.includes(Number(cat.id)))
+);
+
+function formSnapshot() {
+  return JSON.stringify({
+    name: form.name,
+    jobTitle: form.jobTitle,
+    dateValue: dateValue.value,
+    categoryIds: [...form.categoryIds].sort(),
+    avatarUrl: form.avatarUrl,
+    galleryUrls: [...form.galleryUrls],
+    slideshowPosition: form.slideshowPosition,
+    fullContent: form.fullContent,
+    rating: form.rating,
+    isVisible: form.isVisible,
+    sortOrder: form.sortOrder
+  });
+}
+
+const isDirty = computed(() => Boolean(props.open) && baselineSnapshot.value !== formSnapshot());
+
+watch(isDirty, (value) => emit('dirty-change', value));
+
+watch(
+  () => form.avatarUrl,
+  (nextUrl, prevUrl) => {
+    if (prevUrl && prevUrl !== nextUrl) cleanupPendingUrl(prevUrl);
+  }
 );
 
 function formatIsoToReadableDate(iso) {
@@ -131,7 +162,20 @@ function hydrateForm() {
 watch(
   [() => props.open, () => props.initialItem],
   ([isOpen]) => {
-    if (isOpen) hydrateForm();
+    if (isOpen) {
+      sessionToken.value += 1;
+      uploadingCover.value = false;
+      uploadingGallery.value = false;
+      closeConfirmOpen.value = false;
+      hydrateForm();
+      baselineSnapshot.value = formSnapshot();
+      return;
+    }
+    sessionToken.value += 1;
+    uploadingCover.value = false;
+    uploadingGallery.value = false;
+    closeConfirmOpen.value = false;
+    pendingUploads.clear();
   },
   { immediate: true }
 );
@@ -180,26 +224,39 @@ function cleanupAllPendingUploads() {
   }
 }
 
-function handleClose() {
+function requestClose() {
   if (isBusy.value) return;
+  if (isDirty.value) {
+    closeConfirmOpen.value = true;
+    return;
+  }
+  cleanupAllPendingUploads();
+  emit('close');
+}
+
+function confirmDiscard() {
+  closeConfirmOpen.value = false;
   cleanupAllPendingUploads();
   emit('close');
 }
 
 onBeforeUnmount(() => {
+  sessionToken.value += 1;
   cleanupAllPendingUploads();
 });
 
 async function handleCoverFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
+  const token = sessionToken.value;
   uploadingCover.value = true;
   try {
     const uploadedUrl = await props.uploadHandler(file);
+    if (uploadedUrl && token !== sessionToken.value) {
+      adminService.cleanupMediaByUrl(uploadedUrl);
+      return;
+    }
     if (uploadedUrl) {
-      if (form.avatarUrl && form.avatarUrl !== uploadedUrl) {
-        cleanupPendingUrl(form.avatarUrl);
-      }
       pendingUploads.add(uploadedUrl);
       form.avatarUrl = uploadedUrl;
       selectedCoverName.value = file.name;
@@ -209,7 +266,7 @@ async function handleCoverFile(event) {
       selectedCoverName.value = '';
     }
   } finally {
-    uploadingCover.value = false;
+    if (token === sessionToken.value) uploadingCover.value = false;
     if (coverInputRef.value) coverInputRef.value.value = '';
   }
 }
@@ -217,13 +274,19 @@ async function handleCoverFile(event) {
 async function handleGalleryFiles(event) {
   const files = Array.from(event.target.files || []);
   if (files.length === 0) return;
+  const token = sessionToken.value;
   uploadingGallery.value = true;
   try {
     for (const file of files) {
       if (form.galleryUrls.length >= 20) break;
       try {
         const uploadedUrl = await props.uploadHandler(file);
-        if (uploadedUrl && !form.galleryUrls.includes(uploadedUrl)) {
+        if (!uploadedUrl) continue;
+        if (token !== sessionToken.value) {
+          adminService.cleanupMediaByUrl(uploadedUrl);
+          break;
+        }
+        if (!form.galleryUrls.includes(uploadedUrl)) {
           pendingUploads.add(uploadedUrl);
           form.galleryUrls.push(uploadedUrl);
         }
@@ -231,7 +294,7 @@ async function handleGalleryFiles(event) {
       }
     }
   } finally {
-    uploadingGallery.value = false;
+    if (token === sessionToken.value) uploadingGallery.value = false;
     if (galleryInputRef.value) galleryInputRef.value.value = '';
   }
 }
@@ -263,7 +326,6 @@ function submit() {
     return;
   }
   const finalDate = dateValue.value ? formatIsoToReadableDate(dateValue.value) : form.jobTitle.trim();
-  pendingUploads.clear();
   emit('save', {
     id: form.id,
     name: form.name.trim(),
@@ -285,7 +347,7 @@ function submit() {
   <ModalDialog
     :open="open"
     :title="form.id ? t('adminDashboard.cmsPanel.newsModalTitleEdit') : t('adminDashboard.cmsPanel.newsModalTitleAdd')"
-    @close="handleClose"
+    @close="requestClose"
   >
     <form class="space-y-4" @submit.prevent="submit">
       <div>
@@ -404,6 +466,7 @@ function submit() {
               id="news-modal-cover"
               ref="coverInputRef"
               type="file"
+              tabindex="-1"
               accept="image/jpeg,image/png,image/webp,image/gif"
               class="sr-only"
               @change="handleCoverFile"
@@ -464,6 +527,7 @@ function submit() {
               id="news-modal-gallery"
               ref="galleryInputRef"
               type="file"
+              tabindex="-1"
               multiple
               accept="image/jpeg,image/png,image/webp,image/gif"
               class="sr-only"
@@ -576,7 +640,7 @@ function submit() {
           type="button"
           :disabled="isBusy"
           class="min-h-[42px] rounded-xl border border-surface-border bg-white px-5 text-xs font-bold text-slate-700 transition hover:bg-surface-muted disabled:opacity-50"
-          @click="handleClose"
+          @click="requestClose"
         >
           {{ t('adminDashboard.cancelBtn') }}
         </button>
@@ -590,4 +654,14 @@ function submit() {
       </div>
     </form>
   </ModalDialog>
+
+  <AdminConfirmModal
+    :open="closeConfirmOpen"
+    title="Buang perubahan berita?"
+    description="Perubahan dan gambar yang belum disimpan akan dibuang."
+    confirm-label="Ya, Buang"
+    :cancel-label="t('adminDashboard.cancelBtn')"
+    @confirm="confirmDiscard"
+    @cancel="closeConfirmOpen = false"
+  />
 </template>
