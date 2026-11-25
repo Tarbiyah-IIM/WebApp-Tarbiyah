@@ -4,6 +4,8 @@ node_modules/
 uploads/
 docs/reports/
 .backups/
+.tmp-dist/
+*.bak
 coverage/
 playwright-report/
 test-results/

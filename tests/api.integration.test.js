@@ -202,12 +202,31 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       });
       expect(reset.status).toBe(200);
 
-      const adminRelogin = await request(app).post('/api/v1/auth/login').send({
+    const adminRelogin = await request(app).post('/api/v1/auth/login').send({
         email: 'tarbiyah@iim.ac.id',
         password: 'TempAdminPass123!'
       });
       expect(adminRelogin.status).toBe(200);
       expect(adminRelogin.body.user.role).toBe('admin');
+
+      const loginCookies = adminRelogin.headers['set-cookie'] || [];
+      const refreshPair = loginCookies.find((c) => c.startsWith('tarbiyah_refresh='))?.split(';')[0] || '';
+      expect(refreshPair).toContain('tarbiyah_refresh=');
+
+      const rotatedRes = await request(app)
+        .post('/api/v1/auth/refresh')
+        .set('Cookie', refreshPair);
+      expect(rotatedRes.status).toBe(200);
+      expect(rotatedRes.body.accessToken).toBeTruthy();
+
+      const replayOldRes = await request(app)
+        .post('/api/v1/auth/refresh')
+        .set('Cookie', refreshPair);
+      expect(replayOldRes.status).toBe(401);
+      const replaySetCookies = Array.isArray(replayOldRes.headers['set-cookie'])
+        ? replayOldRes.headers['set-cookie'].join(';')
+        : String(replayOldRes.headers['set-cookie'] || '');
+      expect(replaySetCookies).not.toContain('tarbiyah_refresh=;');
     } finally {
       if (existingRealAdmin && preservedRealAdminHash) {
         await updateUserPassword(existingRealAdmin.id, preservedRealAdminHash);
@@ -694,6 +713,171 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       env.hasPrivateGuestLectureUrl = prevPrivateFlag;
       setCache('guest_lecture_data', null, 0);
       setCache('guest_lecture_source_script', null, 0);
+    }
+  });
+
+  it('enforces auth origin guards, preserves concurrent refresh cookies, and cleans unreferenced uploads cleanly', async () => {
+    const malformedOriginRes = await request(app)
+      .post('/api/v1/auth/refresh')
+      .set('Origin', 'not-a-valid-origin');
+    expect(malformedOriginRes.status).toBe(403);
+    expect(malformedOriginRes.body.error.code).toBe('CSRF_ORIGIN_REJECTED');
+
+    const crossSiteRes = await request(app)
+      .post('/api/v1/auth/logout')
+      .set('Sec-Fetch-Site', 'cross-site');
+    expect(crossSiteRes.status).toBe(403);
+    expect(crossSiteRes.body.error.code).toBe('CSRF_ORIGIN_REJECTED');
+
+    const invalidRefreshRes = await request(app)
+      .post('/api/v1/auth/refresh')
+      .set('Cookie', 'tarbiyah_refresh=nonexistent-token-1234567890');
+    expect(invalidRefreshRes.status).toBe(401);
+    const refreshSetCookies = Array.isArray(invalidRefreshRes.headers['set-cookie'])
+      ? invalidRefreshRes.headers['set-cookie'].join(';')
+      : String(invalidRefreshRes.headers['set-cookie'] || '');
+    expect(refreshSetCookies).not.toContain('tarbiyah_refresh=;');
+
+    const unknownCmsKeyRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_arbitrary_custom_key: JSON.stringify({ ok: true }) });
+    expect(unknownCmsKeyRes.status).toBe(400);
+
+    const arrayCmsRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_programs: '[]' });
+    expect(arrayCmsRes.status).toBe(400);
+
+    const spoofedScriptHostRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_contacts: JSON.stringify({ guestLectureUrl: 'https://script.google.com.evil.com/macros/s/abc/exec' }) });
+    expect(spoofedScriptHostRes.status).toBe(400);
+
+    const spoofedMapsPathRes = await request(app)
+      .patch('/api/v1/admin/settings')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ cms_contacts: JSON.stringify({ mapsEmbedUrl: 'https://www.google.com/url?q=https://evil.com' }) });
+    expect(spoofedMapsPathRes.status).toBe(400);
+
+    const hashAvatarRes = await request(app)
+      .post('/api/v1/admin/testimonials')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Uji Hash Avatar',
+        jobTitle: '25 November 2026',
+        fullContent: 'Konten valid untuk menguji penolakan avatarUrl tanda pagar.',
+        avatarUrl: '#',
+        categoryIds: [1]
+      });
+    expect(hashAvatarRes.status).toBe(400);
+
+    const overflowSortRes = await request(app)
+      .post('/api/v1/admin/partners')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'Mitra Overflow', sortOrder: 99999999999 });
+    expect(overflowSortRes.status).toBe(400);
+
+    const overflowParamIdRes = await request(app)
+      .delete('/api/v1/admin/partners/99999999999')
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(overflowParamIdRes.status).toBe(400);
+    expect(overflowParamIdRes.body.error.code).toBe('INVALID_ID');
+
+    const png1x1 = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    const pngBase64 = png1x1.toString('base64');
+    const excessPhotosRes = await request(app)
+      .post('/api/v1/guest-lectures')
+      .send({
+        mode: 'new',
+        mataKuliah: 'Uji Batas Gabungan Foto',
+        existingFotoUrl: 'https://drive.google.com/file/d/1\nhttps://drive.google.com/file/d/2',
+        fotoFiles: [
+          { filename: 'f1.png', mimeType: 'image/png', base64: pngBase64 },
+          { filename: 'f2.png', mimeType: 'image/png', base64: pngBase64 }
+        ]
+      });
+    expect(excessPhotosRes.status).toBe(400);
+
+    const invalidMediaDeleteRes = await request(app)
+      .delete('/api/v1/admin/uploads/not-a-uuid')
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(invalidMediaDeleteRes.status).toBe(400);
+
+    const unusedUploadRes = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', png1x1, { filename: 'orphan.png', contentType: 'image/png' });
+    expect(unusedUploadRes.status).toBe(201);
+
+    const cleanupRes = await request(app)
+      .delete(`/api/v1/admin/uploads/${unusedUploadRes.body.id}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(cleanupRes.status).toBe(200);
+    expect(cleanupRes.body.deleted).toBe(true);
+
+    const goneRes = await request(app).get(unusedUploadRes.body.url);
+    expect(goneRes.status).toBe(404);
+
+    const refUploadRes = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', png1x1, { filename: 'linked.png', contentType: 'image/png' });
+    expect(refUploadRes.status).toBe(201);
+
+    const categoriesRes = await request(app)
+      .get('/api/v1/admin/news-categories')
+      .set('Authorization', `Bearer ${adminToken}`);
+    const catId = categoriesRes.body.items[0].id;
+    let createdNewsId = null;
+
+    try {
+      const createdNewsRes = await request(app)
+        .post('/api/v1/admin/testimonials')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          name: 'Berita Cache & Media Ref Test',
+          jobTitle: '25 November 2026',
+          fullContent: 'Artikel verifikasi cache detail dan proteksi hapus media terpakai.',
+          avatarUrl: refUploadRes.body.url,
+          categoryIds: [catId],
+          isVisible: true
+        });
+      expect(createdNewsRes.status).toBe(201);
+      createdNewsId = createdNewsRes.body.testimonial.id;
+
+      const blockedCleanupRes = await request(app)
+        .delete(`/api/v1/admin/uploads/${refUploadRes.body.id}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(blockedCleanupRes.status).toBe(200);
+      expect(blockedCleanupRes.body.deleted).toBe(false);
+
+      const publicNewsRes = await request(app).get(`/api/v1/news/${createdNewsId}`);
+      expect(publicNewsRes.status).toBe(200);
+      expect(publicNewsRes.body.news.name).toBe('Berita Cache & Media Ref Test');
+
+      const delNewsRes = await request(app)
+        .delete(`/api/v1/admin/testimonials/${createdNewsId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(delNewsRes.status).toBe(200);
+      createdNewsId = null;
+
+      const invalidatedNewsRes = await request(app).get(`/api/v1/news/${createdNewsRes.body.testimonial.id}`);
+      expect(invalidatedNewsRes.status).toBe(404);
+
+      const invalidatedMediaRes = await request(app).get(refUploadRes.body.url);
+      expect(invalidatedMediaRes.status).toBe(404);
+    } finally {
+      if (createdNewsId) {
+        await request(app)
+          .delete(`/api/v1/admin/testimonials/${createdNewsId}`)
+          .set('Authorization', `Bearer ${adminToken}`);
+      }
     }
   });
 });

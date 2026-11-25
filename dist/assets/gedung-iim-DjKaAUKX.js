@@ -1,0 +1,1 @@
+var e=`/assets/gedung-iim-F3XHkjxB.webp`;export{e as t};

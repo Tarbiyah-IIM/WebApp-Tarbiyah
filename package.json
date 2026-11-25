@@ -16,7 +16,7 @@
     "start": "node server/server.js",
     "test": "node -e \"import('node:fs').then(async fs=>{const {spawnSync}=await import('node:child_process');const r=spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run'],{cwd:fs.realpathSync.native('.'),stdio:'inherit',env:{...process.env,NODE_ENV:'test',ALLOW_PUBLIC_REGISTER:'true',ALLOW_SANDBOX_RESET:'true'}});process.exit(r.status??1)})\"",
     "test:e2e": "playwright test",
-    "check:server": "node -e \"import('node:fs').then(async fs=>{const {execSync}=await import('node:child_process');const walk=(d)=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?[...walk(d+'/'+e.name)]:e.name.endsWith('.js')?[d+'/'+e.name]:[]);for(const f of [...walk('server'),...walk('src')]){execSync('node --check \"'+f+'\"',{stdio:'inherit'})}console.log('All JS syntax OK')})\""
+    "check:server": "node -e \"import('node:fs').then(async fs=>{const {execSync}=await import('node:child_process');const walk=(d)=>fs.existsSync(d)?fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?[...walk(d+'/'+e.name)]:(e.name.endsWith('.js')||e.name.endsWith('.mjs'))?[d+'/'+e.name]:[]):[];for(const f of [...walk('server'),...walk('src'),...walk('scripts'),...walk('tests'),...walk('e2e')]){execSync('node --check \\\"'+f+'\\\"',{stdio:'inherit'})}console.log('All JS syntax OK')})\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.5",

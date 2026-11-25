@@ -27,12 +27,15 @@ function terminateChild(child) {
   child.kill('SIGTERM');
 }
 
+let shuttingDown = false;
 function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
   for (const child of children) {
     terminateChild(child);
   }
   process.exit(0);
 }
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);

@@ -219,3 +219,72 @@ test('portal pages cross-locale reset keeps sibling language overrides intact', 
     });
   }
 });
+
+test('portal pages ID/EN saves avoid locales.id bloat and canceled news upload cleans orphan media', async ({
+  page,
+  loginViaApi,
+  request
+}) => {
+  const admin = await loginViaApi('tarbiyah@iim.ac.id');
+  const headers = { Authorization: `Bearer ${admin.accessToken}` };
+
+  const initialRes = await request.get('http://localhost:3001/api/v1/admin/settings', { headers });
+  expect(initialRes.ok()).toBeTruthy();
+  const originalPrograms = (await initialRes.json()).settings?.cms_programs ?? '';
+
+  try {
+    await page.goto('/admin');
+    await page.getByRole('button', { name: 'Halaman Portal', exact: true }).click();
+    await page.getByLabel('Badge / Status Akreditasi').fill('Unggul ID Bersih');
+    await page.getByLabel('Tautan Info PMB').fill('https://pmb.iimsurakarta.ac.id/id');
+    await page.getByRole('button', { name: 'Simpan Halaman Ini' }).click();
+    await expect(page.getByText('Konten halaman portal disimpan & disinkronkan!')).toBeVisible();
+
+    await page.getByTestId('lang-switch-en').click();
+    await page.getByLabel('Badge / Accreditation Status').fill('Excellent EN Only');
+    await page.getByLabel('Admissions Info Link').fill('https://pmb.iimsurakarta.ac.id/en');
+    await page.getByRole('button', { name: 'Save This Page' }).click();
+    await expect(page.getByText('Portal page content saved & synced!')).toBeVisible();
+
+    const savedSettingsRes = await request.get('http://localhost:3001/api/v1/admin/settings', { headers });
+    expect(savedSettingsRes.ok()).toBeTruthy();
+    const programsJson = JSON.parse((await savedSettingsRes.json()).settings.cms_programs || '{}');
+    expect(programsJson.pai?.badge).toBe('Unggul ID Bersih');
+    expect(programsJson.pai?.pmbUrl).toBe('https://pmb.iimsurakarta.ac.id/id');
+    expect(programsJson.pai?.locales?.id).toBeUndefined();
+    expect(programsJson.pai?.locales?.en?.badge).toBe('Excellent EN Only');
+    expect(programsJson.pai?.locales?.en?.pmbUrl).toBe('https://pmb.iimsurakarta.ac.id/en');
+
+    await page.getByTestId('lang-switch-id').click();
+    await page.getByRole('button', { name: 'Berita', exact: true }).click();
+    await page.getByRole('button', { name: 'Tambah Berita' }).first().click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    const pngBuffer = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    const chooserPromise = page.waitForEvent('filechooser');
+    await dialog.getByRole('button', { name: 'Pilih Gambar' }).click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles({
+      name: 'cancel-orphan.png',
+      mimeType: 'image/png',
+      buffer: pngBuffer
+    });
+    const urlInput = dialog.getByLabel('Atau Tempel URL Gambar (Opsional)');
+    await expect(urlInput).toHaveValue(/^\/api\/v1\/media\/[0-9a-f-]{36}$/i);
+    const orphanUrl = await urlInput.inputValue();
+
+    await dialog.getByRole('button', { name: 'Batal' }).click();
+    await expect(dialog).toHaveCount(0);
+
+    await expect.poll(async () => (await page.request.get(orphanUrl)).status()).toBe(404);
+  } finally {
+    await request.patch('http://localhost:3001/api/v1/admin/settings', {
+      headers,
+      data: { cms_programs: originalPrograms }
+    });
+  }
+});
