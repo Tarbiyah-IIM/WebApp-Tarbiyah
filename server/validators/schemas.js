@@ -271,3 +271,54 @@ export const pplWorkPermitSchema = z.object({
   tempat_ppl: z.string().trim().min(1, 'Tempat PPL wajib diisi.').max(150),
   alamat_ppl: z.string().trim().min(1, 'Alamat PPL wajib diisi.').max(300)
 });
+
+const guestLectureFotoFileSchema = z.object({
+  filename: z.string().trim().min(1).max(200),
+  mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+  base64: z
+    .string()
+    .trim()
+    .min(16, 'Data gambar tidak valid.')
+    .max(2200000, 'Ukuran file gambar terlalu besar setelah optimasi.')
+});
+
+export const guestLectureSubmitSchema = z
+  .object({
+    mode: z.enum(['new', 'update']).default('new'),
+    rowIndex: z.coerce.number().int().min(3).max(50000).nullable().optional(),
+    prodi: z.string().trim().max(40).default(''),
+    dosenPengampu: z.string().trim().max(160).default(''),
+    dosenTamu: z.string().trim().max(240).default(''),
+    mataKuliah: z.string().trim().max(200).default(''),
+    tema: z.string().trim().max(1000).default(''),
+    tanggal: z.string().trim().max(40).default(''),
+    jam: z.string().trim().max(80).default(''),
+    peserta: z.string().trim().max(40).default('100'),
+    existingFotoUrl: z.string().trim().max(2000).default(''),
+    fotoFiles: z.array(guestLectureFotoFileSchema).max(3, 'Maksimal 3 foto narasumber.').default([])
+  })
+  .superRefine((data, ctx) => {
+    if (data.mode === 'update' && !data.rowIndex) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['rowIndex'],
+        message: 'Nomor baris agenda wajib disertakan saat memperbarui data.'
+      });
+    }
+    const hasCore = Boolean(
+      data.prodi ||
+        data.dosenPengampu ||
+        data.dosenTamu ||
+        data.mataKuliah ||
+        data.tema ||
+        data.tanggal ||
+        data.jam
+    );
+    if (!hasCore) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['mataKuliah'],
+        message: 'Isi minimal satu informasi agenda kuliah tamu.'
+      });
+    }
+  });

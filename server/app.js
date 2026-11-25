@@ -37,6 +37,7 @@ app.use(
     credentials: true
   })
 );
+app.use('/api/v1/guest-lectures', express.json({ limit: '6mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
