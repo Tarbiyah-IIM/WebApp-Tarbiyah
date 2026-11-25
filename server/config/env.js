@@ -36,6 +36,19 @@ export function resolveJwtAccessSecret(
   return raw || DEV_EPHEMERAL_ACCESS_SECRET;
 }
 
+export function resolveAppsScriptRelaySecret(
+  rawOverride = process.env.APPS_SCRIPT_RELAY_SECRET,
+  targetNodeEnv = nodeEnv
+) {
+  const raw = String(rawOverride || '').trim();
+  if (targetNodeEnv === 'production' && raw.length < 16) {
+    throw new Error(
+      '[FATAL] APPS_SCRIPT_RELAY_SECRET wajib diisi minimal 16 karakter saat NODE_ENV=production agar relay Google Apps Script menolak penulisan tanpa autentikasi.'
+    );
+  }
+  return raw;
+}
+
 const clientOrigins = String(process.env.CLIENT_ORIGIN || 'http://localhost:5173')
   .split(',')
   .map((item) => item.trim().replace(/\/+$/, '').toLowerCase())
@@ -74,7 +87,7 @@ export const env = {
     process.env.GUEST_LECTURE_SCRIPT_URL ||
     'https://script.google.com/macros/s/AKfycbwjx4f_R-H4MXwGpjMyI8X-BpGKASOTfkuwqMWp1JkjcvPRYyhiI9C00gMQTp351LHo/exec',
   hasPrivateGuestLectureUrl: Boolean(String(process.env.GUEST_LECTURE_SCRIPT_URL || '').trim()),
-  appsScriptRelaySecret: String(process.env.APPS_SCRIPT_RELAY_SECRET || '').trim(),
+  appsScriptRelaySecret: resolveAppsScriptRelaySecret(),
   allowPublicRegister: nodeEnv === 'test' && process.env.ALLOW_PUBLIC_REGISTER === 'true',
   allowSandboxReset: nodeEnv === 'test' && process.env.ALLOW_SANDBOX_RESET === 'true'
 };

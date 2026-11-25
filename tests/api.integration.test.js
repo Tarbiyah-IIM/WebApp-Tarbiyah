@@ -572,6 +572,28 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
     expect(spoofedPhotoRes.status).toBe(400);
   });
 
+  it('accepts a multi-photo guest lecture submission above the global 1MB body limit', async () => {
+    // 3 photos x ~400 KB base64 each: payload is over 1MB but below the route's 10MB cap.
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    const bigBase64 = png.toString('base64') + 'A'.repeat(400 * 1024);
+    const res = await request(app)
+      .post('/api/v1/guest-lectures')
+      .send({
+        mode: 'new',
+        mataKuliah: 'Uji Batas Body',
+        fotoFiles: [
+          { filename: 'a.png', mimeType: 'image/png', base64: bigBase64 },
+          { filename: 'b.png', mimeType: 'image/png', base64: bigBase64 },
+          { filename: 'c.png', mimeType: 'image/png', base64: bigBase64 }
+        ]
+      });
+    expect(res.status).not.toBe(413);
+    expect(res.body.error?.code).not.toBe('PAYLOAD_TOO_LARGE');
+  });
+
   it('supports partner CRUD without logoUrl and rejects unsafe partner URLs', async () => {
     const badRes = await request(app)
       .post('/api/v1/admin/partners')

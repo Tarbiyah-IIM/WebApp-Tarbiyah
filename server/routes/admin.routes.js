@@ -22,6 +22,7 @@ import {
   adminListPartners,
   adminListStats,
   adminListTestimonials,
+  adminListAuditLog,
   adminListUsers,
   adminUpdateAgenda,
   adminUpdateFaq,
@@ -36,6 +37,7 @@ import {
   getAdminOverview
 } from '../controllers/admin.controller.js';
 import { authenticate, requireRole } from '../middlewares/auth.middleware.js';
+import { adminUploadLimiter, adminWriteLimiter, limitWrites } from '../middlewares/adminRateLimit.middleware.js';
 import { uploadImage } from '../middlewares/upload.middleware.js';
 import { validateBody } from '../middlewares/validate.middleware.js';
 import {
@@ -53,9 +55,11 @@ import {
 const router = Router();
 
 router.use(authenticate, requireRole('admin'));
+router.use(limitWrites(adminWriteLimiter));
 
 router.get('/overview', getAdminOverview);
 router.get('/users', adminListUsers);
+router.get('/audit-log', adminListAuditLog);
 router.patch('/users/:id', validateBody(adminUserUpdateSchema), adminUpdateUser);
 
 router.get('/testimonials', adminListTestimonials);
@@ -95,7 +99,7 @@ router.delete('/partners/:id', adminDeletePartner);
 router.get('/settings', adminGetSettings);
 router.patch('/settings', validateBody(adminSettingsUpdateSchema), adminUpdateSettings);
 
-router.post('/uploads', uploadImage.single('file'), adminUploadImage);
+router.post('/uploads', limitWrites(adminUploadLimiter), uploadImage.single('file'), adminUploadImage);
 router.delete('/uploads/:id', adminDeleteUploadedImage);
 
 export default router;

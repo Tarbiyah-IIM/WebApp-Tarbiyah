@@ -1,4 +1,4 @@
-import express, { Router } from 'express';
+import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { deleteMe, getMe, updateMe } from '../controllers/auth.controller.js';
 import { getGuestLectureData, submitGuestLecture } from '../controllers/guestLecture.controller.js';
@@ -96,13 +96,7 @@ router.post('/subscribers', ensureSubscribersEnabled, relayWriteLimiter, validat
 router.get('/permits/work-permit/meta', relayReadLimiter, getWorkPermitMeta);
 router.post('/permits/work-permit', relayWriteLimiter, validateBody(pplWorkPermitSchema), submitWorkPermit);
 router.get('/guest-lectures', relayReadLimiter, getGuestLectureData);
-router.post(
-  '/guest-lectures',
-  relayWriteLimiter,
-  express.json({ limit: '10mb' }),
-  validateBody(guestLectureSubmitSchema),
-  submitGuestLecture
-);
+router.post('/guest-lectures', relayWriteLimiter, validateBody(guestLectureSubmitSchema), submitGuestLecture);
 
 router.get('/me', authenticate, getMe);
 router.patch('/me', profileWriteLimiter, authenticate, validateBody(updateProfileSchema), updateMe);
