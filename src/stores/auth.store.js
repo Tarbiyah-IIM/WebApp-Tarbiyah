@@ -3,10 +3,36 @@ import { defineStore } from 'pinia';
 import { configureApiAuth } from '../services/api.js';
 import { authService } from '../services/auth.service.js';
 
+const SESSION_HINT_KEY = 'tarbiyah_has_session';
+const LEGACY_TOKEN_KEY = 'tarbiyah_token';
+
+function readSessionHint() {
+  if (typeof window === 'undefined') return false;
+  try {
+    window.localStorage.removeItem(LEGACY_TOKEN_KEY);
+    return window.localStorage.getItem(SESSION_HINT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeSessionHint(active) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(LEGACY_TOKEN_KEY);
+    if (active) {
+      window.localStorage.setItem(SESSION_HINT_KEY, '1');
+    } else {
+      window.localStorage.removeItem(SESSION_HINT_KEY);
+    }
+  } catch {}
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
-  const accessToken = ref(localStorage.getItem('tarbiyah_token') || '');
+  const accessToken = ref('');
   const hydrated = ref(false);
+  const checkedCookieRefresh = ref(false);
 
   const isAuthenticated = computed(() => Boolean(user.value && accessToken.value));
   const isAdmin = computed(() => user.value?.role === 'admin');
@@ -14,11 +40,7 @@ export const useAuthStore = defineStore('auth', () => {
   function setSession({ accessToken: token, user: nextUser }) {
     accessToken.value = token || '';
     user.value = nextUser || null;
-    if (token) {
-      localStorage.setItem('tarbiyah_token', token);
-    } else {
-      localStorage.removeItem('tarbiyah_token');
-    }
+    writeSessionHint(Boolean(token));
   }
 
   function clearSession() {
@@ -35,13 +57,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   });
 
-  async function initSession() {
-    if (hydrated.value) return;
+  async function initSession({ forceRefreshCheck = false } = {}) {
+    if (hydrated.value && (!forceRefreshCheck || checkedCookieRefresh.value)) return;
     try {
       if (accessToken.value) {
         const res = await authService.getMe();
         user.value = res.user;
-      } else {
+      } else if (forceRefreshCheck || readSessionHint()) {
+        checkedCookieRefresh.value = true;
         const res = await authService.refresh();
         setSession(res);
         await authService.getMe();

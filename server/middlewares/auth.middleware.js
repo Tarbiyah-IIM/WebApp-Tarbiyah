@@ -11,8 +11,12 @@ export async function authenticate(req, _res, next) {
     }
 
     const token = authHeader.slice(7).trim();
-    const payload = jwt.verify(token, env.jwt.accessSecret);
-    const user = await findUserById(payload.sub);
+    const payload = jwt.verify(token, env.jwt.accessSecret, { algorithms: ['HS256'] });
+    const subjectId = Number(payload?.sub);
+    if (!Number.isInteger(subjectId) || subjectId <= 0) {
+      return next(new AppError(401, 'INVALID_TOKEN', 'Token tidak valid atau telah kedaluwarsa'));
+    }
+    const user = await findUserById(subjectId);
 
     if (!user || !user.is_active) {
       return next(new AppError(401, 'UNAUTHORIZED', 'Akun tidak aktif atau tidak ditemukan'));
@@ -33,8 +37,12 @@ export async function optionalAuth(req, _res, next) {
       return next();
     }
     const token = authHeader.slice(7).trim();
-    const payload = jwt.verify(token, env.jwt.accessSecret);
-    const user = await findUserById(payload.sub);
+    const payload = jwt.verify(token, env.jwt.accessSecret, { algorithms: ['HS256'] });
+    const subjectId = Number(payload?.sub);
+    if (!Number.isInteger(subjectId) || subjectId <= 0) {
+      return next(new AppError(401, 'INVALID_TOKEN', 'Token tidak valid atau telah kedaluwarsa'));
+    }
+    const user = await findUserById(subjectId);
     req.user = user && user.is_active ? user : null;
     return next();
   } catch {

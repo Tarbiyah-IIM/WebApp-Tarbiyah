@@ -19,15 +19,24 @@ const password = ref('');
 const submitting = ref(false);
 const errorMessage = ref('');
 
+function resolveSafeRedirect(rawRedirect) {
+  if (typeof rawRedirect !== 'string') return '';
+  const trimmed = rawRedirect.trim();
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.includes('\\')) {
+    return '';
+  }
+  return trimmed;
+}
+
 async function handleLogin() {
   submitting.value = true;
   errorMessage.value = '';
   try {
     const user = await auth.login({ email: email.value, password: password.value });
     toast.success(t('auth.welcomePrefix') + user.name + '!');
-    const redirect = route.query.redirect;
-    if (redirect && typeof redirect === 'string') {
-      router.push(redirect);
+    const safeRedirect = resolveSafeRedirect(route.query.redirect);
+    if (safeRedirect) {
+      router.push(safeRedirect);
     } else if (user.role === 'admin') {
       router.push('/admin');
     } else {

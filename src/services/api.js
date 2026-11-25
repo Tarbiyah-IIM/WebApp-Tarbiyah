@@ -6,7 +6,7 @@ const api = axios.create({
   timeout: 15000
 });
 
-let getTokenFn = () => localStorage.getItem('tarbiyah_token');
+let getTokenFn = () => '';
 let onTokenRefreshedFn = null;
 let onUnauthorizedFn = null;
 let refreshPromise = null;

@@ -7,13 +7,19 @@ const { t } = useI18n();
 const visible = ref(false);
 
 onMounted(() => {
-  if (!localStorage.getItem('tarbiyah_cookie_consent')) {
+  try {
+    if (!window.localStorage.getItem('tarbiyah_cookie_consent')) {
+      visible.value = true;
+    }
+  } catch {
     visible.value = true;
   }
 });
 
 function accept(choice) {
-  localStorage.setItem('tarbiyah_cookie_consent', choice);
+  try {
+    window.localStorage.setItem('tarbiyah_cookie_consent', choice);
+  } catch {}
   visible.value = false;
 }
 </script>

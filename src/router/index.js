@@ -89,8 +89,8 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
-  if (!auth.hydrated) {
-    await auth.initSession();
+  if (!auth.hydrated || to.meta.requiresAuth) {
+    await auth.initSession({ forceRefreshCheck: Boolean(to.meta.requiresAuth) });
   }
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {

@@ -1,4 +1,8 @@
 import { env } from '../config/env.js';
+import { isSafeHttpsUrl, readBoundedResponseText, withRelaySlot } from '../utils/security.js';
+
+const MAX_META_RESPONSE_BYTES = 128 * 1024;
+const MAX_SUBMIT_RESPONSE_BYTES = 4 * 1024 * 1024;
 
 const INDONESIAN_MONTHS = [
   'Januari',
@@ -57,6 +61,55 @@ function tryParseJson(rawText) {
   }
 }
 
+function sanitizeWorkPermitMeta(rawData) {
+  if (!rawData || typeof rawData !== 'object') return buildFallbackMeta();
+  const fallback = buildFallbackMeta();
+  return {
+    nama_dekan: typeof rawData.nama_dekan === 'string' ? rawData.nama_dekan.slice(0, 120) : fallback.nama_dekan,
+    nidn_dekan: typeof rawData.nidn_dekan === 'string' ? rawData.nidn_dekan.slice(0, 40) : fallback.nidn_dekan,
+    nomor_surat: typeof rawData.nomor_surat === 'string' ? rawData.nomor_surat.slice(0, 100) : fallback.nomor_surat,
+    system_status: rawData.system_status === 'CLOSED' ? 'CLOSED' : 'OPEN',
+    program_studi_options: Array.isArray(rawData.program_studi_options)
+      ? rawData.program_studi_options.map((v) => String(v)).slice(0, 20)
+      : fallback.program_studi_options,
+    semester_options: Array.isArray(rawData.semester_options)
+      ? rawData.semester_options.map((v) => String(v)).slice(0, 20)
+      : fallback.semester_options,
+    limits: rawData.limits && typeof rawData.limits === 'object' ? rawData.limits : fallback.limits,
+    tahun_akademik:
+      typeof rawData.tahun_akademik === 'string' ? rawData.tahun_akademik.slice(0, 40) : fallback.tahun_akademik,
+    tanggal_bulan_tahun:
+      typeof rawData.tanggal_bulan_tahun === 'string'
+        ? rawData.tanggal_bulan_tahun.slice(0, 60)
+        : fallback.tanggal_bulan_tahun,
+    is_configured: Boolean(rawData.is_configured ?? true)
+  };
+}
+
+function sanitizeWorkPermitSubmitResponse(parsed) {
+  const src = parsed?.data && typeof parsed.data === 'object' ? parsed.data : {};
+  const rawDownloadUrl = typeof src.download_url === 'string' ? src.download_url.trim() : '';
+  const rawPdfBase64 = typeof src.pdf_base64 === 'string' ? src.pdf_base64.trim() : '';
+  const safePdfBase64 = /^[A-Za-z0-9+/=\r\n]+$/.test(rawPdfBase64) ? rawPdfBase64 : '';
+  const safeFileName = String(src.file_name || 'Surat_Ijin_Kerja_PPL.pdf').replace(/[\\/:*?"<>|]/g, '_');
+
+  return {
+    ok: true,
+    message: typeof parsed.message === 'string' ? parsed.message.slice(0, 300) : 'Surat Ijin Kerja berhasil diterbitkan.',
+    data: {
+      nomor_surat: String(src.nomor_surat || ''),
+      nama_mahasiswa: String(src.nama_mahasiswa || ''),
+      nim: String(src.nim || ''),
+      program_studi: String(src.program_studi || ''),
+      semester: String(src.semester || ''),
+      tempat_ppl: String(src.tempat_ppl || ''),
+      file_name: safeFileName,
+      download_url: isSafeHttpsUrl(rawDownloadUrl) ? rawDownloadUrl : '',
+      pdf_base64: safePdfBase64
+    }
+  };
+}
+
 export async function getWorkPermitMeta(_req, res) {
   const scriptUrl = env.pplWorkPermitScriptUrl;
   if (!scriptUrl) {
@@ -70,12 +123,14 @@ export async function getWorkPermitMeta(_req, res) {
 
   try {
     const separator = scriptUrl.includes('?') ? '&' : '?';
-    const response = await fetch(`${scriptUrl}${separator}api=meta`, {
-      method: 'GET',
-      redirect: 'follow',
-      signal: AbortSignal.timeout(12000)
-    });
-    const text = await response.text();
+    const response = await withRelaySlot(() =>
+      fetch(`${scriptUrl}${separator}api=meta`, {
+        method: 'GET',
+        redirect: 'follow',
+        signal: AbortSignal.timeout(12000)
+      })
+    );
+    const text = await readBoundedResponseText(response, MAX_META_RESPONSE_BYTES);
     const parsed = tryParseJson(text);
 
     if (parsed && parsed.ok && parsed.data) {
@@ -83,7 +138,7 @@ export async function getWorkPermitMeta(_req, res) {
         ok: true,
         source: 'apps-script',
         needsAppsScriptDeploy: false,
-        data: parsed.data
+        data: sanitizeWorkPermitMeta(parsed.data)
       });
     }
 
@@ -114,14 +169,20 @@ export async function submitWorkPermit(req, res) {
   }
 
   try {
-    const response = await fetch(scriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(req.body),
-      redirect: 'follow',
-      signal: AbortSignal.timeout(25000)
-    });
-    const text = await response.text();
+    const outboundPayload = env.appsScriptRelaySecret
+      ? { ...req.body, relaySecret: env.appsScriptRelaySecret }
+      : req.body;
+
+    const response = await withRelaySlot(() =>
+      fetch(scriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(outboundPayload),
+        redirect: 'follow',
+        signal: AbortSignal.timeout(25000)
+      })
+    );
+    const text = await readBoundedResponseText(response, MAX_SUBMIT_RESPONSE_BYTES);
     const parsed = tryParseJson(text);
 
     if (!parsed) {
@@ -140,13 +201,13 @@ export async function submitWorkPermit(req, res) {
         parsed.code === 'VALIDATION_ERROR' ? 400 : parsed.code === 'SYSTEM_CLOSED' ? 403 : 502;
       return res.status(statusCode).json({
         ok: false,
-        code: parsed.code || 'SUBMISSION_ERROR',
-        fieldErrors: parsed.fieldErrors || null,
-        error: { message: parsed.message || 'Gagal memproses pengajuan surat.' }
+        code: typeof parsed.code === 'string' ? parsed.code : 'SUBMISSION_ERROR',
+        fieldErrors: parsed.fieldErrors && typeof parsed.fieldErrors === 'object' ? parsed.fieldErrors : null,
+        error: { message: typeof parsed.message === 'string' ? parsed.message : 'Gagal memproses pengajuan surat.' }
       });
     }
 
-    return res.status(201).json(parsed);
+    return res.status(201).json(sanitizeWorkPermitSubmitResponse(parsed));
   } catch {
     return res.status(502).json({
       ok: false,

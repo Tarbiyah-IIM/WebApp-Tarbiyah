@@ -1,8 +1,10 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { withTransaction } from '../config/db.js';
 import { env } from '../config/env.js';
 import { AppError } from '../middlewares/error.middleware.js';
+import { isTrustedMutationOrigin } from '../utils/security.js';
 import {
   createPasswordReset,
   createUser,
@@ -27,30 +29,41 @@ function issueAccessToken(user) {
   return jwt.sign(
     { sub: user.id, role: user.role, email: user.email },
     env.jwt.accessSecret,
-    { expiresIn: env.jwt.accessExpiresIn }
+    { expiresIn: env.jwt.accessExpiresIn, algorithm: 'HS256' }
   );
 }
 
-async function issueAndStoreRefreshToken(user) {
+async function issueAndStoreRefreshToken(user, executor) {
   const rawToken = crypto.randomBytes(40).toString('hex');
   const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + env.jwt.refreshExpiresDays * 24 * 60 * 60 * 1000);
-  await storeRefreshToken({ userId: user.id, tokenHash, expiresAt });
+  await storeRefreshToken({ userId: user.id, tokenHash, expiresAt }, executor);
   return { rawToken, expiresAt };
 }
 
-function setRefreshCookie(res, rawToken, expiresAt) {
-  res.cookie('tarbiyah_refresh', rawToken, {
+function buildRefreshCookieOptions(expiresAt = null) {
+  return {
     httpOnly: true,
     sameSite: 'lax',
     secure: env.nodeEnv === 'production',
-    expires: expiresAt,
-    path: '/api/v1/auth'
-  });
+    path: '/api/v1/auth',
+    ...(expiresAt ? { expires: expiresAt } : {})
+  };
+}
+
+function setRefreshCookie(res, rawToken, expiresAt) {
+  res.cookie('tarbiyah_refresh', rawToken, buildRefreshCookieOptions(expiresAt));
+}
+
+function clearRefreshCookie(res) {
+  res.clearCookie('tarbiyah_refresh', buildRefreshCookieOptions());
 }
 
 export async function register(req, res, next) {
   try {
+    if (!env.allowPublicRegister) {
+      return next(new AppError(403, 'REGISTRATION_DISABLED', 'Pendaftaran akun publik dinonaktifkan'));
+    }
     const { name, email, password } = req.body;
     const normalizedEmail = email.trim().toLowerCase();
     const existing = await findUserByEmail(normalizedEmail);
@@ -122,6 +135,10 @@ export async function login(req, res, next) {
 
 export async function refresh(req, res, next) {
   try {
+    if (!isTrustedMutationOrigin(req, env.clientOrigins)) {
+      return next(new AppError(403, 'CSRF_ORIGIN_REJECTED', 'Origin permintaan tidak diizinkan'));
+    }
+
     const rawCookie = req.cookies?.tarbiyah_refresh;
     if (!rawCookie) {
       return next(new AppError(401, 'NO_REFRESH_TOKEN', 'Sesi login telah berakhir'));
@@ -130,24 +147,31 @@ export async function refresh(req, res, next) {
     const tokenHash = hashToken(rawCookie);
     const stored = await findValidRefreshToken(tokenHash);
     if (!stored) {
-      res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
+      clearRefreshCookie(res);
       return next(new AppError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token tidak valid'));
     }
 
     const user = await findUserById(stored.user_id);
     if (!user || !user.is_active) {
       await revokeRefreshToken(tokenHash);
-      res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
+      clearRefreshCookie(res);
       return next(new AppError(401, 'UNAUTHORIZED', 'Akun tidak aktif'));
     }
 
-    await revokeRefreshToken(tokenHash);
-    const accessToken = issueAccessToken(user);
-    const { rawToken, expiresAt } = await issueAndStoreRefreshToken(user);
-    setRefreshCookie(res, rawToken, expiresAt);
+    const rotated = await withTransaction(async (conn) => {
+      const revoked = await revokeRefreshToken(tokenHash, conn);
+      if (!revoked) {
+        throw new AppError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token sudah digunakan atau kedaluwarsa');
+      }
+      const nextAccessToken = issueAccessToken(user);
+      const nextRefresh = await issueAndStoreRefreshToken(user, conn);
+      return { accessToken: nextAccessToken, ...nextRefresh };
+    });
+
+    setRefreshCookie(res, rotated.rawToken, rotated.expiresAt);
 
     return res.json({
-      accessToken,
+      accessToken: rotated.accessToken,
       user
     });
   } catch (err) {
@@ -157,11 +181,15 @@ export async function refresh(req, res, next) {
 
 export async function logout(req, res, next) {
   try {
+    if (!isTrustedMutationOrigin(req, env.clientOrigins)) {
+      return next(new AppError(403, 'CSRF_ORIGIN_REJECTED', 'Origin permintaan tidak diizinkan'));
+    }
+
     const rawCookie = req.cookies?.tarbiyah_refresh;
     if (rawCookie) {
       await revokeRefreshToken(hashToken(rawCookie));
     }
-    res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
+    clearRefreshCookie(res);
     return res.json({ message: 'Logout berhasil' });
   } catch (err) {
     return next(err);
@@ -173,6 +201,16 @@ const ADMIN_ACCOUNT_EMAIL = 'tarbiyah@iim.ac.id';
 
 export async function forgotPassword(req, res, next) {
   try {
+    if (!env.allowSandboxReset) {
+      return next(
+        new AppError(
+          503,
+          'AUTH_RECOVERY_UNAVAILABLE',
+          'Layanan pemulihan password via email belum diaktifkan pada server ini. Hubungi administrator hosting untuk reset kredensial.'
+        )
+      );
+    }
+
     const normalizedEmail = req.body.email.trim().toLowerCase();
     if (normalizedEmail !== ADMIN_RECOVERY_EMAIL) {
       return next(
@@ -194,11 +232,9 @@ export async function forgotPassword(req, res, next) {
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
     await createPasswordReset({ userId: user.id, tokenHash, expiresAt });
 
-    const sandboxResetToken = env.nodeEnv !== 'production' ? rawToken : null;
-
     return res.json({
       message: 'Token pemulihan password admin berhasil dibuat.',
-      ...(sandboxResetToken ? { sandboxResetToken } : {})
+      sandboxResetToken: rawToken
     });
   } catch (err) {
     return next(err);
@@ -216,9 +252,14 @@ export async function resetPassword(req, res, next) {
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
-    await updateUserPassword(resetRow.user_id, passwordHash);
-    await markPasswordResetUsed(resetRow.id);
-    await revokeAllUserRefreshTokens(resetRow.user_id);
+    await withTransaction(async (conn) => {
+      const consumed = await markPasswordResetUsed(resetRow.id, conn);
+      if (!consumed) {
+        throw new AppError(400, 'INVALID_RESET_TOKEN', 'Token pemulihan sudah digunakan atau kedaluwarsa');
+      }
+      await updateUserPassword(resetRow.user_id, passwordHash, conn);
+      await revokeAllUserRefreshTokens(resetRow.user_id, conn);
+    });
 
     return res.json({ message: 'Password berhasil diperbarui. Silakan login kembali.' });
   } catch (err) {
@@ -232,7 +273,18 @@ export async function getMe(req, res) {
 
 export async function updateMe(req, res, next) {
   try {
-    const { name, avatarUrl, bio, newPassword } = req.body;
+    const { name, avatarUrl, bio, currentPassword, newPassword } = req.body;
+    if (newPassword) {
+      const userWithPassword = await findUserByEmail(req.user.email);
+      const validCurrent =
+        Boolean(currentPassword) &&
+        Boolean(userWithPassword?.password_hash) &&
+        (await bcrypt.compare(currentPassword, userWithPassword.password_hash));
+      if (!validCurrent) {
+        return next(new AppError(400, 'INVALID_CURRENT_PASSWORD', 'Password saat ini tidak sesuai'));
+      }
+    }
+
     const updated = await updateUserProfile(req.user.id, {
       name: name ? name.trim() : req.user.name,
       avatarUrl: avatarUrl !== undefined ? avatarUrl : req.user.avatar_url,
@@ -242,6 +294,7 @@ export async function updateMe(req, res, next) {
     if (newPassword) {
       const hash = await bcrypt.hash(newPassword, 10);
       await updateUserPassword(req.user.id, hash);
+      await revokeAllUserRefreshTokens(req.user.id);
     }
 
     return res.json({ user: updated });
@@ -252,8 +305,13 @@ export async function updateMe(req, res, next) {
 
 export async function deleteMe(req, res, next) {
   try {
+    if (req.user.role === 'admin') {
+      return next(
+        new AppError(403, 'ADMIN_SELF_DELETE_FORBIDDEN', 'Akun administrator tidak dapat dihapus melalui profil sendiri')
+      );
+    }
     await deleteUserById(req.user.id);
-    res.clearCookie('tarbiyah_refresh', { path: '/api/v1/auth' });
+    clearRefreshCookie(res);
     return res.json({ message: 'Akun dan data terkait berhasil dihapus' });
   } catch (err) {
     return next(err);

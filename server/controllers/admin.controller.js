@@ -40,7 +40,15 @@ import {
   updateTestimonial,
   upsertSettings
 } from '../models/landing.model.js';
-import { listUsersAdmin, updateUserRoleAndStatusAdmin } from '../models/user.model.js';
+import { listUsersAdmin, revokeAllUserRefreshTokens, updateUserRoleAndStatusAdmin } from '../models/user.model.js';
+
+function parsePositiveId(rawValue) {
+  const numeric = Number(rawValue);
+  if (!Number.isInteger(numeric) || numeric <= 0) {
+    throw new AppError(400, 'INVALID_ID', 'Parameter ID harus berupa bilangan bulat positif');
+  }
+  return numeric;
+}
 
 export async function getAdminOverview(_req, res, next) {
   try {
@@ -62,13 +70,19 @@ export async function adminListUsers(_req, res, next) {
 
 export async function adminUpdateUser(req, res, next) {
   try {
-    const targetId = Number(req.params.id);
+    const targetId = parsePositiveId(req.params.id);
     if (targetId === req.user.id && req.body.role !== 'admin') {
       return next(new AppError(400, 'SELF_DEMOTE_FORBIDDEN', 'Tidak dapat menurunkan peran akun admin yang sedang digunakan'));
+    }
+    if (targetId === req.user.id && req.body.isActive === false) {
+      return next(new AppError(400, 'SELF_SUSPEND_FORBIDDEN', 'Tidak dapat menonaktifkan akun admin yang sedang digunakan'));
     }
     const user = await updateUserRoleAndStatusAdmin(targetId, req.body);
     if (!user) {
       return next(new AppError(404, 'USER_NOT_FOUND', 'Pengguna tidak ditemukan'));
+    }
+    if (!user.is_active || user.role !== 'admin') {
+      await revokeAllUserRefreshTokens(targetId);
     }
     return res.json({ user });
   } catch (err) {
@@ -110,7 +124,7 @@ async function cleanupUnusedMediaList(urls) {
 
 export async function adminUpdateTestimonial(req, res, next) {
   try {
-    const id = Number(req.params.id);
+    const id = parsePositiveId(req.params.id);
     const oldUrls = await findTestimonialMediaUrls(id);
     const item = await updateTestimonial(id, req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Berita tidak ditemukan'));
@@ -134,7 +148,7 @@ export async function adminUpdateTestimonial(req, res, next) {
 
 export async function adminDeleteTestimonial(req, res, next) {
   try {
-    const id = Number(req.params.id);
+    const id = parsePositiveId(req.params.id);
     const oldUrls = await findTestimonialMediaUrls(id);
     const ok = await deleteTestimonial(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Berita tidak ditemukan'));
@@ -168,7 +182,7 @@ export async function adminCreateNewsCategory(req, res, next) {
 
 export async function adminDeleteNewsCategory(req, res, next) {
   try {
-    const result = await deleteNewsCategory(Number(req.params.id));
+    const result = await deleteNewsCategory(parsePositiveId(req.params.id));
     if (result.inUse) {
       return next(new AppError(409, 'CATEGORY_IN_USE', 'Kategori masih dipakai berita'));
     }
@@ -202,7 +216,7 @@ export async function adminCreateAgenda(req, res, next) {
 
 export async function adminUpdateAgenda(req, res, next) {
   try {
-    const id = Number(req.params.id);
+    const id = parsePositiveId(req.params.id);
     const oldUrls = await findAgendaMediaUrls(id);
     const item = await updateAgenda(id, req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Agenda tidak ditemukan'));
@@ -220,7 +234,7 @@ export async function adminUpdateAgenda(req, res, next) {
 
 export async function adminDeleteAgenda(req, res, next) {
   try {
-    const id = Number(req.params.id);
+    const id = parsePositiveId(req.params.id);
     const oldUrls = await findAgendaMediaUrls(id);
     const ok = await deleteAgenda(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Agenda tidak ditemukan'));
@@ -252,7 +266,7 @@ export async function adminCreateFaq(req, res, next) {
 
 export async function adminUpdateFaq(req, res, next) {
   try {
-    const item = await updateFaq(Number(req.params.id), req.body);
+    const item = await updateFaq(parsePositiveId(req.params.id), req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'FAQ tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ faq: item });
@@ -263,7 +277,7 @@ export async function adminUpdateFaq(req, res, next) {
 
 export async function adminDeleteFaq(req, res, next) {
   try {
-    const ok = await deleteFaq(Number(req.params.id));
+    const ok = await deleteFaq(parsePositiveId(req.params.id));
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'FAQ tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ message: 'FAQ dihapus' });
@@ -292,7 +306,7 @@ export async function adminCreateStat(req, res, next) {
 
 export async function adminUpdateStat(req, res, next) {
   try {
-    const item = await updateStat(Number(req.params.id), req.body);
+    const item = await updateStat(parsePositiveId(req.params.id), req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Statistik tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ stat: item });
@@ -303,7 +317,7 @@ export async function adminUpdateStat(req, res, next) {
 
 export async function adminDeleteStat(req, res, next) {
   try {
-    const ok = await deleteStat(Number(req.params.id));
+    const ok = await deleteStat(parsePositiveId(req.params.id));
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Statistik tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ message: 'Statistik dihapus' });
@@ -332,7 +346,7 @@ export async function adminCreateFeature(req, res, next) {
 
 export async function adminUpdateFeature(req, res, next) {
   try {
-    const item = await updateFeature(Number(req.params.id), req.body);
+    const item = await updateFeature(parsePositiveId(req.params.id), req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Fitur tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ feature: item });
@@ -343,7 +357,7 @@ export async function adminUpdateFeature(req, res, next) {
 
 export async function adminDeleteFeature(req, res, next) {
   try {
-    const ok = await deleteFeature(Number(req.params.id));
+    const ok = await deleteFeature(parsePositiveId(req.params.id));
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Fitur tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ message: 'Fitur dihapus' });
@@ -372,7 +386,7 @@ export async function adminCreatePartner(req, res, next) {
 
 export async function adminUpdatePartner(req, res, next) {
   try {
-    const item = await updatePartner(Number(req.params.id), req.body);
+    const item = await updatePartner(parsePositiveId(req.params.id), req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Layanan tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ partner: item });
@@ -383,7 +397,7 @@ export async function adminUpdatePartner(req, res, next) {
 
 export async function adminDeletePartner(req, res, next) {
   try {
-    const ok = await deletePartner(Number(req.params.id));
+    const ok = await deletePartner(parsePositiveId(req.params.id));
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Layanan tidak ditemukan'));
     invalidateLandingCache();
     return res.json({ message: 'Layanan dihapus' });

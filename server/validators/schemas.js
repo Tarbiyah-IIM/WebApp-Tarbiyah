@@ -1,14 +1,22 @@
 import { z } from 'zod';
+import { detectImageMimeFromBuffer } from '../middlewares/upload.middleware.js';
+import { isSafeAppUrl, isSafeHttpsUrl, sanitizeSpreadsheetCell } from '../utils/security.js';
+
+const safePasswordSchema = z
+  .string()
+  .min(8, 'Password minimal 8 karakter')
+  .max(72, 'Password maksimal 72 karakter')
+  .refine((val) => Buffer.byteLength(val, 'utf8') <= 72, 'Password melebihi batas 72 byte');
 
 export const registerSchema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().email().max(191),
-  password: z.string().min(6).max(100)
+  password: safePasswordSchema
 });
 
 export const loginSchema = z.object({
   email: z.string().trim().email(),
-  password: z.string().min(1)
+  password: z.string().min(1).max(128)
 });
 
 export const forgotPasswordSchema = z.object({
@@ -17,15 +25,32 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(10),
-  newPassword: z.string().min(6).max(100)
+  newPassword: safePasswordSchema
 });
 
-export const updateProfileSchema = z.object({
-  name: z.string().trim().min(2).max(120).optional(),
-  avatarUrl: z.string().trim().max(500).nullable().optional(),
-  bio: z.string().trim().max(1000).nullable().optional(),
-  newPassword: z.string().min(6).max(100).optional()
-});
+export const updateProfileSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120).optional(),
+    avatarUrl: z
+      .string()
+      .trim()
+      .max(500)
+      .nullable()
+      .optional()
+      .refine((v) => !v || isSafeAppUrl(v, { allowEmpty: true }), 'URL foto profil tidak valid'),
+    bio: z.string().trim().max(1000).nullable().optional(),
+    currentPassword: z.string().min(1).max(128).optional(),
+    newPassword: safePasswordSchema.optional()
+  })
+  .superRefine((data, ctx) => {
+    if (data.newPassword && !data.currentPassword) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['currentPassword'],
+        message: 'Password saat ini wajib diisi untuk mengganti password'
+      });
+    }
+  });
 
 export const subscribeSchema = z.object({
   email: z.string().trim().email().max(191),
@@ -142,8 +167,20 @@ export const featureBodySchema = z.object({
 
 export const partnerBodySchema = z.object({
   name: z.string().trim().min(1).max(100),
-  logoUrl: z.string().trim().max(500).nullable().optional(),
-  url: z.string().trim().max(500).nullable().optional(),
+  logoUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .refine((v) => !v || isSafeAppUrl(v, { allowEmpty: true }), 'URL logo layanan tidak valid'),
+  url: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .refine((v) => !v || isSafeAppUrl(v, { allowEmpty: true, allowHash: true }), 'URL tujuan layanan tidak valid'),
   sortOrder: z.coerce.number().int().min(0).default(0)
 });
 
@@ -211,9 +248,35 @@ function validateNestedCmsUrls(node, path = '') {
   return null;
 }
 
+const ALLOWED_STATIC_SETTING_KEYS = new Set([
+  'hero_tagline',
+  'hero_title',
+  'hero_subtitle',
+  'footer_cta_title',
+  'footer_cta_subtitle'
+]);
+
+const MAX_GUEST_PHOTO_BYTES = 1650000;
+
+function isAllowedSettingKey(key) {
+  return ALLOWED_STATIC_SETTING_KEYS.has(key) || /^cms_[a-z0-9_]{1,60}$/.test(key);
+}
+
+function decodeBase64ImageBuffer(rawBase64) {
+  const cleaned = String(rawBase64 || '').replace(/^data:image\/[a-z0-9.+-]+;base64,/i, '').trim();
+  if (!cleaned || cleaned.length % 4 === 1 || !/^[A-Za-z0-9+/]+={0,2}$/.test(cleaned)) {
+    return null;
+  }
+  const buffer = Buffer.from(cleaned, 'base64');
+  return buffer.length > 0 ? buffer : null;
+}
+
 export const adminSettingsUpdateSchema = z
   .record(
-    z.string().regex(/^[a-z0-9_]{1,100}$/, 'Kunci pengaturan hanya boleh huruf kecil, angka, dan underscore'),
+    z
+      .string()
+      .regex(/^[a-z0-9_]{1,100}$/, 'Kunci pengaturan hanya boleh huruf kecil, angka, dan underscore')
+      .refine((key) => isAllowedSettingKey(key), 'Kunci pengaturan tidak terdaftar pada konfigurasi CMS'),
     z.union([z.string(), z.number(), z.boolean(), z.null()]).transform((val) => (val === null ? '' : String(val)))
   )
   .superRefine((obj, ctx) => {
@@ -223,8 +286,8 @@ export const adminSettingsUpdateSchema = z
       return;
     }
     for (const [key, value] of Object.entries(obj)) {
-      if (value.length > 60000) {
-        ctx.addIssue({ code: 'custom', path: [key], message: `Nilai ${key} terlalu panjang` });
+      if (Buffer.byteLength(value, 'utf8') > 60000) {
+        ctx.addIssue({ code: 'custom', path: [key], message: `Nilai ${key} melebihi batas ukuran 60 KB` });
         continue;
       }
       if (key.startsWith('cms_') && value.trim()) {
@@ -254,22 +317,23 @@ export const adminSettingsUpdateSchema = z
   });
 
 export const pplWorkPermitSchema = z.object({
-  kepada: z.string().trim().min(1, 'Kepada (Yth.) wajib diisi.').max(150),
-  nama_mahasiswa: z.string().trim().min(1, 'Nama Mahasiswa wajib diisi.').max(120),
+  kepada: z.string().trim().min(1, 'Kepada (Yth.) wajib diisi.').max(150).transform(sanitizeSpreadsheetCell),
+  nama_mahasiswa: z.string().trim().min(1, 'Nama Mahasiswa wajib diisi.').max(120).transform(sanitizeSpreadsheetCell),
   nim: z
     .string()
     .trim()
     .min(3, 'NIM minimal terdiri dari 3 karakter.')
     .max(30)
-    .regex(/^[A-Za-z0-9.\-\/]+$/, 'NIM hanya boleh berisi huruf, angka, titik, garis miring, atau tanda hubung.'),
+    .regex(/^[A-Za-z0-9.\-\/]+$/, 'NIM hanya boleh berisi huruf, angka, titik, garis miring, atau tanda hubung.')
+    .refine((v) => !/^[=+\-@\t\r]/.test(v), 'NIM tidak boleh diawali karakter operator.'),
   program_studi: z.enum([
     'Pendidikan Agama Islam',
     'Pendidikan Guru Madrasah Ibtidaiyah',
     'Pendidikan Islam Anak Usia Dini'
   ]),
   semester: z.enum(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']),
-  tempat_ppl: z.string().trim().min(1, 'Tempat PPL wajib diisi.').max(150),
-  alamat_ppl: z.string().trim().min(1, 'Alamat PPL wajib diisi.').max(300)
+  tempat_ppl: z.string().trim().min(1, 'Tempat PPL wajib diisi.').max(150).transform(sanitizeSpreadsheetCell),
+  alamat_ppl: z.string().trim().min(1, 'Alamat PPL wajib diisi.').max(300).transform(sanitizeSpreadsheetCell)
 });
 
 const guestLectureFotoFileSchema = z.object({
@@ -286,15 +350,20 @@ export const guestLectureSubmitSchema = z
   .object({
     mode: z.enum(['new', 'update']).default('new'),
     rowIndex: z.coerce.number().int().min(3).max(50000).nullable().optional(),
-    prodi: z.string().trim().max(40).default(''),
-    dosenPengampu: z.string().trim().max(160).default(''),
-    dosenTamu: z.string().trim().max(240).default(''),
-    mataKuliah: z.string().trim().max(200).default(''),
-    tema: z.string().trim().max(1000).default(''),
-    tanggal: z.string().trim().max(40).default(''),
-    jam: z.string().trim().max(80).default(''),
-    peserta: z.string().trim().max(40).default('100'),
-    existingFotoUrl: z.string().trim().max(2000).default(''),
+    prodi: z.string().trim().max(40).default('').transform(sanitizeSpreadsheetCell),
+    dosenPengampu: z.string().trim().max(160).default('').transform(sanitizeSpreadsheetCell),
+    dosenTamu: z.string().trim().max(240).default('').transform(sanitizeSpreadsheetCell),
+    mataKuliah: z.string().trim().max(200).default('').transform(sanitizeSpreadsheetCell),
+    tema: z.string().trim().max(1000).default('').transform(sanitizeSpreadsheetCell),
+    tanggal: z.string().trim().max(40).default('').transform(sanitizeSpreadsheetCell),
+    jam: z.string().trim().max(80).default('').transform(sanitizeSpreadsheetCell),
+    peserta: z.string().trim().max(40).default('100').transform(sanitizeSpreadsheetCell),
+    existingFotoUrl: z
+      .string()
+      .trim()
+      .max(2000)
+      .default('')
+      .refine((v) => !v || isSafeHttpsUrl(v), 'URL foto tidak valid'),
     fotoFiles: z.array(guestLectureFotoFileSchema).max(3, 'Maksimal 3 foto narasumber.').default([])
   })
   .superRefine((data, ctx) => {
@@ -321,4 +390,23 @@ export const guestLectureSubmitSchema = z
         message: 'Isi minimal satu informasi agenda kuliah tamu.'
       });
     }
+    data.fotoFiles.forEach((file, index) => {
+      const buf = decodeBase64ImageBuffer(file.base64);
+      if (!buf || buf.length > MAX_GUEST_PHOTO_BYTES) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['fotoFiles', index, 'base64'],
+          message: 'Data file gambar foto tidak valid atau melebihi batas ukuran.'
+        });
+        return;
+      }
+      const detectedMime = detectImageMimeFromBuffer(buf);
+      if (!detectedMime || detectedMime !== file.mimeType) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['fotoFiles', index, 'mimeType'],
+          message: 'Tanda biner file foto tidak sesuai tipe gambar JPG, PNG, WebP, atau GIF.'
+        });
+      }
+    });
   });

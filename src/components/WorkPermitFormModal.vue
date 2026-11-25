@@ -136,15 +136,25 @@ function triggerBase64PdfDownload(base64, fileName) {
   }
 }
 
+function isSafeHttpsUrl(rawUrl) {
+  if (typeof rawUrl !== 'string') return false;
+  try {
+    return new URL(rawUrl.trim()).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function downloadLastPdf() {
   if (!resultData.value) return;
   const ok = triggerBase64PdfDownload(resultData.value.pdf_base64, resultData.value.file_name);
-  if (!ok && resultData.value.download_url) {
+  if (!ok && isSafeHttpsUrl(resultData.value.download_url)) {
     window.open(resultData.value.download_url, '_blank', 'noopener,noreferrer');
   }
 }
 
 async function handleSubmit() {
+  if (submitting.value) return;
   globalError.value = '';
   if (!validateLocal()) return;
 

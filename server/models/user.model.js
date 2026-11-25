@@ -32,8 +32,8 @@ export async function updateUserProfile(id, { name, avatarUrl, bio }) {
   return findUserById(id);
 }
 
-export async function updateUserPassword(id, passwordHash) {
-  await pool.execute(
+export async function updateUserPassword(id, passwordHash, executor = pool) {
+  await executor.execute(
     'UPDATE users SET password_hash = ? WHERE id = ?',
     [passwordHash, id]
   );
@@ -59,30 +59,31 @@ export async function updateUserRoleAndStatusAdmin(id, { role, isActive }) {
   return findUserById(id);
 }
 
-export async function storeRefreshToken({ userId, tokenHash, expiresAt }) {
-  await pool.execute(
+export async function storeRefreshToken({ userId, tokenHash, expiresAt }, executor = pool) {
+  await executor.execute(
     'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
     [userId, tokenHash, expiresAt]
   );
 }
 
-export async function findValidRefreshToken(tokenHash) {
-  const [rows] = await pool.execute(
+export async function findValidRefreshToken(tokenHash, executor = pool) {
+  const [rows] = await executor.execute(
     'SELECT id, user_id, expires_at, revoked_at FROM refresh_tokens WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW() LIMIT 1',
     [tokenHash]
   );
   return rows[0] || null;
 }
 
-export async function revokeRefreshToken(tokenHash) {
-  await pool.execute(
+export async function revokeRefreshToken(tokenHash, executor = pool) {
+  const [result] = await executor.execute(
     'UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = ? AND revoked_at IS NULL',
     [tokenHash]
   );
+  return result.affectedRows > 0;
 }
 
-export async function revokeAllUserRefreshTokens(userId) {
-  await pool.execute(
+export async function revokeAllUserRefreshTokens(userId, executor = pool) {
+  await executor.execute(
     'UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL',
     [userId]
   );
@@ -103,6 +104,10 @@ export async function findValidPasswordReset(tokenHash) {
   return rows[0] || null;
 }
 
-export async function markPasswordResetUsed(id) {
-  await pool.execute('UPDATE password_resets SET used_at = NOW() WHERE id = ?', [id]);
+export async function markPasswordResetUsed(id, executor = pool) {
+  const [result] = await executor.execute(
+    'UPDATE password_resets SET used_at = NOW() WHERE id = ? AND used_at IS NULL',
+    [id]
+  );
+  return result.affectedRows > 0;
 }

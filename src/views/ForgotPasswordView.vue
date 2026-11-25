@@ -118,7 +118,8 @@ async function confirmReset() {
             v-model="newPassword"
             type="password"
             required
-            minlength="6"
+            minlength="8"
+            maxlength="72"
             class="mt-1.5 min-h-[46px] w-full rounded-xl border border-surface-border bg-white px-4 text-sm text-brand-900"
           />
         </div>

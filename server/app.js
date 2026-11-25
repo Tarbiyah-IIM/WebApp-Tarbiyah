@@ -23,9 +23,11 @@ app.use(
         frameSrc: [
           "'self'",
           'https://drive.google.com',
+          'https://docs.google.com',
           'https://script.google.com',
           'https://*.googleusercontent.com',
-          'https://www.google.com/maps'
+          'https://www.google.com/maps/',
+          'https://maps.google.com/'
         ]
       }
     }
@@ -33,15 +35,18 @@ app.use(
 );
 app.use(
   cors({
-    origin: env.clientOrigin,
+    origin(origin, callback) {
+      if (!origin || env.clientOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true
   })
 );
 app.use('/api/v1/guest-lectures', express.json({ limit: '6mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
-
-app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
 app.get('/api/v1/health', (_req, res) => {
   res.json({ status: 'ok', service: 'tarbiyah-api' });
@@ -53,10 +58,27 @@ app.use('/api/v1/admin', adminRoutes);
 
 const distDir = path.resolve(process.cwd(), 'dist');
 if (fs.existsSync(distDir)) {
-  app.use(express.static(distDir));
+  app.use(
+    '/assets',
+    express.static(path.join(distDir, 'assets'), {
+      maxAge: '1y',
+      immutable: true
+    })
+  );
+  app.use(
+    express.static(distDir, {
+      setHeaders(res, filePath) {
+        if (path.basename(filePath) === 'index.html') {
+          res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+        }
+      }
+    })
+  );
   app.use((req, res, next) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return next();
-    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+    if (req.path.startsWith('/api') || req.path.startsWith('/assets/')) return next();
+    if (/\.[a-z0-9]{1,8}$/i.test(req.path)) return next();
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.sendFile(path.join(distDir, 'index.html'));
   });
 }

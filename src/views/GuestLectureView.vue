@@ -22,6 +22,7 @@ const submitting = ref(false);
 const errorMessage = ref('');
 const needsAppsScriptDeploy = ref(false);
 const resolvedScriptUrl = ref('');
+const fallbackIframeRef = ref(null);
 const iframeAutoHeight = ref(0);
 const activeTab = ref('tracking');
 const offline = ref(typeof navigator !== 'undefined' && !navigator.onLine);
@@ -44,7 +45,7 @@ const iframeStyle = computed(() =>
 );
 
 function isTrustedHeightOrigin(origin) {
-  if (!origin || origin === 'null') return true;
+  if (!origin || origin === 'null') return false;
   if (typeof window !== 'undefined' && origin === window.location.origin) return true;
   return (
     origin === 'https://script.google.com' ||
@@ -55,6 +56,9 @@ function isTrustedHeightOrigin(origin) {
 
 function handleIframeMessage(event) {
   if (!isTrustedHeightOrigin(event.origin)) return;
+  if (fallbackIframeRef.value?.contentWindow && event.source !== fallbackIframeRef.value.contentWindow) {
+    return;
+  }
   const payload = event.data;
   if (!payload || payload.type !== 'TARBIYAH_GUEST_LECTURE_HEIGHT') return;
   const parsedHeight = Number(payload.height);
@@ -84,8 +88,8 @@ async function loadData(forceRefresh = false) {
 
   try {
     const res = await guestLectureService.fetchData({ refresh: forceRefresh });
-    if (res?.scriptUrl) {
-      resolvedScriptUrl.value = res.scriptUrl;
+    if (res?.fallbackUrl) {
+      resolvedScriptUrl.value = res.fallbackUrl;
     }
     if (res?.needsAppsScriptDeploy) {
       needsAppsScriptDeploy.value = true;
@@ -153,6 +157,7 @@ onUnmounted(() => {
   >
     <iframe
       v-if="isIframeFallback"
+      ref="fallbackIframeRef"
       :src="fallbackUrl"
       :title="t('guestLecture.iframeTitle')"
       :style="iframeStyle"
@@ -160,6 +165,7 @@ onUnmounted(() => {
       class="block w-full border-0"
       :class="iframeAutoHeight > 0 ? 'overflow-hidden' : 'h-[calc(100dvh-138px)] lg:h-[calc(100dvh-73px)]'"
       loading="eager"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
       referrerpolicy="strict-origin-when-cross-origin"
     />
 
