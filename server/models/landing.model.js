@@ -216,6 +216,7 @@ export async function getLandingData() {
       LEFT JOIN news_categories nc ON nc.id = t.category_id
       WHERE t.is_visible = 1
       ORDER BY t.sort_order ASC, t.id ASC
+      LIMIT 200
     `),
     pool.execute(`
       SELECT id, title, event_date, event_time, excerpt, description,
@@ -223,6 +224,7 @@ export async function getLandingData() {
       FROM agendas
       WHERE is_visible = 1
       ORDER BY sort_order ASC, id ASC
+      LIMIT 200
     `),
     pool.execute('SELECT id, question, answer, sort_order FROM faqs ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT setting_key, setting_value FROM site_settings')

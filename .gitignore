@@ -12,3 +12,4 @@ test-results/
 
 # Database upload bundles
 server/database/*.zip
+.vscode/

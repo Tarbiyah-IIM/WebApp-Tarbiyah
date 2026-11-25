@@ -22,7 +22,13 @@ export default defineConfig({
       command: 'node server/server.js',
       url: 'http://localhost:3001/api/v1/health',
       reuseExistingServer: !process.env.CI,
-      timeout: 30000
+      timeout: 30000,
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        ALLOW_PUBLIC_REGISTER: 'true',
+        ALLOW_SANDBOX_RESET: 'true'
+      }
     },
     {
       command: 'npm run dev',

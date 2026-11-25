@@ -2,16 +2,28 @@ import { test as base, expect } from '@playwright/test';
 
 export const test = base.extend({
   loginViaApi: async ({ page, request }, use) => {
-    const fn = async (email, password = 'adminganteng') => {
+    const fn = async (email, password = process.env.E2E_ADMIN_PASSWORD || '') => {
+      if (!password) {
+        throw new Error('Set E2E_ADMIN_PASSWORD in environment before running admin E2E suites.');
+      }
       const res = await request.post('http://localhost:3001/api/v1/auth/login', {
         data: { email, password }
       });
       expect(res.ok()).toBeTruthy();
       const body = await res.json();
       await page.goto('/login');
-      await page.evaluate((token) => {
-        localStorage.setItem('tarbiyah_token', token);
-      }, body.accessToken);
+      await page.evaluate(
+        async ({ loginEmail, loginPassword }) => {
+          await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: loginEmail, password: loginPassword })
+          });
+          window.localStorage.setItem('tarbiyah_has_session', '1');
+        },
+        { loginEmail: email, loginPassword: password }
+      );
       return body;
     };
     await use(fn);

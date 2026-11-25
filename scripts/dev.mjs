@@ -18,9 +18,18 @@ function launch(name, cmd, args) {
 launch('server', 'npm', ['run', 'dev:server']);
 launch('client', 'npm', ['run', 'dev']);
 
+function terminateChild(child) {
+  if (!child || child.killed) return;
+  if (process.platform === 'win32' && child.pid) {
+    spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+    return;
+  }
+  child.kill('SIGTERM');
+}
+
 function shutdown() {
   for (const child of children) {
-    child.kill('SIGTERM');
+    terminateChild(child);
   }
   process.exit(0);
 }

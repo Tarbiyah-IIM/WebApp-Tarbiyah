@@ -29,28 +29,6 @@ export async function authenticate(req, _res, next) {
   }
 }
 
-export async function optionalAuth(req, _res, next) {
-  try {
-    const authHeader = req.headers.authorization || '';
-    if (!authHeader.startsWith('Bearer ')) {
-      req.user = null;
-      return next();
-    }
-    const token = authHeader.slice(7).trim();
-    const payload = jwt.verify(token, env.jwt.accessSecret, { algorithms: ['HS256'] });
-    const subjectId = Number(payload?.sub);
-    if (!Number.isInteger(subjectId) || subjectId <= 0) {
-      return next(new AppError(401, 'INVALID_TOKEN', 'Token tidak valid atau telah kedaluwarsa'));
-    }
-    const user = await findUserById(subjectId);
-    req.user = user && user.is_active ? user : null;
-    return next();
-  } catch {
-    req.user = null;
-    return next();
-  }
-}
-
 export function requireRole(...roles) {
   return (req, _res, next) => {
     if (!req.user) {

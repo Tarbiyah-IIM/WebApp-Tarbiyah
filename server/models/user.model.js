@@ -111,3 +111,16 @@ export async function markPasswordResetUsed(id, executor = pool) {
   );
   return result.affectedRows > 0;
 }
+
+export async function purgeExpiredAuthTokens() {
+  const [refreshRes] = await pool.execute(
+    'DELETE FROM refresh_tokens WHERE (revoked_at IS NOT NULL AND revoked_at < DATE_SUB(NOW(), INTERVAL 7 DAY)) OR expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)'
+  );
+  const [resetRes] = await pool.execute(
+    'DELETE FROM password_resets WHERE (used_at IS NOT NULL AND used_at < DATE_SUB(NOW(), INTERVAL 7 DAY)) OR expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)'
+  );
+  return {
+    deletedRefreshTokens: refreshRes.affectedRows || 0,
+    deletedPasswordResets: resetRes.affectedRows || 0
+  };
+}

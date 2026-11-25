@@ -1,18 +1,104 @@
+import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import app from '../server/app.js';
 import { pool } from '../server/config/db.js';
-import { findUserByEmail, updateUserPassword } from '../server/models/user.model.js';
+import { env } from '../server/config/env.js';
+import {
+  createUser,
+  deleteUserById,
+  findUserByEmail,
+  updateUserPassword
+} from '../server/models/user.model.js';
 
 describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
   const testEmail = `test.${Date.now()}@tarbiyah.test`;
+  const testAdminEmail = `test.admin.${Date.now()}@tarbiyah.test`;
+  const testAdminPassword = `Adm!${crypto.randomBytes(12).toString('hex')}`;
   let userToken = '';
   let adminToken = '';
+  let createdTestAdminId = null;
+  let originalFetch = null;
+
+  beforeAll(async () => {
+    const isTestDb = env.db.database.endsWith('_test');
+    if (env.nodeEnv !== 'test' || (!isTestDb && process.env.ALLOW_LIVE_DB_TEST !== 'true')) {
+      throw new Error(
+        `Refusing to run integration tests against "${env.db.database}" (${env.nodeEnv}). Use *_test DB or set ALLOW_LIVE_DB_TEST=true intentionally.`
+      );
+    }
+
+    originalFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', async (url, init) => {
+      const targetUrl = String(url || '');
+      if (targetUrl.startsWith('https://script.google.com/')) {
+        if (targetUrl.includes('api=meta')) {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              data: {
+                system_status: 'OPEN',
+                tahun_akademik: '2026/2027',
+                tanggal_bulan_tahun: '25 November 2026',
+                program_studi_options: [
+                  'Pendidikan Agama Islam',
+                  'Pendidikan Guru Madrasah Ibtidaiyah',
+                  'Pendidikan Islam Anak Usia Dini'
+                ],
+                semester_options: ['1', '2', '3', '4', '5', '6', '7', '8']
+              }
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        if (targetUrl.includes('api=data')) {
+          return new Response(
+            JSON.stringify({
+              success: true,
+              prodiList: ['PAI', 'PIAUD', 'PGMI'],
+              dosenList: ['Dosen Uji'],
+              incompleteLectures: [{ rowIndex: 99, prodi: 'PAI', mataKuliah: 'Uji MK', status: 'Not Started' }],
+              trackingLectures: []
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            success: true,
+            isComplete: true,
+            status: 'Process',
+            message: 'Mock Apps Script OK',
+            rowIndex: 100
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return originalFetch(url, init);
+    });
+
+    const passwordHash = await bcrypt.hash(testAdminPassword, 10);
+    const createdAdmin = await createUser({
+      name: 'Isolated Admin Test',
+      email: testAdminEmail,
+      passwordHash,
+      role: 'admin',
+      avatarUrl: null
+    });
+    createdTestAdminId = createdAdmin.id;
+  });
 
   afterAll(async () => {
+    if (originalFetch) {
+      vi.unstubAllGlobals();
+    }
     if (userToken) {
       await request(app).delete('/api/v1/me').set('Authorization', `Bearer ${userToken}`);
+    }
+    if (createdTestAdminId) {
+      await deleteUserById(createdTestAdminId);
     }
     await pool.end();
   });
@@ -73,13 +159,33 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .send({ email: 'tarbiyah@iim.ac.id' });
     expect(wrongRecovery2.status).toBe(400);
 
-    const tarbiyahAdminLogin = await request(app).post('/api/v1/auth/login').send({
-      email: 'tarbiyah@iim.ac.id',
-      password: 'adminganteng'
+    const adminLogin = await request(app).post('/api/v1/auth/login').send({
+      email: testAdminEmail,
+      password: testAdminPassword
     });
-    expect(tarbiyahAdminLogin.status).toBe(200);
-    expect(tarbiyahAdminLogin.body.user.role).toBe('admin');
-    adminToken = tarbiyahAdminLogin.body.accessToken;
+    expect(adminLogin.status).toBe(200);
+    expect(adminLogin.body.user.role).toBe('admin');
+    adminToken = adminLogin.body.accessToken;
+
+    const noCurrentPass = await request(app)
+      .patch('/api/v1/me')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ newPassword: 'NewPassword123!' });
+    expect(noCurrentPass.status).toBe(400);
+
+    const selfDeleteAdmin = await request(app)
+      .delete('/api/v1/me')
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(selfDeleteAdmin.status).toBe(403);
+
+    const selfSuspendAdmin = await request(app)
+      .patch(`/api/v1/admin/users/${createdTestAdminId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ role: 'admin', isActive: false });
+    expect(selfSuspendAdmin.status).toBe(400);
+
+    const existingRealAdmin = await findUserByEmail('tarbiyah@iim.ac.id');
+    const preservedRealAdminHash = existingRealAdmin?.password_hash || '';
 
     try {
       const forgot = await request(app)
@@ -101,10 +207,8 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       expect(adminRelogin.status).toBe(200);
       expect(adminRelogin.body.user.role).toBe('admin');
     } finally {
-      const adminUser = await findUserByEmail('tarbiyah@iim.ac.id');
-      if (adminUser) {
-        const originalHash = await bcrypt.hash('adminganteng', 10);
-        await updateUserPassword(adminUser.id, originalHash);
+      if (existingRealAdmin && preservedRealAdminHash) {
+        await updateUserPassword(existingRealAdmin.id, preservedRealAdminHash);
       }
     }
   });
@@ -413,10 +517,10 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
     }
   });
 
-  it('serves stateless guest-lecture relay metadata and validates submit payloads cleanly', async () => {
+  it('serves stateless guest-lecture relay metadata and rejects forged updates or spoofed images', async () => {
     const getRes = await request(app).get('/api/v1/guest-lectures');
     expect([200, 502]).toContain(getRes.status);
-    expect(getRes.body.scriptUrl).toMatch(/^https:\/\/script\.google\.com\//);
+    expect(getRes.body.scriptUrl).toBeUndefined();
 
     const emptyPostRes = await request(app).post('/api/v1/guest-lectures').send({ mode: 'new' });
     expect(emptyPostRes.status).toBe(400);
@@ -425,5 +529,66 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .post('/api/v1/guest-lectures')
       .send({ mode: 'update', mataKuliah: 'Uji Validasi' });
     expect(missingRowUpdateRes.status).toBe(400);
+
+    const lockedRowUpdateRes = await request(app)
+      .post('/api/v1/guest-lectures')
+      .send({ mode: 'update', rowIndex: 9999, mataKuliah: 'Uji Row Terkunci' });
+    expect(lockedRowUpdateRes.status).toBe(403);
+
+    const spoofedPhotoRes = await request(app)
+      .post('/api/v1/guest-lectures')
+      .send({
+        mode: 'new',
+        mataKuliah: 'Uji Upload Spoof',
+        fotoFiles: [
+          {
+            filename: 'shell.png',
+            mimeType: 'image/png',
+            base64: Buffer.from('<?php echo "hello"; ?>').toString('base64')
+          }
+        ]
+      });
+    expect(spoofedPhotoRes.status).toBe(400);
+  });
+
+  it('supports partner CRUD without logoUrl and rejects unsafe partner URLs', async () => {
+    const badRes = await request(app)
+      .post('/api/v1/admin/partners')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Mitra Uji XSS',
+        logoUrl: 'javascript:alert(1)',
+        url: 'https://iimsurakarta.ac.id',
+        sortOrder: 99
+      });
+    expect(badRes.status).toBe(400);
+
+    const createRes = await request(app)
+      .post('/api/v1/admin/partners')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Mitra Uji Integrasi',
+        url: 'https://iimsurakarta.ac.id',
+        sortOrder: 99
+      });
+    expect(createRes.status).toBe(201);
+    const partnerId = createRes.body.partner?.id;
+    expect(partnerId).toBeTruthy();
+
+    const updateRes = await request(app)
+      .patch(`/api/v1/admin/partners/${partnerId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Mitra Uji Integrasi Updated',
+        url: 'https://tarbiyah.iimsurakarta.ac.id',
+        sortOrder: 100
+      });
+    expect(updateRes.status).toBe(200);
+    expect(updateRes.body.partner?.name).toBe('Mitra Uji Integrasi Updated');
+
+    const deleteRes = await request(app)
+      .delete(`/api/v1/admin/partners/${partnerId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(deleteRes.status).toBe(200);
   });
 });

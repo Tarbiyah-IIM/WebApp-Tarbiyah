@@ -17,7 +17,11 @@ export function notFoundHandler(req, res) {
   });
 }
 
-export function errorHandler(err, req, res, _next) {
+export function errorHandler(err, req, res, next) {
+  if (res.headersSent) {
+    return next(err);
+  }
+
   if (err instanceof AppError) {
     return res.status(err.status).json({
       error: {
@@ -42,7 +46,7 @@ export function errorHandler(err, req, res, _next) {
     const message =
       err.code === 'LIMIT_FILE_SIZE'
         ? 'Ukuran file terlalu besar. Maksimal ukuran file adalah 10 MB.'
-        : err.message;
+        : 'Format unggahan file tidak valid.';
     return res.status(400).json({
       error: {
         code: 'UPLOAD_ERROR',
@@ -52,15 +56,40 @@ export function errorHandler(err, req, res, _next) {
     });
   }
 
-  const status = err?.status || 500;
-  const message = status === 500 ? 'Terjadi kesalahan pada server' : err.message;
-  if (status === 500) {
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({
+      error: {
+        code: 'INVALID_JSON',
+        message: 'Format data JSON tidak valid',
+        details: []
+      }
+    });
+  }
+
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Ukuran permintaan melebihi batas maksimal server',
+        details: []
+      }
+    });
+  }
+
+  const status = Number.isInteger(err?.status) && err.status >= 400 && err.status < 600 ? err.status : 500;
+  const message =
+    status >= 500
+      ? 'Terjadi kesalahan pada server'
+      : err.expose
+        ? err.message
+        : 'Permintaan tidak dapat diproses';
+  if (status >= 500) {
     console.error('[ServerError]', err?.message || err);
   }
 
   return res.status(status).json({
     error: {
-      code: status === 500 ? 'INTERNAL_ERROR' : 'REQUEST_ERROR',
+      code: status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_ERROR',
       message,
       details: []
     }

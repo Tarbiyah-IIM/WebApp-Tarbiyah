@@ -6,6 +6,7 @@ import {
   deleteMediaFileIfUnreferenced,
   extractMediaId,
   findAgendaMediaUrls,
+  findPartnerLogoUrl,
   findTestimonialMediaUrls
 } from '../models/media.model.js';
 import {
@@ -386,8 +387,15 @@ export async function adminCreatePartner(req, res, next) {
 
 export async function adminUpdatePartner(req, res, next) {
   try {
-    const item = await updatePartner(parsePositiveId(req.params.id), req.body);
+    const id = parsePositiveId(req.params.id);
+    const oldUrls = await findPartnerLogoUrl(id);
+    const item = await updatePartner(id, req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Layanan tidak ditemukan'));
+    const nextUrls = new Set(item.logo_url ? [item.logo_url] : []);
+    const removedUrls = oldUrls.filter((url) => !nextUrls.has(url));
+    if (removedUrls.length > 0) {
+      await cleanupUnusedMediaList(removedUrls);
+    }
     invalidateLandingCache();
     return res.json({ partner: item });
   } catch (err) {
@@ -397,8 +405,11 @@ export async function adminUpdatePartner(req, res, next) {
 
 export async function adminDeletePartner(req, res, next) {
   try {
-    const ok = await deletePartner(parsePositiveId(req.params.id));
+    const id = parsePositiveId(req.params.id);
+    const oldUrls = await findPartnerLogoUrl(id);
+    const ok = await deletePartner(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Layanan tidak ditemukan'));
+    await cleanupUnusedMediaList(oldUrls);
     invalidateLandingCache();
     return res.json({ message: 'Layanan dihapus' });
   } catch (err) {
@@ -414,9 +425,40 @@ export async function adminGetSettings(_req, res, next) {
   }
 }
 
+function extractStructureImageUrl(rawProfileJson) {
+  if (typeof rawProfileJson !== 'string' || !rawProfileJson.trim()) return [];
+  try {
+    const parsed = JSON.parse(rawProfileJson);
+    const urls = new Set();
+    if (typeof parsed?.structureImageUrl === 'string' && parsed.structureImageUrl.trim()) {
+      urls.add(parsed.structureImageUrl.trim());
+    }
+    for (const loc of Object.values(parsed?.locales || {})) {
+      if (typeof loc?.structureImageUrl === 'string' && loc.structureImageUrl.trim()) {
+        urls.add(loc.structureImageUrl.trim());
+      }
+    }
+    return Array.from(urls);
+  } catch {
+    return [];
+  }
+}
+
 export async function adminUpdateSettings(req, res, next) {
   try {
+    let oldProfileMediaUrls = [];
+    if (Object.prototype.hasOwnProperty.call(req.body, 'cms_profile')) {
+      const prevSettings = await getSettingsMap();
+      oldProfileMediaUrls = extractStructureImageUrl(prevSettings?.cms_profile);
+    }
     const settings = await upsertSettings(req.body);
+    if (oldProfileMediaUrls.length > 0) {
+      const nextUrlSet = new Set(extractStructureImageUrl(settings?.cms_profile));
+      const removed = oldProfileMediaUrls.filter((url) => !nextUrlSet.has(url));
+      if (removed.length > 0) {
+        await cleanupUnusedMediaList(removed);
+      }
+    }
     invalidateLandingCache();
     return res.json({ settings });
   } catch (err) {

@@ -9,6 +9,10 @@ export const pool = mysql.createPool({
   database: env.db.database,
   waitForConnections: true,
   connectionLimit: 10,
+  queueLimit: 25,
+  connectTimeout: 10000,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
   namedPlaceholders: false,
   decimalNumbers: true
 });

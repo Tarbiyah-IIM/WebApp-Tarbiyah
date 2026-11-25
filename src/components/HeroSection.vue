@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
-import heroTarbiyahImage from '../assets/hero-tarbiyah.png';
+import heroTarbiyahImage from '../assets/hero-tarbiyah.webp';
 import strukturOrganisasiImage from '../assets/struktur-organisasi.jpg';
 import ModalDialog from './ModalDialog.vue';
 import ScholarshipModal from './ScholarshipModal.vue';

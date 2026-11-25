@@ -1,6 +1,6 @@
 <script setup>
 import { Award, BookOpen, CheckCircle2, GraduationCap, ShieldCheck, Sparkles, Users } from 'lucide-vue-next';
-import howTarbiyahImage from '../assets/how-tarbiyah.png';
+import howTarbiyahImage from '../assets/how-tarbiyah.webp';
 import { useI18n } from '../composables/useI18n.js';
 
 defineProps({

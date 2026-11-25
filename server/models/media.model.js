@@ -72,6 +72,12 @@ export async function findAgendaMediaUrls(agendaId) {
   return coverUrl ? [coverUrl] : [];
 }
 
+export async function findPartnerLogoUrl(partnerId) {
+  const [rows] = await pool.execute('SELECT logo_url FROM partners WHERE id = ? LIMIT 1', [partnerId]);
+  const logoUrl = rows[0]?.logo_url;
+  return logoUrl ? [logoUrl] : [];
+}
+
 export async function deleteMediaFileIfUnreferenced(mediaId) {
   if (!isValidMediaId(mediaId)) return false;
   const pattern = `%/api/v1/media/${mediaId}%`;
@@ -79,8 +85,10 @@ export async function deleteMediaFileIfUnreferenced(mediaId) {
     `SELECT
       (SELECT COUNT(*) FROM testimonials WHERE avatar_url LIKE ? OR gallery_urls LIKE ?) +
       (SELECT COUNT(*) FROM agendas WHERE cover_url LIKE ?) +
+      (SELECT COUNT(*) FROM partners WHERE logo_url LIKE ?) +
+      (SELECT COUNT(*) FROM users WHERE avatar_url LIKE ?) +
       (SELECT COUNT(*) FROM site_settings WHERE setting_value LIKE ?) AS refCount`,
-    [pattern, pattern, pattern, pattern]
+    [pattern, pattern, pattern, pattern, pattern, pattern]
   );
   if (Number(usage?.refCount || 0) > 0) {
     return false;

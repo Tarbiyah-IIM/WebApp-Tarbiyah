@@ -168,7 +168,7 @@ test('guest lecture page gracefully falls back when Apps Script JSON is not depl
       body: JSON.stringify({
         ok: false,
         needsAppsScriptDeploy: true,
-        scriptUrl: defaultScriptUrl,
+        fallbackUrl: defaultScriptUrl,
         data: null
       })
     })

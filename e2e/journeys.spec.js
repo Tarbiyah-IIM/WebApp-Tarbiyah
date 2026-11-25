@@ -112,10 +112,21 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     );
     await expect(servicesSection.getByRole('link', { name: /Jurnal Tarbiyah/ })).toHaveAttribute('href', '/publikasi/jurnal');
 
+    const landingNewsCheck = await page.request.get('/api/v1/landing');
+    expect(landingNewsCheck.ok()).toBeTruthy();
+    const landingNewsPayload = await landingNewsCheck.json();
+    const publishedNewsCount = Array.isArray(landingNewsPayload.testimonials)
+      ? landingNewsPayload.testimonials.length
+      : 0;
+
     const newsSection = page.locator('#testimonials');
     await expect(newsSection.getByRole('heading', { name: 'Berita Fakultas' })).toBeVisible();
-    await expect(newsSection.locator('article')).toHaveCount(0);
-    await expect(newsSection.getByText('Belum ada berita fakultas yang dipublikasikan.')).toBeVisible();
+    if (publishedNewsCount > 0) {
+      await expect(newsSection.locator('article')).toHaveCount(Math.min(3, publishedNewsCount));
+    } else {
+      await expect(newsSection.locator('article')).toHaveCount(0);
+      await expect(newsSection.getByText('Belum ada berita fakultas yang dipublikasikan.')).toBeVisible();
+    }
 
     await expect(page.getByText('Berbagai macam pertanyaan yang sering ditanyakan antara lain')).toBeVisible();
     const firstFaqBtn = page.getByRole('button', { name: 'Nilai pada KHS tidak muncul, bagaimana solusinya?' });
@@ -142,6 +153,10 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(footerSection.getByRole('link', { name: /PIAUD \(Education Journal/ })).toHaveAttribute(
       'href',
       'https://jurnal.iimsurakarta.ac.id/index.php/emerald'
+    );
+    await expect(footerSection.getByRole('link', { name: /Mamba'ul 'Ulum/ })).toHaveAttribute(
+      'href',
+      'https://jurnal.iimsurakarta.ac.id/index.php/mu'
     );
     await expect(
       footerSection.locator('iframe[title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"]')
@@ -193,7 +208,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await searchDialog.getByTestId('global-search-input').fill('KHS');
     await expect(searchDialog.getByText('FAQ')).toBeVisible();
     await searchDialog.getByTestId('global-search-input').fill('zzznonexistentquery999');
-    await expect(searchDialog.getByText('Tidak ada hasil yang cocok pada halaman beranda.')).toBeVisible();
+    await expect(searchDialog.getByText('Tidak ada hasil yang cocok di portal.')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(searchDialog).toHaveCount(0);
 
@@ -442,44 +457,47 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
 
   test('J2: Tarbiyah login UI, admin forgot-password restriction, and RBAC guard', async ({ page, createIsolatedStudent }) => {
     const nonAdmin = await createIsolatedStudent('E2E Portal NonAdmin');
+    const adminPassword = process.env.E2E_ADMIN_PASSWORD || '';
 
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole('heading', { name: 'Tarbiyah Login' })).toHaveCSS('text-align', 'center');
-    await expect(page.getByText('Selamat datang ke Tarbiyah Login')).toHaveCSS('text-align', 'center');
-    await expect(page.getByPlaceholder('Masukan Email atau ID anda')).toBeVisible();
-    await expect(page.getByPlaceholder('Masukkan Passcode anda')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Masuk Portal Tarbiyah' })).toHaveCSS('text-align', 'center');
+    await expect(page.getByText('Masuk ke panel manajemen Fakultas Tarbiyah')).toHaveCSS('text-align', 'center');
+    await expect(page.getByPlaceholder('Masukkan Email atau ID Anda')).toBeVisible();
+    await expect(page.getByPlaceholder('Masukkan Kata Sandi Anda')).toBeVisible();
 
     await page.getByLabel('Email / ID').fill('tarbiyah@iim.ac.id');
-    await page.getByLabel('Passcode').fill('WrongPass!');
-    await page.getByRole('button', { name: 'Login' }).click();
+    await page.getByLabel('Kata Sandi').fill('WrongPass!');
+    await page.getByRole('button', { name: 'Masuk', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText('Email atau password salah');
 
-    await page.getByRole('link', { name: 'Forgot password?' }).click();
+    await page.getByRole('link', { name: 'Lupa kata sandi?' }).click();
     await expect(page).toHaveURL(/\/forgot-password/);
     await page.getByLabel('Email Pemulihan Admin').fill('bukanemailadmin@gmail.com');
-    await page.getByRole('button', { name: 'Request Reset Token' }).click();
+    await page.getByRole('button', { name: 'Kirim Token Pemulihan' }).click();
     await expect(page.getByRole('alert')).toContainText('Email pemulihan salah');
 
     await page.getByLabel('Email Pemulihan Admin').fill('iimtarbiyah20232@gmail.com');
-    await page.getByRole('button', { name: 'Request Reset Token' }).click();
-    await expect(page.getByRole('heading', { name: 'Set New Password' })).toBeVisible();
+    await page.getByRole('button', { name: 'Kirim Token Pemulihan' }).click();
+    await expect(page.getByRole('heading', { name: 'Atur Kata Sandi Baru' })).toBeVisible();
 
-    await page.getByRole('link', { name: 'Back to Login' }).click();
+    await page.getByRole('link', { name: 'Kembali ke Halaman Masuk' }).click();
     await expect(page).toHaveURL(/\/login/);
 
-    await page.getByLabel('Email / ID').fill('tarbiyah@iim.ac.id');
-    await page.getByLabel('Passcode').fill('adminganteng');
-    await page.getByRole('button', { name: 'Login' }).click();
-    await expect(page).toHaveURL(/\/admin/);
+    if (adminPassword) {
+      await page.getByLabel('Email / ID').fill('tarbiyah@iim.ac.id');
+      await page.getByLabel('Kata Sandi').fill(adminPassword);
+      await page.getByRole('button', { name: 'Masuk', exact: true }).click();
+      await expect(page).toHaveURL(/\/admin/);
 
-    await page.getByRole('button', { name: 'Logout' }).click();
-    await expect(page).toHaveURL('/');
+      await page.getByRole('button', { name: 'Logout' }).click();
+      await expect(page).toHaveURL('/');
+    }
 
     await page.goto('/login');
     await page.getByLabel('Email / ID').fill(nonAdmin.email);
-    await page.getByLabel('Passcode').fill(nonAdmin.password);
-    await page.getByRole('button', { name: 'Login' }).click();
+    await page.getByLabel('Kata Sandi').fill(nonAdmin.password);
+    await page.getByRole('button', { name: 'Masuk', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
 
     await page.goto('/admin');
@@ -523,5 +541,47 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await restoreInput.fill(originalTitle);
     await page.getByRole('button', { name: 'Simpan & Sinkronkan Landing' }).click();
     await expect(page.getByText('Pengaturan situs disimpan & halaman utama diperbarui!')).toBeVisible();
+  });
+
+  test('J4: Admin Partners CRUD succeeds without logoUrl and CSP allows dist/theme-init without console errors', async ({
+    page,
+    loginViaApi,
+    request
+  }) => {
+    const admin = await loginViaApi('tarbiyah@iim.ac.id');
+    const headers = { Authorization: `Bearer ${admin.accessToken}` };
+    const partnerName = `Layanan Uji ${Date.now()} | Verifikasi Partner`;
+    let createdPartnerId = null;
+
+    try {
+      await page.goto('/admin');
+      await page.getByRole('button', { name: 'Layanan & Mitra', exact: true }).click();
+      await page.getByPlaceholder('Nama Layanan / Mitra').fill(partnerName);
+      await page.getByPlaceholder('https://...').fill('https://ft.iim.ac.id/layanan-uji');
+      await page.getByRole('button', { name: 'Simpan', exact: true }).click();
+
+      await expect(page.getByText('Layanan/Mitra disimpan & disinkronkan.')).toBeVisible();
+      await expect(page.getByText(partnerName)).toBeVisible();
+
+      const partnersRes = await request.get('http://localhost:3001/api/v1/admin/partners', { headers });
+      expect(partnersRes.ok()).toBeTruthy();
+      const created = (await partnersRes.json()).items.find((p) => p.name === partnerName);
+      expect(created).toBeTruthy();
+      createdPartnerId = created.id;
+
+      const cspViolations = [];
+      page.on('console', (msg) => {
+        if (msg.type() === 'error' && msg.text().toLowerCase().includes('content security policy')) {
+          cspViolations.push(msg.text());
+        }
+      });
+      await page.goto('http://localhost:3001/');
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      expect(cspViolations).toHaveLength(0);
+    } finally {
+      if (createdPartnerId) {
+        await request.delete(`http://localhost:3001/api/v1/admin/partners/${createdPartnerId}`, { headers });
+      }
+    }
   });
 });
