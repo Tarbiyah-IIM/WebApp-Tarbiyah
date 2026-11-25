@@ -201,7 +201,8 @@ async function handleStructureUpload(event) {
       pendingStructureUploads.add(url);
       draft.value.structureImageUrl = url;
     }
-  } catch {
+  } catch (err) {
+    toast.error(err?.message || 'Gagal mengunggah gambar struktur organisasi.');
   } finally {
     uploading.value = false;
     if (fileInputRef.value) fileInputRef.value.value = '';

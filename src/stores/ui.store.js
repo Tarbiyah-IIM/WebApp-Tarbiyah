@@ -45,7 +45,9 @@ export const useUiStore = defineStore('ui', () => {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(THEME_STORAGE_KEY, normalized);
-      } catch {}
+      } catch (err) {
+        console.warn('[ui] preferensi tema tidak dapat disimpan', err?.message || err);
+      }
     }
     applyThemeToDom(normalized);
   }
@@ -60,7 +62,9 @@ export const useUiStore = defineStore('ui', () => {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(LOCALE_STORAGE_KEY, normalized);
-      } catch {}
+      } catch (err) {
+        console.warn('[ui] preferensi bahasa tidak dapat disimpan', err?.message || err);
+      }
     }
     applyLocaleToDom(normalized);
   }

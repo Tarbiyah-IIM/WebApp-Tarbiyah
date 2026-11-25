@@ -148,6 +148,8 @@ export const adminService = {
     if (!match) return;
     try {
       await api.delete(`/admin/uploads/${match[1]}`);
-    } catch {}
+    } catch (err) {
+      console.warn('[admin] pembersihan media gagal', err?.message || err);
+    }
   }
 };

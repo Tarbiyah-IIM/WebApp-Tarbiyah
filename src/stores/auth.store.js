@@ -20,7 +20,9 @@ function getLogoutChannel() {
 function broadcastLogout() {
   try {
     getLogoutChannel()?.postMessage({ type: 'logout', at: Date.now() });
-  } catch {}
+  } catch (err) {
+    console.warn('[auth] sinkronisasi logout lintas-tab gagal', err?.message || err);
+  }
 }
 
 function readSessionHint() {
@@ -42,7 +44,9 @@ function writeSessionHint(active) {
     } else {
       window.localStorage.removeItem(SESSION_HINT_KEY);
     }
-  } catch {}
+  } catch (err) {
+    console.warn('[auth] penanda sesi tidak dapat ditulis', err?.message || err);
+  }
 }
 
 let unauthorizedRedirectFn = null;
@@ -139,7 +143,9 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     try {
       await authService.logout();
-    } catch {
+    } catch (err) {
+      // Sesi lokal tetap dibersihkan walau server tidak menjawab; catat untuk diagnosa.
+      console.warn('[auth] logout server gagal', err?.message || err);
     } finally {
       clearSession();
       broadcastLogout();

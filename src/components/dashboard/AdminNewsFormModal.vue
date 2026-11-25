@@ -37,6 +37,7 @@ const galleryInputRef = ref(null);
 const categoryDropdownRef = ref(null);
 const categoryMenuOpen = ref(false);
 const categoryError = ref(false);
+const galleryError = ref('');
 const selectedCoverName = ref('');
 const dateValue = ref('');
 const pendingUploads = new Set();
@@ -275,6 +276,7 @@ async function handleGalleryFiles(event) {
   const files = Array.from(event.target.files || []);
   if (files.length === 0) return;
   const token = sessionToken.value;
+  galleryError.value = '';
   uploadingGallery.value = true;
   try {
     for (const file of files) {
@@ -290,7 +292,8 @@ async function handleGalleryFiles(event) {
           pendingUploads.add(uploadedUrl);
           form.galleryUrls.push(uploadedUrl);
         }
-      } catch {
+      } catch (err) {
+        galleryError.value = err?.message || 'Gagal mengunggah sebagian gambar galeri.';
       }
     }
   } finally {
@@ -551,6 +554,7 @@ function submit() {
             </span>
           </div>
 
+          <p v-if="galleryError" role="alert" class="pt-1 text-xs font-semibold text-rose-600">{{ galleryError }}</p>
           <div v-if="form.galleryUrls.length > 0" class="grid grid-cols-2 gap-2.5 pt-1 sm:grid-cols-3">
             <div
               v-for="(url, idx) in form.galleryUrls"

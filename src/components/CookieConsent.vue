@@ -19,7 +19,9 @@ onMounted(() => {
 function accept(choice) {
   try {
     window.localStorage.setItem('tarbiyah_cookie_consent', choice);
-  } catch {}
+  } catch (err) {
+    console.warn('[cookie-consent] preferensi tidak dapat disimpan', err?.message || err);
+  }
   visible.value = false;
 }
 </script>

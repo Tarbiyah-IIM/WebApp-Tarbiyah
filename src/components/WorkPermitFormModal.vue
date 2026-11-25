@@ -6,6 +6,7 @@ import { publicService } from '../services/public.service.js';
 import { extractApiError } from '../services/api.js';
 import { useI18n } from '../composables/useI18n.js';
 import { useToast } from '../composables/useToast.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false }
@@ -13,6 +14,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 const { t } = useI18n();
+const { contacts } = usePortalContent();
 const toast = useToast();
 
 const NIM_REGEX = /^[A-Za-z0-9.\-\/]+$/;
@@ -262,11 +264,19 @@ function resetForm() {
           </button>
           <span
             v-else
-            class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-dashed border-surface-border bg-surface-page px-4 text-xs font-semibold text-slate-500"
+            class="inline-flex min-h-[44px] flex-wrap items-center gap-2 rounded-xl border border-dashed border-surface-border bg-surface-page px-4 text-xs font-semibold text-slate-500"
             role="status"
           >
-            <Download class="h-4 w-4" />
+            <Download class="h-4 w-4 shrink-0" />
             <span>{{ DOWNLOAD_UNAVAILABLE_LABEL }}</span>
+            <a
+              :href="contacts.waAdminUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-[28px] items-center rounded-lg bg-brand-600 px-2.5 text-[11px] font-bold text-white hover:bg-brand-700"
+            >
+              {{ t('footer.adminFaculty') }}
+            </a>
           </span>
           <button type="button" class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-surface-border bg-white px-4 text-xs font-semibold text-slate-700 hover:bg-surface-muted" @click="resetForm">
             <RotateCcw class="h-3.5 w-3.5" />

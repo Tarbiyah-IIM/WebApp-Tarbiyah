@@ -53,7 +53,9 @@ export const useLandingStore = defineStore('landing', () => {
   function notifyLandingUpdated() {
     try {
       getBroadcastChannel()?.postMessage({ type: LANDING_UPDATED_CHANNEL, at: Date.now() });
-    } catch {}
+    } catch (err) {
+      console.warn('[landing] sinkronisasi CMS lintas-tab gagal', err?.message || err);
+    }
   }
 
   function listenForLandingUpdates() {

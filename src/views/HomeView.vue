@@ -20,7 +20,8 @@ const { loading, error, isOffline, run } = useAsyncState();
 async function loadLanding(force = false) {
   try {
     await run(() => landingStore.fetchLanding(force));
-  } catch {
+  } catch (err) {
+    console.warn('[home] gagal memuat data beranda', err?.message || err);
   }
 }
 
