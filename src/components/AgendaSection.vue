@@ -69,11 +69,11 @@ const paginatedAgendas = computed(() => {
         <article
           v-for="item in paginatedAgendas"
           :key="item.id"
-          class="group flex flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-float"
+          class="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-float"
         >
           <button
             type="button"
-            class="flex flex-1 flex-col text-left"
+            class="flex min-w-0 flex-1 flex-col text-left"
             @click="selectedAgenda = item"
           >
             <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
@@ -103,7 +103,7 @@ const paginatedAgendas = computed(() => {
                 </span>
               </div>
 
-              <h3 class="mt-2.5 flex-1 text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
+              <h3 class="mt-2.5 flex-1 break-words text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
                 {{ tr(item.title) }}
               </h3>
 

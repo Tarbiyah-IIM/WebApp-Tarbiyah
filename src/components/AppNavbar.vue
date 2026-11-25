@@ -125,7 +125,7 @@ async function handleLogout() {
     class="sticky top-0 z-40 border-b border-surface-border/80 bg-white/95 backdrop-blur-md"
   >
     <nav
-      class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8"
+      class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:gap-2 lg:px-6 xl:gap-3 xl:px-8"
       :aria-label="t('nav.mainAria')"
     >
       <router-link
@@ -143,13 +143,13 @@ async function handleLogout() {
           <span class="text-sm font-extrabold tracking-tight text-brand-900 sm:text-base">
             {{ t('brand.faculty') }}
           </span>
-          <span class="max-w-[180px] truncate text-[11px] font-semibold text-slate-600 sm:max-w-none sm:text-xs">
+          <span class="max-w-[180px] truncate text-[11px] font-semibold text-slate-600 sm:max-w-none lg:max-w-[150px] xl:max-w-none sm:text-xs">
             {{ t('brand.institute') }}
           </span>
         </span>
       </router-link>
 
-      <div class="hidden items-center gap-4 xl:gap-6 lg:flex">
+      <div class="hidden items-center gap-3 lg:flex xl:gap-6">
         <template v-for="menu in navMenus" :key="menu.id">
           <router-link
             v-if="!menu.children"
@@ -220,7 +220,7 @@ async function handleLogout() {
         </template>
       </div>
 
-      <div class="hidden shrink-0 items-center gap-2.5 lg:flex">
+      <div class="hidden shrink-0 items-center gap-1.5 lg:flex xl:gap-2.5">
         <div
           class="inline-flex items-center rounded-xl border border-surface-border bg-surface-muted p-0.5"
           role="group"
@@ -259,7 +259,7 @@ async function handleLogout() {
         >
           <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" />
           <Sun v-else class="h-4 w-4 text-amber-500" />
-          <span>{{ ui.isNight ? t('theme.night') : t('theme.light') }}</span>
+          <span class="hidden xl:inline">{{ ui.isNight ? t('theme.night') : t('theme.light') }}</span>
         </button>
 
         <button
@@ -277,14 +277,14 @@ async function handleLogout() {
           <router-link
             v-if="auth.isAdmin"
             :to="dashboardRoute"
-            class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-100 transition"
+            class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-100 transition xl:px-4"
           >
             <LayoutDashboard class="h-4 w-4" />
             <span>{{ auth.user.role.toUpperCase() }} {{ t('nav.panelSuffix') }}</span>
           </router-link>
           <button
             type="button"
-            class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-surface-border px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
+            class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-surface-border px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition xl:px-3.5"
             @click="handleLogout"
           >
             <LogOut class="h-4 w-4" />

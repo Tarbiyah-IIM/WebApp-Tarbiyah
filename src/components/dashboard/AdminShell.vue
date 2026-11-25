@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import {
   CheckCircle2,
   ExternalLink,
@@ -14,6 +14,7 @@ import ftarLogo from '../../assets/ftar-logo.png';
 import { useAuthStore } from '../../stores/auth.store.js';
 import { useUiStore } from '../../stores/ui.store.js';
 import { useI18n } from '../../composables/useI18n.js';
+import { useFocusTrap } from '../../composables/useFocusTrap.js';
 
 const props = defineProps({
   navGroups: { type: Array, required: true },
@@ -27,6 +28,7 @@ const auth = useAuthStore();
 const ui = useUiStore();
 const { locale, setLocale, t } = useI18n();
 const mobileDrawerOpen = ref(false);
+const mobileDrawerRef = ref(null);
 
 const activeItem = computed(() => {
   for (const group of props.navGroups) {
@@ -41,14 +43,11 @@ function selectTab(id) {
   mobileDrawerOpen.value = false;
 }
 
-function handleKeydown(event) {
-  if (mobileDrawerOpen.value && event.key === 'Escape') {
+useFocusTrap(mobileDrawerRef, () => mobileDrawerOpen.value, {
+  onEscape: () => {
     mobileDrawerOpen.value = false;
   }
-}
-
-onMounted(() => document.addEventListener('keydown', handleKeydown));
-onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
+});
 </script>
 
 <template>
@@ -111,7 +110,14 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
         class="fixed inset-0 z-50 flex bg-slate-950/60 backdrop-blur-xs lg:hidden"
         @click.self="mobileDrawerOpen = false"
       >
-        <aside class="flex h-full w-72 max-w-[85vw] flex-col bg-white shadow-float">
+        <aside
+          ref="mobileDrawerRef"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('adminDashboard.openMenuAria')"
+          class="flex h-full w-72 max-w-[85vw] flex-col bg-white shadow-float focus:outline-none"
+        >
           <div class="flex items-center justify-between border-b border-surface-border px-4 py-3.5">
             <div class="flex items-center gap-2.5 min-w-0">
               <img :src="ftarLogo" :alt="t('nav.logoAlt')" class="h-9 w-auto shrink-0 object-contain" />

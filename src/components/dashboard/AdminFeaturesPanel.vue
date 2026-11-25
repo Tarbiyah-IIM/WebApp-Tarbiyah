@@ -61,6 +61,7 @@ function confirmDelete() {
           v-model="form.title"
           type="text"
           required
+          :aria-label="t('adminDashboard.cmsPanel.featureTitlePlaceholder')"
           :placeholder="t('adminDashboard.cmsPanel.featureTitlePlaceholder')"
           class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
         />
@@ -68,6 +69,7 @@ function confirmDelete() {
           v-model="form.description"
           rows="4"
           required
+          :aria-label="t('adminDashboard.cmsPanel.featureDescPlaceholder')"
           :placeholder="t('adminDashboard.cmsPanel.featureDescPlaceholder')"
           class="w-full rounded-xl border border-surface-border p-3.5 text-sm leading-relaxed"
         />

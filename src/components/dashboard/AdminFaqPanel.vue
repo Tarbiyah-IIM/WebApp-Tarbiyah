@@ -60,6 +60,7 @@ function confirmDelete() {
           v-model="form.question"
           type="text"
           required
+          :aria-label="t('adminDashboard.cmsPanel.faqQuestionPlaceholder')"
           :placeholder="t('adminDashboard.cmsPanel.faqQuestionPlaceholder')"
           class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
         />
@@ -67,6 +68,7 @@ function confirmDelete() {
           v-model="form.answer"
           rows="4"
           required
+          :aria-label="t('adminDashboard.cmsPanel.faqAnswerPlaceholder')"
           :placeholder="t('adminDashboard.cmsPanel.faqAnswerPlaceholder')"
           class="w-full rounded-xl border border-surface-border p-3.5 text-sm leading-relaxed"
         />

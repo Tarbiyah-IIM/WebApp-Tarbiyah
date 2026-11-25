@@ -75,11 +75,11 @@ function getCategories(item) {
         <article
           v-for="item in paginatedNews"
           :key="item.id"
-          class="group flex flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-float"
+          class="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-float"
         >
           <button
             type="button"
-            class="flex flex-1 flex-col text-left"
+            class="flex min-w-0 flex-1 flex-col text-left"
             @click="selectedNews = item"
           >
             <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
@@ -107,11 +107,11 @@ function getCategories(item) {
                 <span>{{ tr(item.job_title) }}</span>
               </div>
 
-              <h3 class="mt-2 text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
+              <h3 class="mt-2 break-words text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
                 {{ tr(item.name) }}
               </h3>
 
-              <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
+              <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600 [overflow-wrap:anywhere]">
                 {{ tr(item.quote) }}
               </p>
 

@@ -60,6 +60,7 @@ function confirmDelete() {
       <form class="space-y-3" @submit.prevent="submit">
         <select
           v-model="form.statGroup"
+          :aria-label="t('adminDashboard.cmsPanel.statsHeading')"
           class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
         >
           <option value="hero">{{ t('adminDashboard.cmsPanel.statHeroOpt') }}</option>
@@ -69,6 +70,7 @@ function confirmDelete() {
           v-model="form.label"
           type="text"
           required
+          :aria-label="t('adminDashboard.cmsPanel.statLabelPlaceholder')"
           :placeholder="t('adminDashboard.cmsPanel.statLabelPlaceholder')"
           class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
         />
@@ -77,12 +79,14 @@ function confirmDelete() {
             v-model="form.valueNum"
             type="text"
             required
+            :aria-label="t('adminDashboard.cmsPanel.statValuePlaceholder')"
             :placeholder="t('adminDashboard.cmsPanel.statValuePlaceholder')"
             class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm"
           />
           <input
             v-model="form.suffix"
             type="text"
+            :aria-label="t('adminDashboard.cmsPanel.statSuffixPlaceholder')"
             :placeholder="t('adminDashboard.cmsPanel.statSuffixPlaceholder')"
             class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm"
           />

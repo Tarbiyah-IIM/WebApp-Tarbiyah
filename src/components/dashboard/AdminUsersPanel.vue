@@ -52,6 +52,7 @@ function confirmSuspend() {
         <input
           v-model="searchQuery"
           type="search"
+          :aria-label="t('adminDashboard.usersSearchPlaceholder')"
           :placeholder="t('adminDashboard.usersSearchPlaceholder')"
           class="min-h-[40px] w-full rounded-xl border border-surface-border pl-9 pr-3 text-sm"
         />
