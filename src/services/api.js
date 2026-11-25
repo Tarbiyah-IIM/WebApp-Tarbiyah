@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { translations } from '../i18n/translations.js';
 
 const api = axios.create({
   baseURL: '/api/v1',
@@ -11,6 +12,13 @@ let onTokenRefreshedFn = null;
 let onUnauthorizedFn = null;
 let onForbiddenFn = null;
 let refreshPromise = null;
+
+const REFRESH_LOCK_NAME = 'tarbiyah_refresh_lock';
+
+async function runWithCrossTabLock(task) {
+  if (typeof navigator === 'undefined' || !navigator.locks?.request) return task();
+  return navigator.locks.request(REFRESH_LOCK_NAME, task);
+}
 
 export function configureApiAuth({ getToken, onTokenRefreshed, onUnauthorized, onForbidden }) {
   getTokenFn = getToken;
@@ -40,11 +48,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         if (!refreshPromise) {
-          refreshPromise = axios
-            .post('/api/v1/auth/refresh', {}, { withCredentials: true, timeout: 15000 })
-            .finally(() => {
-              refreshPromise = null;
-            });
+          refreshPromise = runWithCrossTabLock(() =>
+            axios.post('/api/v1/auth/refresh', {}, { withCredentials: true, timeout: 15000 })
+          ).finally(() => {
+            refreshPromise = null;
+          });
         }
         const refreshRes = await refreshPromise;
         const { accessToken, user } = refreshRes.data;
@@ -54,7 +62,8 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        if (onUnauthorizedFn) {
+        const refreshStatus = refreshError?.response?.status;
+        if (onUnauthorizedFn && (refreshStatus === 401 || refreshStatus === 403)) {
           onUnauthorizedFn();
         }
         return Promise.reject(refreshError);
@@ -69,16 +78,22 @@ api.interceptors.response.use(
   }
 );
 
-export function extractApiError(error) {
-  if (!error) return 'Terjadi kesalahan tidak terduga.';
+function apiErrorMessage(key, overrides = {}) {
+  if (overrides[key]) return overrides[key];
+  const lang = typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'en' : 'id';
+  return translations[lang]?.apiError?.[key] || translations.id.apiError[key];
+}
+
+export function extractApiError(error, messages = {}) {
+  if (!error) return apiErrorMessage('unexpected', messages);
   if (!error.response) {
-    return 'Koneksi ke server terputus. Periksa jaringan Anda lalu coba lagi.';
+    return apiErrorMessage('network', messages);
   }
   const errObj = error.response.data?.error;
   if (errObj?.details?.length) {
     return `${errObj.message}: ${errObj.details.map((d) => d.message).join(', ')}`;
   }
-  return errObj?.message || 'Permintaan gagal diproses.';
+  return errObj?.message || apiErrorMessage('requestFailed', messages);
 }
 
 export default api;

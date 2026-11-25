@@ -233,7 +233,7 @@ function isSafePortalUrl(value, key) {
   }
   try {
     const parsed = new URL(trimmed);
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    return parsed.protocol === 'https:';
   } catch {
     return false;
   }
@@ -278,6 +278,14 @@ const ALLOWED_CMS_SETTING_KEYS = new Set([
   'cms_info_pages',
   'cms_profile'
 ]);
+
+function spreadsheetCell(max, message) {
+  return z
+    .string()
+    .trim()
+    .transform(sanitizeSpreadsheetCell)
+    .pipe(z.string().max(max, message));
+}
 
 const MAX_GUEST_PHOTO_BYTES = 1650000;
 
@@ -340,8 +348,8 @@ export const adminSettingsUpdateSchema = z
   });
 
 export const pplWorkPermitSchema = z.object({
-  kepada: z.string().trim().min(1, 'Kepada (Yth.) wajib diisi.').max(150).transform(sanitizeSpreadsheetCell),
-  nama_mahasiswa: z.string().trim().min(1, 'Nama Mahasiswa wajib diisi.').max(120).transform(sanitizeSpreadsheetCell),
+  kepada: spreadsheetCell(150, 'Kepada (Yth.) terlalu panjang.').pipe(z.string().min(1, 'Kepada (Yth.) wajib diisi.')),
+  nama_mahasiswa: spreadsheetCell(120, 'Nama Mahasiswa terlalu panjang.').pipe(z.string().min(1, 'Nama Mahasiswa wajib diisi.')),
   nim: z
     .string()
     .trim()
@@ -355,8 +363,8 @@ export const pplWorkPermitSchema = z.object({
     'Pendidikan Islam Anak Usia Dini'
   ]),
   semester: z.enum(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']),
-  tempat_ppl: z.string().trim().min(1, 'Tempat PPL wajib diisi.').max(150).transform(sanitizeSpreadsheetCell),
-  alamat_ppl: z.string().trim().min(1, 'Alamat PPL wajib diisi.').max(300).transform(sanitizeSpreadsheetCell)
+  tempat_ppl: spreadsheetCell(150, 'Tempat PPL terlalu panjang.').pipe(z.string().min(1, 'Tempat PPL wajib diisi.')),
+  alamat_ppl: spreadsheetCell(300, 'Alamat PPL terlalu panjang.').pipe(z.string().min(1, 'Alamat PPL wajib diisi.'))
 });
 
 const guestLectureFotoFileSchema = z.object({
@@ -373,14 +381,14 @@ export const guestLectureSubmitSchema = z
   .object({
     mode: z.enum(['new', 'update']).default('new'),
     rowIndex: z.coerce.number().int().min(3).max(50000).nullable().optional(),
-    prodi: z.string().trim().max(40).default('').transform(sanitizeSpreadsheetCell),
-    dosenPengampu: z.string().trim().max(160).default('').transform(sanitizeSpreadsheetCell),
-    dosenTamu: z.string().trim().max(240).default('').transform(sanitizeSpreadsheetCell),
-    mataKuliah: z.string().trim().max(200).default('').transform(sanitizeSpreadsheetCell),
-    tema: z.string().trim().max(1000).default('').transform(sanitizeSpreadsheetCell),
-    tanggal: z.string().trim().max(40).default('').transform(sanitizeSpreadsheetCell),
-    jam: z.string().trim().max(80).default('').transform(sanitizeSpreadsheetCell),
-    peserta: z.string().trim().max(40).default('100').transform(sanitizeSpreadsheetCell),
+    prodi: spreadsheetCell(40).default(''),
+    dosenPengampu: spreadsheetCell(160).default(''),
+    dosenTamu: spreadsheetCell(240).default(''),
+    mataKuliah: spreadsheetCell(200).default(''),
+    tema: spreadsheetCell(1000).default(''),
+    tanggal: spreadsheetCell(40).default(''),
+    jam: spreadsheetCell(80).default(''),
+    peserta: spreadsheetCell(40).default('100'),
     existingFotoUrl: z
       .string()
       .trim()

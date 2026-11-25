@@ -5,6 +5,23 @@ import { authService } from '../services/auth.service.js';
 
 const SESSION_HINT_KEY = 'tarbiyah_has_session';
 const LEGACY_TOKEN_KEY = 'tarbiyah_token';
+const LOGOUT_CHANNEL_NAME = 'tarbiyah_auth_sync';
+
+let logoutChannel = null;
+
+function getLogoutChannel() {
+  if (typeof window === 'undefined' || typeof window.BroadcastChannel !== 'function') return null;
+  if (!logoutChannel) {
+    logoutChannel = new window.BroadcastChannel(LOGOUT_CHANNEL_NAME);
+  }
+  return logoutChannel;
+}
+
+function broadcastLogout() {
+  try {
+    getLogoutChannel()?.postMessage({ type: 'logout', at: Date.now() });
+  } catch {}
+}
 
 function readSessionHint() {
   if (typeof window === 'undefined') return false;
@@ -125,7 +142,29 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
     } finally {
       clearSession();
+      broadcastLogout();
     }
+  }
+
+  function syncLogoutAcrossTabs() {
+    if (typeof window === 'undefined') return () => {};
+    const channel = getLogoutChannel();
+    const onMessage = (event) => {
+      if (event?.data?.type !== 'logout') return;
+      clearSession();
+      unauthorizedRedirectFn?.();
+    };
+    const onStorage = (event) => {
+      if (event.key !== SESSION_HINT_KEY || event.newValue === '1') return;
+      clearSession();
+      unauthorizedRedirectFn?.();
+    };
+    channel?.addEventListener('message', onMessage);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      channel?.removeEventListener('message', onMessage);
+      window.removeEventListener('storage', onStorage);
+    };
   }
 
   return {
@@ -138,6 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     refreshProfile,
     logout,
+    syncLogoutAcrossTabs,
     clearSession
   };
 });

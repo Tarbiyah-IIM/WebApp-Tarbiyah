@@ -1,7 +1,7 @@
 import { getCache, setCache } from '../config/cache.js';
 import { env } from '../config/env.js';
 import { getSettingsMap } from '../models/landing.model.js';
-import { readBoundedResponseText, withRelaySlot } from '../utils/security.js';
+import { coalesceRelayRead, readBoundedResponseText, withRelaySlot, isSafeHttpsUrl } from '../utils/security.js';
 
 const CACHE_KEY = 'guest_lecture_data';
 const SOURCE_SCRIPT_CACHE_KEY = 'guest_lecture_source_script';
@@ -68,18 +68,24 @@ function invalidateGuestLectureCache() {
 
 async function fetchGuestLecturePayload(scriptUrl, clientSignal) {
   const separator = scriptUrl.includes('?') ? '&' : '?';
-  const text = await withRelaySlot(
-    async () => {
-      const response = await fetch(`${scriptUrl}${separator}api=data`, {
-        method: 'GET',
-        redirect: 'follow',
-        signal: buildUpstreamSignal(15000, clientSignal)
-      });
-      if (!response.ok) {
-        throw new Error('UPSTREAM_HTTP_ERROR');
-      }
-      return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
-    },
+  const requestUrl = `${scriptUrl}${separator}api=data`;
+  const text = await coalesceRelayRead(
+    requestUrl,
+    () =>
+      withRelaySlot(
+        async () => {
+          const response = await fetch(requestUrl, {
+            method: 'GET',
+            redirect: 'follow',
+            signal: buildUpstreamSignal(15000, clientSignal)
+          });
+          if (!response.ok) {
+            throw new Error('UPSTREAM_HTTP_ERROR');
+          }
+          return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
+        },
+        { signal: clientSignal }
+      ),
     { signal: clientSignal }
   );
   return tryParseJson(text);
@@ -176,25 +182,17 @@ export async function getGuestLectureData(req, res) {
 }
 
 export async function submitGuestLecture(req, res) {
-  const { scriptUrl } = await resolveGuestLectureScriptTarget();
+  const { scriptUrl, isPrivateEnvUrl } = await resolveGuestLectureScriptTarget();
   const abortTracker = createRelayAbortTracker(res);
 
   try {
     if (req.body.mode === 'update') {
-      let cached = getCache(CACHE_KEY);
-      if (!cached?.data || getCache(SOURCE_SCRIPT_CACHE_KEY) !== scriptUrl) {
-        const latestParsed = await fetchGuestLecturePayload(scriptUrl, abortTracker.signal);
-        if (latestParsed?.success && Array.isArray(latestParsed.trackingLectures)) {
-          cached = {
-            data: {
-              incompleteLectures: Array.isArray(latestParsed.incompleteLectures) ? latestParsed.incompleteLectures : [],
-              trackingLectures: latestParsed.trackingLectures
-            }
-          };
-        }
-      }
-      const editableRows = extractEditableRowSet(cached?.data);
-      if (!editableRows.has(Number(req.body.rowIndex))) {
+      const latestParsed = await fetchGuestLecturePayload(scriptUrl, abortTracker.signal);
+      const editableRows = extractEditableRowSet({
+        incompleteLectures: Array.isArray(latestParsed?.incompleteLectures) ? latestParsed.incompleteLectures : [],
+        trackingLectures: Array.isArray(latestParsed?.trackingLectures) ? latestParsed.trackingLectures : []
+      });
+      if (!latestParsed?.success || !editableRows.has(Number(req.body.rowIndex))) {
         return res.status(403).json({
           ok: false,
           code: 'ROW_NOT_EDITABLE',
@@ -206,9 +204,10 @@ export async function submitGuestLecture(req, res) {
     }
 
     const basePayload = req.body.mode === 'new' ? { ...req.body, rowIndex: null } : req.body;
-    const outboundPayload = env.appsScriptRelaySecret
-      ? { ...basePayload, relaySecret: env.appsScriptRelaySecret }
-      : basePayload;
+    const outboundPayload =
+      env.appsScriptRelaySecret && isPrivateEnvUrl
+        ? { ...basePayload, relaySecret: env.appsScriptRelaySecret }
+        : basePayload;
 
     const text = await withRelaySlot(
       async () => {
@@ -249,13 +248,14 @@ export async function submitGuestLecture(req, res) {
 
     invalidateGuestLectureCache();
     const statusCode = req.body.mode === 'update' ? 200 : 201;
+    const safeFotoUrl = isSafeHttpsUrl(parsed.fotoUrl) ? parsed.fotoUrl.trim() : '';
     return res.status(statusCode).json({
       ok: true,
       isComplete: Boolean(parsed.isComplete),
       status: typeof parsed.status === 'string' ? parsed.status : 'Not Started',
       message: typeof parsed.message === 'string' ? parsed.message : 'Data kuliah tamu berhasil disimpan.',
       rowIndex: parsed.rowIndex || null,
-      fotoUrl: typeof parsed.fotoUrl === 'string' ? parsed.fotoUrl : ''
+      fotoUrl: safeFotoUrl
     });
   } catch (err) {
     if (err?.code === 'RELAY_ABORTED' || res.writableEnded) {

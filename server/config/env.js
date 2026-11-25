@@ -38,7 +38,7 @@ export function resolveJwtAccessSecret(
 
 const clientOrigins = String(process.env.CLIENT_ORIGIN || 'http://localhost:5173')
   .split(',')
-  .map((item) => item.trim())
+  .map((item) => item.trim().replace(/\/+$/, '').toLowerCase())
   .filter(Boolean);
 
 function parseBoundedInt(raw, fallback, min, max) {

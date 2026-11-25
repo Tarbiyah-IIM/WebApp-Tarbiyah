@@ -5,6 +5,7 @@ import { withTransaction } from '../config/db.js';
 import { env } from '../config/env.js';
 import { AppError } from '../middlewares/error.middleware.js';
 import { isTrustedMutationOrigin } from '../utils/security.js';
+import { isCookieTokenString, markUserAccessTokensRevoked } from '../utils/tokenRevocation.js';
 import {
   createPasswordReset,
   createUser,
@@ -141,6 +142,10 @@ export async function refresh(req, res, next) {
     if (!rawCookie) {
       return next(new AppError(401, 'NO_REFRESH_TOKEN', 'Sesi login telah berakhir'));
     }
+    if (!isCookieTokenString(rawCookie)) {
+      clearRefreshCookie(res);
+      return next(new AppError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token tidak valid'));
+    }
 
     const tokenHash = hashToken(rawCookie);
     const stored = await findValidRefreshToken(tokenHash);
@@ -183,7 +188,7 @@ export async function logout(req, res, next) {
     }
 
     const rawCookie = req.cookies?.tarbiyah_refresh;
-    if (rawCookie) {
+    if (isCookieTokenString(rawCookie)) {
       await revokeRefreshToken(hashToken(rawCookie));
     }
     clearRefreshCookie(res);
@@ -262,6 +267,7 @@ export async function resetPassword(req, res, next) {
       await updateUserPassword(resetRow.user_id, passwordHash, conn);
       await revokeAllUserRefreshTokens(resetRow.user_id, conn);
     });
+    markUserAccessTokensRevoked(resetRow.user_id);
 
     return res.json({ message: 'Password berhasil diperbarui. Silakan login kembali.' });
   } catch (err) {
@@ -306,6 +312,14 @@ export async function updateMe(req, res, next) {
 
       return profile;
     });
+
+    if (newPassword) {
+      markUserAccessTokensRevoked(req.user.id);
+      const accessToken = issueAccessToken(updated);
+      const { rawToken, expiresAt } = await issueAndStoreRefreshToken(updated);
+      setRefreshCookie(res, rawToken, expiresAt);
+      return res.json({ user: updated, accessToken });
+    }
 
     return res.json({ user: updated });
   } catch (err) {

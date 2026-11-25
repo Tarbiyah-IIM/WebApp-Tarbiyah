@@ -77,6 +77,21 @@ export async function readBoundedResponseText(response, maxBytes = MAX_SAFE_RELA
   return result;
 }
 
+const inflightRelayReads = new Map();
+
+export function coalesceRelayRead(key, fn, { signal } = {}) {
+  if (!key) return fn();
+  const existing = inflightRelayReads.get(key);
+  if (existing) return existing;
+  const pending = Promise.resolve()
+    .then(fn)
+    .finally(() => {
+      inflightRelayReads.delete(key);
+    });
+  inflightRelayReads.set(key, pending);
+  return pending;
+}
+
 export async function withRelaySlot(fn, { signal, waitTimeoutMs = 20000 } = {}) {
   if (signal?.aborted) {
     const abortedErr = new Error('RELAY_ABORTED');
@@ -134,8 +149,10 @@ export async function withRelaySlot(fn, { signal, waitTimeoutMs = 20000 } = {}) 
     return await fn();
   } finally {
     activeRelayCount -= 1;
-    const next = waitingRelayResolvers.shift();
-    if (next) next();
+    queueMicrotask(() => {
+      const next = waitingRelayResolvers.shift();
+      if (next) next();
+    });
   }
 }
 
@@ -168,10 +185,10 @@ export function isTrustedMutationOrigin(req, allowedOrigins = [], { isProduction
   const normalizedAllowed = new Set(allowedOrigins.map((origin) => origin.toLowerCase()));
   const host = req.get('host');
   if (host) {
-    const proto = req.protocol === 'https' ? 'https' : 'http';
-    normalizedAllowed.add(`${proto}://${host}`.toLowerCase());
     normalizedAllowed.add(`https://${host}`.toLowerCase());
     if (!isProduction) {
+      const proto = req.protocol === 'https' ? 'https' : 'http';
+      normalizedAllowed.add(`${proto}://${host}`.toLowerCase());
       normalizedAllowed.add(`http://${host}`.toLowerCase());
     }
   }

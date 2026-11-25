@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { AppError } from './error.middleware.js';
 import { findUserById } from '../models/user.model.js';
+import { isAccessTokenRevoked } from '../utils/tokenRevocation.js';
 
 export async function authenticate(req, _res, next) {
   try {
@@ -16,6 +17,10 @@ export async function authenticate(req, _res, next) {
     if (!Number.isInteger(subjectId) || subjectId <= 0) {
       return next(new AppError(401, 'INVALID_TOKEN', 'Token tidak valid atau telah kedaluwarsa'));
     }
+    if (isAccessTokenRevoked(subjectId, payload?.iat)) {
+      return next(new AppError(401, 'INVALID_TOKEN', 'Token tidak valid atau telah kedaluwarsa'));
+    }
+
     const user = await findUserById(subjectId);
 
     if (!user || !user.is_active) {
