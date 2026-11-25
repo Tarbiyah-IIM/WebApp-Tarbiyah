@@ -412,4 +412,18 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       }
     }
   });
+
+  it('serves stateless guest-lecture relay metadata and validates submit payloads cleanly', async () => {
+    const getRes = await request(app).get('/api/v1/guest-lectures');
+    expect([200, 502]).toContain(getRes.status);
+    expect(getRes.body.scriptUrl).toMatch(/^https:\/\/script\.google\.com\//);
+
+    const emptyPostRes = await request(app).post('/api/v1/guest-lectures').send({ mode: 'new' });
+    expect(emptyPostRes.status).toBe(400);
+
+    const missingRowUpdateRes = await request(app)
+      .post('/api/v1/guest-lectures')
+      .send({ mode: 'update', mataKuliah: 'Uji Validasi' });
+    expect(missingRowUpdateRes.status).toBe(400);
+  });
 });
