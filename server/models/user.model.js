@@ -68,7 +68,7 @@ export async function storeRefreshToken({ userId, tokenHash, expiresAt }, execut
 
 export async function findValidRefreshToken(tokenHash, executor = pool) {
   const [rows] = await executor.execute(
-    'SELECT id, user_id, expires_at, revoked_at FROM refresh_tokens WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW() LIMIT 1',
+    'SELECT id, user_id, expires_at, revoked_at FROM refresh_tokens WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > UTC_TIMESTAMP() LIMIT 1',
     [tokenHash]
   );
   return rows[0] || null;
@@ -76,7 +76,7 @@ export async function findValidRefreshToken(tokenHash, executor = pool) {
 
 export async function revokeRefreshToken(tokenHash, executor = pool) {
   const [result] = await executor.execute(
-    'UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = ? AND revoked_at IS NULL',
+    'UPDATE refresh_tokens SET revoked_at = UTC_TIMESTAMP() WHERE token_hash = ? AND revoked_at IS NULL',
     [tokenHash]
   );
   return result.affectedRows > 0;
@@ -84,7 +84,7 @@ export async function revokeRefreshToken(tokenHash, executor = pool) {
 
 export async function revokeAllUserRefreshTokens(userId, executor = pool) {
   await executor.execute(
-    'UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL',
+    'UPDATE refresh_tokens SET revoked_at = UTC_TIMESTAMP() WHERE user_id = ? AND revoked_at IS NULL',
     [userId]
   );
 }
@@ -98,7 +98,7 @@ export async function createPasswordReset({ userId, tokenHash, expiresAt }) {
 
 export async function findValidPasswordReset(tokenHash) {
   const [rows] = await pool.execute(
-    'SELECT id, user_id, expires_at, used_at FROM password_resets WHERE token_hash = ? AND used_at IS NULL AND expires_at > NOW() LIMIT 1',
+    'SELECT id, user_id, expires_at, used_at FROM password_resets WHERE token_hash = ? AND used_at IS NULL AND expires_at > UTC_TIMESTAMP() LIMIT 1',
     [tokenHash]
   );
   return rows[0] || null;
@@ -106,7 +106,7 @@ export async function findValidPasswordReset(tokenHash) {
 
 export async function markPasswordResetUsed(id, executor = pool) {
   const [result] = await executor.execute(
-    'UPDATE password_resets SET used_at = NOW() WHERE id = ? AND used_at IS NULL',
+    'UPDATE password_resets SET used_at = UTC_TIMESTAMP() WHERE id = ? AND used_at IS NULL',
     [id]
   );
   return result.affectedRows > 0;
@@ -114,10 +114,10 @@ export async function markPasswordResetUsed(id, executor = pool) {
 
 export async function purgeExpiredAuthTokens() {
   const [refreshRes] = await pool.execute(
-    'DELETE FROM refresh_tokens WHERE (revoked_at IS NOT NULL AND revoked_at < DATE_SUB(NOW(), INTERVAL 7 DAY)) OR expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)'
+    'DELETE FROM refresh_tokens WHERE (revoked_at IS NOT NULL AND revoked_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)) OR expires_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)'
   );
   const [resetRes] = await pool.execute(
-    'DELETE FROM password_resets WHERE (used_at IS NOT NULL AND used_at < DATE_SUB(NOW(), INTERVAL 7 DAY)) OR expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)'
+    'DELETE FROM password_resets WHERE (used_at IS NOT NULL AND used_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)) OR expires_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)'
   );
   return {
     deletedRefreshTokens: refreshRes.affectedRows || 0,
