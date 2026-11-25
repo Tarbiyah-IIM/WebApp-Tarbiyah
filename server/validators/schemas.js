@@ -6,7 +6,8 @@ const safePasswordSchema = z
   .string()
   .min(8, 'Password minimal 8 karakter')
   .max(72, 'Password maksimal 72 karakter')
-  .refine((val) => Buffer.byteLength(val, 'utf8') <= 72, 'Password melebihi batas 72 byte');
+  .refine((val) => Buffer.byteLength(val, 'utf8') <= 72, 'Password melebihi batas 72 byte')
+  .refine((val) => /[A-Za-z]/.test(val) && /[0-9]/.test(val), 'Password harus memuat huruf dan angka');
 
 export const registerSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -16,7 +17,7 @@ export const registerSchema = z.object({
 
 export const loginSchema = z.object({
   email: z.string().trim().email(),
-  password: z.string().min(1).max(128)
+  password: z.string().min(1).max(256)
 });
 
 export const forgotPasswordSchema = z.object({

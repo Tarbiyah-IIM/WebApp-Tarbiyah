@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger.js';
+
 export class AppError extends Error {
   constructor(status, code, message, details = []) {
     super(message);
@@ -8,10 +10,11 @@ export class AppError extends Error {
 }
 
 export function notFoundHandler(req, res) {
+  const safePath = String(req.path || '/').replace(/[<>\r\n\t]/g, '');
   res.status(404).json({
     error: {
       code: 'NOT_FOUND',
-      message: `Route ${req.method} ${req.originalUrl} not found`,
+      message: `Route ${req.method} ${safePath} not found`,
       details: []
     }
   });
@@ -104,7 +107,11 @@ export function errorHandler(err, req, res, next) {
         ? err.message
         : 'Permintaan tidak dapat diproses';
   if (status >= 500) {
-    console.error('[ServerError]', err?.message || err);
+    logger.error('unhandled_request_error', {
+      status,
+      name: err?.name,
+      message: err?.message || String(err)
+    });
   }
 
   return res.status(status).json({
