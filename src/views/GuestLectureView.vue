@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { ExternalLink, Plus, RefreshCw } from 'lucide-vue-next';
+import { Plus, RefreshCw } from 'lucide-vue-next';
 import { useI18n } from '../composables/useI18n.js';
 import { usePortalContent } from '../composables/usePortalContent.js';
 import { useToast } from '../composables/useToast.js';
@@ -22,6 +22,7 @@ const submitting = ref(false);
 const errorMessage = ref('');
 const needsAppsScriptDeploy = ref(false);
 const resolvedScriptUrl = ref('');
+const iframeAutoHeight = ref(0);
 const activeTab = ref('tracking');
 const offline = ref(typeof navigator !== 'undefined' && !navigator.onLine);
 
@@ -35,10 +36,36 @@ const newModalOpen = ref(false);
 const zoomModalItem = ref(null);
 
 const fallbackUrl = computed(() => resolvedScriptUrl.value || contacts.value.guestLectureUrl);
+const isIframeFallback = computed(
+  () => !offline.value && !loading.value && needsAppsScriptDeploy.value
+);
+const iframeStyle = computed(() =>
+  iframeAutoHeight.value > 0 ? { height: `${iframeAutoHeight.value}px` } : undefined
+);
+
+function isTrustedHeightOrigin(origin) {
+  if (!origin || origin === 'null') return true;
+  if (typeof window !== 'undefined' && origin === window.location.origin) return true;
+  return (
+    origin === 'https://script.google.com' ||
+    origin.endsWith('.googleusercontent.com') ||
+    origin.endsWith('.script.google.com')
+  );
+}
+
+function handleIframeMessage(event) {
+  if (!isTrustedHeightOrigin(event.origin)) return;
+  const payload = event.data;
+  if (!payload || payload.type !== 'TARBIYAH_GUEST_LECTURE_HEIGHT') return;
+  const parsedHeight = Number(payload.height);
+  if (Number.isFinite(parsedHeight) && parsedHeight >= 400 && parsedHeight <= 30000) {
+    iframeAutoHeight.value = Math.ceil(parsedHeight);
+  }
+}
 
 function syncOfflineState() {
   offline.value = !navigator.onLine;
-  if (!offline.value && errorMessage.value) {
+  if (!offline.value && (errorMessage.value || (!needsAppsScriptDeploy.value && trackingLectures.value.length === 0))) {
     loadData();
   }
 }
@@ -107,33 +134,50 @@ async function handleSubmitAgenda(payload) {
 onMounted(() => {
   window.addEventListener('online', syncOfflineState);
   window.addEventListener('offline', syncOfflineState);
+  window.addEventListener('message', handleIframeMessage);
   loadData(false);
 });
 
 onUnmounted(() => {
   window.removeEventListener('online', syncOfflineState);
   window.removeEventListener('offline', syncOfflineState);
+  window.removeEventListener('message', handleIframeMessage);
 });
 </script>
 
 <template>
-  <section :aria-label="t('guestLecture.title')" class="min-h-[calc(100vh-73px)] bg-surface-page py-8 sm:py-10">
-    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-6">
+  <section
+    :aria-label="t('guestLecture.title')"
+    class="bg-surface-page"
+    :class="isIframeFallback ? 'min-h-[calc(100dvh-73px)]' : 'min-h-[calc(100vh-73px)] py-8 sm:py-10'"
+  >
+    <iframe
+      v-if="isIframeFallback"
+      :src="fallbackUrl"
+      :title="t('guestLecture.iframeTitle')"
+      :style="iframeStyle"
+      :scrolling="iframeAutoHeight > 0 ? 'no' : 'auto'"
+      class="block w-full border-0"
+      :class="iframeAutoHeight > 0 ? 'overflow-hidden' : 'h-[calc(100dvh-138px)] lg:h-[calc(100dvh-73px)]'"
+      loading="eager"
+      referrerpolicy="strict-origin-when-cross-origin"
+    />
+
+    <div v-else class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-6">
       <div
         v-if="offline"
         role="alert"
         class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900"
       >
         <p class="font-medium">{{ t('guestLecture.unavailable') }}</p>
-        <a
-          :href="fallbackUrl"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
           class="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white transition hover:bg-brand-700"
+          @click="syncOfflineState"
         >
-          <span>{{ t('guestLecture.openDirect') }}</span>
-          <ExternalLink class="h-3.5 w-3.5" aria-hidden="true" />
-        </a>
+          <RefreshCw class="h-3.5 w-3.5" aria-hidden="true" />
+          <span>{{ t('guestLecture.retryBtn') }}</span>
+        </button>
       </div>
 
       <div
@@ -144,33 +188,6 @@ onUnmounted(() => {
       >
         <RefreshCw class="mx-auto h-7 w-7 animate-spin text-brand-600" aria-hidden="true" />
         <p class="text-sm font-semibold text-slate-600">{{ t('guestLecture.loading') }}</p>
-      </div>
-
-      <div
-        v-else-if="needsAppsScriptDeploy"
-        class="space-y-4"
-      >
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50/70 px-4 py-3 text-xs text-slate-700">
-          <span>{{ t('guestLecture.fallbackDeployNotice') }}</span>
-          <a
-            :href="fallbackUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 font-bold text-white hover:bg-brand-700 transition"
-          >
-            <span>{{ t('guestLecture.openDirect') }}</span>
-            <ExternalLink class="h-3.5 w-3.5" aria-hidden="true" />
-          </a>
-        </div>
-        <div class="overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card">
-          <iframe
-            :src="fallbackUrl"
-            :title="t('guestLecture.iframeTitle')"
-            class="block h-[calc(100dvh-16rem)] min-h-[600px] w-full border-0"
-            loading="eager"
-            referrerpolicy="strict-origin-when-cross-origin"
-          />
-        </div>
       </div>
 
       <div
@@ -188,15 +205,6 @@ onUnmounted(() => {
             <RefreshCw class="h-4 w-4" aria-hidden="true" />
             <span>{{ t('guestLecture.retryBtn') }}</span>
           </button>
-          <a
-            :href="fallbackUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-surface-border bg-surface-page px-4 text-xs font-bold text-brand-900 transition hover:bg-brand-50"
-          >
-            <span>{{ t('guestLecture.openDirect') }}</span>
-            <ExternalLink class="h-3.5 w-3.5" aria-hidden="true" />
-          </a>
         </div>
       </div>
 
