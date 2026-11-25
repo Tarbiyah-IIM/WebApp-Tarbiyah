@@ -1,4 +1,6 @@
 import { invalidateLandingCache } from '../config/cache.js';
+import { listAdminAuditLog, recordAdminAction } from '../models/audit.model.js';
+import { readPagination } from '../utils/pagination.js';
 import { ALLOWED_IMAGE_MIME_TO_EXT, detectImageMimeFromBuffer } from '../middlewares/upload.middleware.js';
 import { AppError } from '../middlewares/error.middleware.js';
 import {
@@ -61,9 +63,9 @@ export async function getAdminOverview(_req, res, next) {
   }
 }
 
-export async function adminListUsers(_req, res, next) {
+export async function adminListUsers(req, res, next) {
   try {
-    const items = await listUsersAdmin();
+    const items = await listUsersAdmin(readPagination(req.query) ?? {});
     return res.json({ items });
   } catch (err) {
     return next(err);
@@ -86,15 +88,16 @@ export async function adminUpdateUser(req, res, next) {
     if (!user.is_active || user.role !== 'admin') {
       await revokeAllUserRefreshTokens(targetId);
     }
+    await recordAdminAction(req, { action: 'update', entity: 'user', entityId: targetId, detail: { role: req.body.role, isActive: req.body.isActive } });
     return res.json({ user });
   } catch (err) {
     return next(err);
   }
 }
 
-export async function adminListTestimonials(_req, res, next) {
+export async function adminListTestimonials(req, res, next) {
   try {
-    return res.json({ items: await listTestimonialsAdmin() });
+    return res.json({ items: await listTestimonialsAdmin(readPagination(req.query) ?? {}) });
   } catch (err) {
     return next(err);
   }
@@ -103,7 +106,8 @@ export async function adminListTestimonials(_req, res, next) {
 export async function adminCreateTestimonial(req, res, next) {
   try {
     const item = await createTestimonial(req.body);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'create', entity: 'testimonial', entityId: item?.id, detail: { name: req.body.name } });
     return res.status(201).json({ testimonial: item });
   } catch (err) {
     if (err?.code === 'ER_NO_REFERENCED_ROW_2') {
@@ -138,7 +142,8 @@ export async function adminUpdateTestimonial(req, res, next) {
     if (removedUrls.length > 0) {
       await cleanupUnusedMediaList(removedUrls);
     }
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'update', entity: 'testimonial', entityId: req.params.id, detail: { name: req.body.name } });
     return res.json({ testimonial: item });
   } catch (err) {
     if (err?.code === 'ER_NO_REFERENCED_ROW_2') {
@@ -155,7 +160,8 @@ export async function adminDeleteTestimonial(req, res, next) {
     const ok = await deleteTestimonial(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Berita tidak ditemukan'));
     await cleanupUnusedMediaList(oldUrls);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'delete', entity: 'testimonial', entityId: id, detail: null });
     return res.json({ message: 'Berita dihapus' });
   } catch (err) {
     return next(err);
@@ -173,6 +179,7 @@ export async function adminListNewsCategories(_req, res, next) {
 export async function adminCreateNewsCategory(req, res, next) {
   try {
     const item = await createNewsCategory(req.body);
+    await recordAdminAction(req, { action: 'create', entity: 'news_category', entityId: item?.id, detail: { name: req.body.name } });
     return res.status(201).json({ category: item });
   } catch (err) {
     if (err?.code === 'ER_DUP_ENTRY') {
@@ -189,6 +196,7 @@ export async function adminDeleteNewsCategory(req, res, next) {
       return next(new AppError(409, 'CATEGORY_IN_USE', 'Kategori masih dipakai berita'));
     }
     if (!result.deleted) return next(new AppError(404, 'NOT_FOUND', 'Kategori berita tidak ditemukan'));
+    await recordAdminAction(req, { action: 'delete', entity: 'news_category', entityId: req.params.id, detail: null });
     return res.json({ message: 'Kategori berita dihapus' });
   } catch (err) {
     if (err?.code === 'ER_ROW_IS_REFERENCED_2') {
@@ -198,9 +206,9 @@ export async function adminDeleteNewsCategory(req, res, next) {
   }
 }
 
-export async function adminListAgendas(_req, res, next) {
+export async function adminListAgendas(req, res, next) {
   try {
-    return res.json({ items: await listAgendasAdmin() });
+    return res.json({ items: await listAgendasAdmin(readPagination(req.query) ?? {}) });
   } catch (err) {
     return next(err);
   }
@@ -209,7 +217,8 @@ export async function adminListAgendas(_req, res, next) {
 export async function adminCreateAgenda(req, res, next) {
   try {
     const item = await createAgenda(req.body);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'create', entity: 'agenda', entityId: item?.id, detail: { title: req.body.title } });
     return res.status(201).json({ agenda: item });
   } catch (err) {
     return next(err);
@@ -227,7 +236,8 @@ export async function adminUpdateAgenda(req, res, next) {
     if (removedUrls.length > 0) {
       await cleanupUnusedMediaList(removedUrls);
     }
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'update', entity: 'agenda', entityId: req.params.id, detail: { title: req.body.title } });
     return res.json({ agenda: item });
   } catch (err) {
     return next(err);
@@ -241,16 +251,17 @@ export async function adminDeleteAgenda(req, res, next) {
     const ok = await deleteAgenda(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Agenda tidak ditemukan'));
     await cleanupUnusedMediaList(oldUrls);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'delete', entity: 'agenda', entityId: id, detail: null });
     return res.json({ message: 'Agenda dihapus' });
   } catch (err) {
     return next(err);
   }
 }
 
-export async function adminListFaqs(_req, res, next) {
+export async function adminListFaqs(req, res, next) {
   try {
-    return res.json({ items: await listFaqsAdmin() });
+    return res.json({ items: await listFaqsAdmin(readPagination(req.query) ?? {}) });
   } catch (err) {
     return next(err);
   }
@@ -259,7 +270,8 @@ export async function adminListFaqs(_req, res, next) {
 export async function adminCreateFaq(req, res, next) {
   try {
     const item = await createFaq(req.body);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'create', entity: 'faq', entityId: item?.id, detail: { question: req.body.question } });
     return res.status(201).json({ faq: item });
   } catch (err) {
     return next(err);
@@ -270,7 +282,8 @@ export async function adminUpdateFaq(req, res, next) {
   try {
     const item = await updateFaq(parsePositiveId(req.params.id), req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'FAQ tidak ditemukan'));
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'update', entity: 'faq', entityId: req.params.id, detail: { question: req.body.question } });
     return res.json({ faq: item });
   } catch (err) {
     return next(err);
@@ -281,16 +294,17 @@ export async function adminDeleteFaq(req, res, next) {
   try {
     const ok = await deleteFaq(parsePositiveId(req.params.id));
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'FAQ tidak ditemukan'));
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'delete', entity: 'faq', entityId: req.params.id, detail: null });
     return res.json({ message: 'FAQ dihapus' });
   } catch (err) {
     return next(err);
   }
 }
 
-export async function adminListStats(_req, res, next) {
+export async function adminListStats(req, res, next) {
   try {
-    return res.json({ items: await listStatsAdmin() });
+    return res.json({ items: await listStatsAdmin(readPagination(req.query) ?? {}) });
   } catch (err) {
     return next(err);
   }
@@ -299,7 +313,8 @@ export async function adminListStats(_req, res, next) {
 export async function adminCreateStat(req, res, next) {
   try {
     const item = await createStat(req.body);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'create', entity: 'stat', entityId: item?.id, detail: { label: req.body.label } });
     return res.status(201).json({ stat: item });
   } catch (err) {
     return next(err);
@@ -310,7 +325,8 @@ export async function adminUpdateStat(req, res, next) {
   try {
     const item = await updateStat(parsePositiveId(req.params.id), req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Statistik tidak ditemukan'));
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'update', entity: 'stat', entityId: req.params.id, detail: { label: req.body.label } });
     return res.json({ stat: item });
   } catch (err) {
     return next(err);
@@ -321,16 +337,17 @@ export async function adminDeleteStat(req, res, next) {
   try {
     const ok = await deleteStat(parsePositiveId(req.params.id));
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Statistik tidak ditemukan'));
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'delete', entity: 'stat', entityId: req.params.id, detail: null });
     return res.json({ message: 'Statistik dihapus' });
   } catch (err) {
     return next(err);
   }
 }
 
-export async function adminListFeatures(_req, res, next) {
+export async function adminListFeatures(req, res, next) {
   try {
-    return res.json({ items: await listFeaturesAdmin() });
+    return res.json({ items: await listFeaturesAdmin(readPagination(req.query) ?? {}) });
   } catch (err) {
     return next(err);
   }
@@ -339,7 +356,8 @@ export async function adminListFeatures(_req, res, next) {
 export async function adminCreateFeature(req, res, next) {
   try {
     const item = await createFeature(req.body);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'create', entity: 'feature', entityId: item?.id, detail: { title: req.body.title } });
     return res.status(201).json({ feature: item });
   } catch (err) {
     return next(err);
@@ -350,7 +368,8 @@ export async function adminUpdateFeature(req, res, next) {
   try {
     const item = await updateFeature(parsePositiveId(req.params.id), req.body);
     if (!item) return next(new AppError(404, 'NOT_FOUND', 'Fitur tidak ditemukan'));
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'update', entity: 'feature', entityId: req.params.id, detail: { title: req.body.title } });
     return res.json({ feature: item });
   } catch (err) {
     return next(err);
@@ -361,16 +380,17 @@ export async function adminDeleteFeature(req, res, next) {
   try {
     const ok = await deleteFeature(parsePositiveId(req.params.id));
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Fitur tidak ditemukan'));
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'delete', entity: 'feature', entityId: req.params.id, detail: null });
     return res.json({ message: 'Fitur dihapus' });
   } catch (err) {
     return next(err);
   }
 }
 
-export async function adminListPartners(_req, res, next) {
+export async function adminListPartners(req, res, next) {
   try {
-    return res.json({ items: await listPartnersAdmin() });
+    return res.json({ items: await listPartnersAdmin(readPagination(req.query) ?? {}) });
   } catch (err) {
     return next(err);
   }
@@ -379,7 +399,8 @@ export async function adminListPartners(_req, res, next) {
 export async function adminCreatePartner(req, res, next) {
   try {
     const item = await createPartner(req.body);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'create', entity: 'partner', entityId: item?.id, detail: { name: req.body.name } });
     return res.status(201).json({ partner: item });
   } catch (err) {
     return next(err);
@@ -397,7 +418,8 @@ export async function adminUpdatePartner(req, res, next) {
     if (removedUrls.length > 0) {
       await cleanupUnusedMediaList(removedUrls);
     }
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'update', entity: 'partner', entityId: req.params.id, detail: { name: req.body.name } });
     return res.json({ partner: item });
   } catch (err) {
     return next(err);
@@ -411,7 +433,8 @@ export async function adminDeletePartner(req, res, next) {
     const ok = await deletePartner(id);
     if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Layanan tidak ditemukan'));
     await cleanupUnusedMediaList(oldUrls);
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'delete', entity: 'partner', entityId: req.params.id, detail: null });
     return res.json({ message: 'Layanan dihapus' });
   } catch (err) {
     return next(err);
@@ -460,7 +483,8 @@ export async function adminUpdateSettings(req, res, next) {
         await cleanupUnusedMediaList(removed);
       }
     }
-    invalidateLandingCache();
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'update', entity: 'site_settings', entityId: null, detail: Object.keys(req.body || {}) });
     return res.json({ settings });
   } catch (err) {
     return next(err);
@@ -483,6 +507,7 @@ export async function adminUploadImage(req, res, next) {
       uploadedBy: req.user?.id || null
     });
     const ext = ALLOWED_IMAGE_MIME_TO_EXT[detectedMime] || '.png';
+    await recordAdminAction(req, { action: 'upload', entity: 'media', entityId: created?.id, detail: { mimeType: detectedMime } });
     return res.status(201).json({
       id: created.id,
       url: created.url,
@@ -502,7 +527,17 @@ export async function adminDeleteUploadedImage(req, res, next) {
       return next(new AppError(400, 'INVALID_ID', 'ID media tidak valid'));
     }
     const deleted = await deleteMediaFileIfUnreferenced(id);
+    await recordAdminAction(req, { action: 'delete', entity: 'media', entityId: id, detail: { deleted } });
     return res.json({ deleted });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminListAuditLog(req, res, next) {
+  try {
+    const items = await listAdminAuditLog({ limit: req.query?.limit });
+    return res.json({ items });
   } catch (err) {
     return next(err);
   }

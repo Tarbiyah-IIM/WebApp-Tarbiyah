@@ -44,9 +44,10 @@ export async function deleteUserById(id) {
   return result.affectedRows > 0;
 }
 
-export async function listUsersAdmin() {
+export async function listUsersAdmin({ limit = null, offset = 0 } = {}) {
+  const pageClause = limit ? ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}` : '';
   const [rows] = await pool.execute(
-    'SELECT id, name, email, role, avatar_url, is_active, created_at FROM users ORDER BY created_at DESC'
+    `SELECT id, name, email, role, avatar_url, is_active, created_at FROM users ORDER BY created_at DESC${pageClause}`
   );
   return rows;
 }

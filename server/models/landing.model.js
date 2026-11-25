@@ -299,12 +299,13 @@ async function findNewsByIdAdmin(id) {
   return hydrated[0] || null;
 }
 
-export async function listTestimonialsAdmin() {
+export async function listTestimonialsAdmin({ limit = null, offset = 0 } = {}) {
+  const pageClause = limit ? ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}` : '';
   const [rows] = await pool.execute(`
     SELECT t.*, nc.name AS category_name
     FROM testimonials t
     LEFT JOIN news_categories nc ON nc.id = t.category_id
-    ORDER BY t.sort_order ASC, t.id ASC
+    ORDER BY t.sort_order ASC, t.id ASC${pageClause}
   `);
   return sortNewsByNewestDate(await hydrateNewsRows(rows));
 }
@@ -467,8 +468,9 @@ export async function deleteNewsCategory(id) {
   }
 }
 
-export async function listAgendasAdmin() {
-  const [rows] = await pool.execute('SELECT * FROM agendas ORDER BY sort_order ASC, id ASC');
+export async function listAgendasAdmin({ limit = null, offset = 0 } = {}) {
+  const pageClause = limit ? ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}` : '';
+  const [rows] = await pool.execute(`SELECT * FROM agendas ORDER BY sort_order ASC, id ASC${pageClause}`);
   return sortItemsByNewestDate(hydrateAgendaRows(rows), 'event_date');
 }
 
@@ -530,8 +532,9 @@ export async function deleteAgenda(id) {
   return result.affectedRows > 0;
 }
 
-export async function listFaqsAdmin() {
-  const [rows] = await pool.execute('SELECT * FROM faqs ORDER BY sort_order ASC, id ASC');
+export async function listFaqsAdmin({ limit = null, offset = 0 } = {}) {
+  const pageClause = limit ? ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}` : '';
+  const [rows] = await pool.execute(`SELECT * FROM faqs ORDER BY sort_order ASC, id ASC${pageClause}`);
   return rows;
 }
 
@@ -558,8 +561,11 @@ export async function deleteFaq(id) {
   return result.affectedRows > 0;
 }
 
-export async function listStatsAdmin() {
-  const [rows] = await pool.execute('SELECT * FROM stats ORDER BY stat_group ASC, sort_order ASC, id ASC');
+export async function listStatsAdmin({ limit = null, offset = 0 } = {}) {
+  const pageClause = limit ? ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}` : '';
+  const [rows] = await pool.execute(
+    `SELECT * FROM stats ORDER BY stat_group ASC, sort_order ASC, id ASC${pageClause}`
+  );
   return rows;
 }
 
@@ -586,8 +592,9 @@ export async function deleteStat(id) {
   return result.affectedRows > 0;
 }
 
-export async function listFeaturesAdmin() {
-  const [rows] = await pool.execute('SELECT * FROM features ORDER BY sort_order ASC, id ASC');
+export async function listFeaturesAdmin({ limit = null, offset = 0 } = {}) {
+  const pageClause = limit ? ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}` : '';
+  const [rows] = await pool.execute(`SELECT * FROM features ORDER BY sort_order ASC, id ASC${pageClause}`);
   return rows;
 }
 
@@ -614,8 +621,9 @@ export async function deleteFeature(id) {
   return result.affectedRows > 0;
 }
 
-export async function listPartnersAdmin() {
-  const [rows] = await pool.execute('SELECT * FROM partners ORDER BY sort_order ASC, id ASC');
+export async function listPartnersAdmin({ limit = null, offset = 0 } = {}) {
+  const pageClause = limit ? ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}` : '';
+  const [rows] = await pool.execute(`SELECT * FROM partners ORDER BY sort_order ASC, id ASC${pageClause}`);
   return rows;
 }
 
