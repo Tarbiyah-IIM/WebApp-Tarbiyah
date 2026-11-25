@@ -586,7 +586,11 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       await page.getByTestId('search-toggle').click();
       await page.keyboard.type('Pendidikan Agama Islam');
       await expect(page.getByTestId('global-search-input')).toHaveValue('Pendidikan Agama Islam');
-      await page.getByRole('button', { name: /Pendidikan Agama Islam/ }).first().click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: /Pendidikan Agama Islam/ })
+        .first()
+        .click();
       await expect(page).toHaveURL(/\/program-studi\/pai/);
 
       await page.getByTestId('theme-toggle').click();

@@ -28,12 +28,25 @@ function terminateChild(child) {
 }
 
 let shuttingDown = false;
-function shutdown() {
+function waitForExit(child, timeoutMs = 4000) {
+  return new Promise((resolve) => {
+    if (!child || child.killed || child.exitCode !== null) return resolve();
+    const timer = setTimeout(resolve, timeoutMs);
+    timer.unref?.();
+    child.once('exit', () => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
+}
+
+async function shutdown() {
   if (shuttingDown) return;
   shuttingDown = true;
   for (const child of children) {
     terminateChild(child);
   }
+  await Promise.all(children.map((child) => waitForExit(child)));
   process.exit(0);
 }
 

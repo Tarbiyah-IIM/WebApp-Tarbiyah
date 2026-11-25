@@ -278,7 +278,10 @@ test('portal pages ID/EN saves avoid locales.id bloat and canceled news upload c
     const orphanUrl = await urlInput.inputValue();
 
     await dialog.getByRole('button', { name: 'Batal' }).click();
-    await expect(dialog).toHaveCount(0);
+    const discardDialog = page.getByRole('dialog').filter({ hasText: 'Buang perubahan berita?' });
+    await expect(discardDialog).toBeVisible();
+    await discardDialog.getByRole('button', { name: 'Ya, Buang' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
 
     await expect.poll(async () => (await page.request.get(orphanUrl)).status()).toBe(404);
   } finally {

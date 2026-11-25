@@ -1,5 +1,13 @@
 import { defineConfig } from '@playwright/test';
 
+const testDatabaseName = process.env.E2E_DB_NAME || 'u104886200_tarbiyah_iim_test';
+
+if (!/_test$/.test(testDatabaseName)) {
+  throw new Error(
+    `[playwright] Tes E2E wajib memakai database berakhiran _test (sekarang: ${testDatabaseName}). Set E2E_DB_NAME sebelum menjalankan.`
+  );
+}
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -26,6 +34,7 @@ export default defineConfig({
       env: {
         ...process.env,
         NODE_ENV: 'test',
+        DB_NAME: testDatabaseName,
         ALLOW_PUBLIC_REGISTER: 'true',
         ALLOW_SANDBOX_RESET: 'true'
       }
