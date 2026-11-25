@@ -26,7 +26,9 @@ app.use(
           'https://docs.google.com',
           'https://script.google.com',
           'https://*.googleusercontent.com',
+          'https://www.google.com/maps',
           'https://www.google.com/maps/',
+          'https://maps.google.com',
           'https://maps.google.com/'
         ]
       }

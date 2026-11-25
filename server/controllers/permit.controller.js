@@ -1,6 +1,9 @@
+import { getCache, setCache } from '../config/cache.js';
 import { env } from '../config/env.js';
 import { isSafeHttpsUrl, readBoundedResponseText, withRelaySlot } from '../utils/security.js';
 
+const META_CACHE_KEY = 'work_permit_meta';
+const META_CACHE_TTL_MS = 45000;
 const MAX_META_RESPONSE_BYTES = 128 * 1024;
 const MAX_SUBMIT_RESPONSE_BYTES = 4 * 1024 * 1024;
 
@@ -121,25 +124,35 @@ export async function getWorkPermitMeta(_req, res) {
     });
   }
 
+  const cachedMeta = getCache(META_CACHE_KEY);
+  if (cachedMeta) {
+    return res.json(cachedMeta);
+  }
+
   try {
     const separator = scriptUrl.includes('?') ? '&' : '?';
-    const response = await withRelaySlot(() =>
-      fetch(`${scriptUrl}${separator}api=meta`, {
+    const text = await withRelaySlot(async () => {
+      const response = await fetch(`${scriptUrl}${separator}api=meta`, {
         method: 'GET',
         redirect: 'follow',
         signal: AbortSignal.timeout(12000)
-      })
-    );
-    const text = await readBoundedResponseText(response, MAX_META_RESPONSE_BYTES);
+      });
+      if (!response.ok) {
+        throw new Error('UPSTREAM_HTTP_ERROR');
+      }
+      return readBoundedResponseText(response, MAX_META_RESPONSE_BYTES);
+    });
     const parsed = tryParseJson(text);
 
     if (parsed && parsed.ok && parsed.data) {
-      return res.json({
+      const payload = {
         ok: true,
         source: 'apps-script',
         needsAppsScriptDeploy: false,
         data: sanitizeWorkPermitMeta(parsed.data)
-      });
+      };
+      setCache(META_CACHE_KEY, payload, META_CACHE_TTL_MS);
+      return res.json(payload);
     }
 
     return res.json({
@@ -173,16 +186,16 @@ export async function submitWorkPermit(req, res) {
       ? { ...req.body, relaySecret: env.appsScriptRelaySecret }
       : req.body;
 
-    const response = await withRelaySlot(() =>
-      fetch(scriptUrl, {
+    const text = await withRelaySlot(async () => {
+      const response = await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(outboundPayload),
         redirect: 'follow',
         signal: AbortSignal.timeout(25000)
-      })
-    );
-    const text = await readBoundedResponseText(response, MAX_SUBMIT_RESPONSE_BYTES);
+      });
+      return readBoundedResponseText(response, MAX_SUBMIT_RESPONSE_BYTES);
+    });
     const parsed = tryParseJson(text);
 
     if (!parsed) {
@@ -208,7 +221,14 @@ export async function submitWorkPermit(req, res) {
     }
 
     return res.status(201).json(sanitizeWorkPermitSubmitResponse(parsed));
-  } catch {
+  } catch (err) {
+    if (err?.code === 'RELAY_OVERLOADED') {
+      return res.status(503).json({
+        ok: false,
+        code: 'RELAY_OVERLOADED',
+        error: { message: 'Antrean layanan surat ijin kerja sedang penuh. Silakan coba lagi sebentar.' }
+      });
+    }
     return res.status(502).json({
       ok: false,
       code: 'RELAY_TIMEOUT',

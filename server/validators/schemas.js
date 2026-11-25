@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { detectImageMimeFromBuffer } from '../middlewares/upload.middleware.js';
-import { isSafeAppUrl, isSafeHttpsUrl, sanitizeSpreadsheetCell } from '../utils/security.js';
+import { isSafeAppUrl, isSafeHttpUrl, isSafeHttpsUrl, sanitizeSpreadsheetCell } from '../utils/security.js';
 
 const safePasswordSchema = z
   .string()
@@ -363,7 +363,14 @@ export const guestLectureSubmitSchema = z
       .trim()
       .max(2000)
       .default('')
-      .refine((v) => !v || isSafeHttpsUrl(v), 'URL foto tidak valid'),
+      .refine((v) => {
+        if (!v) return true;
+        const lines = v
+          .split(/[\r\n]+/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+        return lines.length <= 3 && lines.every((line) => isSafeHttpUrl(line));
+      }, 'URL foto tidak valid'),
     fotoFiles: z.array(guestLectureFotoFileSchema).max(3, 'Maksimal 3 foto narasumber.').default([])
   })
   .superRefine((data, ctx) => {

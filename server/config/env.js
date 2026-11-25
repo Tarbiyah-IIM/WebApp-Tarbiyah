@@ -11,6 +11,7 @@ const INSECURE_DEFAULT_SECRETS = new Set([
   'change_me_access_secret',
   'change_me_refresh_secret',
   'change_me_webhook_secret',
+  'change_me_with_at_least_32_random_hex_chars',
   'secret',
   'changeme'
 ]);
@@ -18,10 +19,14 @@ const INSECURE_DEFAULT_SECRETS = new Set([
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isProduction = nodeEnv === 'production';
 
-function resolveJwtAccessSecret() {
-  const raw = String(process.env.JWT_ACCESS_SECRET || '').trim();
-  if (isProduction) {
-    if (raw.length < 32 || INSECURE_DEFAULT_SECRETS.has(raw.toLowerCase())) {
+export function resolveJwtAccessSecret(
+  rawOverride = process.env.JWT_ACCESS_SECRET,
+  targetNodeEnv = nodeEnv
+) {
+  const raw = String(rawOverride || '').trim();
+  if (targetNodeEnv === 'production') {
+    const looksPlaceholder = /^(change_me|changeme|dev-|replace_me)/i.test(raw);
+    if (raw.length < 32 || looksPlaceholder || INSECURE_DEFAULT_SECRETS.has(raw.toLowerCase())) {
       throw new Error(
         '[FATAL] JWT_ACCESS_SECRET wajib diisi minimal 32 karakter acak yang aman saat NODE_ENV=production.'
       );
@@ -59,6 +64,7 @@ export const env = {
   guestLectureScriptUrl:
     process.env.GUEST_LECTURE_SCRIPT_URL ||
     'https://script.google.com/macros/s/AKfycbwjx4f_R-H4MXwGpjMyI8X-BpGKASOTfkuwqMWp1JkjcvPRYyhiI9C00gMQTp351LHo/exec',
+  hasPrivateGuestLectureUrl: Boolean(String(process.env.GUEST_LECTURE_SCRIPT_URL || '').trim()),
   appsScriptRelaySecret: String(process.env.APPS_SCRIPT_RELAY_SECRET || '').trim(),
   allowPublicRegister: nodeEnv === 'test' && process.env.ALLOW_PUBLIC_REGISTER === 'true',
   allowSandboxReset: nodeEnv === 'test' && process.env.ALLOW_SANDBOX_RESET === 'true'

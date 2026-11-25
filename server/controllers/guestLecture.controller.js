@@ -18,7 +18,7 @@ function tryParseJson(rawText) {
   }
 }
 
-async function resolveGuestLectureScriptUrl() {
+async function resolveGuestLectureScriptTarget() {
   try {
     const settings = await getSettingsMap();
     const rawContacts = settings?.cms_contacts;
@@ -26,13 +26,13 @@ async function resolveGuestLectureScriptUrl() {
       const parsed = tryParseJson(rawContacts);
       const customUrl = typeof parsed?.guestLectureUrl === 'string' ? parsed.guestLectureUrl.trim() : '';
       if (customUrl.startsWith('https://script.google.com/')) {
-        return customUrl;
+        return { scriptUrl: customUrl, isPrivateEnvUrl: false };
       }
     }
   } catch {
-    return env.guestLectureScriptUrl;
+    return { scriptUrl: env.guestLectureScriptUrl, isPrivateEnvUrl: env.hasPrivateGuestLectureUrl };
   }
-  return env.guestLectureScriptUrl;
+  return { scriptUrl: env.guestLectureScriptUrl, isPrivateEnvUrl: env.hasPrivateGuestLectureUrl };
 }
 
 function invalidateGuestLectureCache() {
@@ -42,14 +42,17 @@ function invalidateGuestLectureCache() {
 
 async function fetchGuestLecturePayload(scriptUrl) {
   const separator = scriptUrl.includes('?') ? '&' : '?';
-  const response = await withRelaySlot(() =>
-    fetch(`${scriptUrl}${separator}api=data`, {
+  const text = await withRelaySlot(async () => {
+    const response = await fetch(`${scriptUrl}${separator}api=data`, {
       method: 'GET',
       redirect: 'follow',
       signal: AbortSignal.timeout(15000)
-    })
-  );
-  const text = await readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
+    });
+    if (!response.ok) {
+      throw new Error('UPSTREAM_HTTP_ERROR');
+    }
+    return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
+  });
   return tryParseJson(text);
 }
 
@@ -70,7 +73,7 @@ function extractEditableRowSet(payloadData) {
 }
 
 export async function getGuestLectureData(req, res) {
-  const scriptUrl = await resolveGuestLectureScriptUrl();
+  const { scriptUrl, isPrivateEnvUrl } = await resolveGuestLectureScriptTarget();
   const forceRefresh = req.query?.refresh === '1' || req.query?.refresh === 'true';
   const cached = getCache(CACHE_KEY);
   const cachedScriptUrl = getCache(SOURCE_SCRIPT_CACHE_KEY);
@@ -90,7 +93,7 @@ export async function getGuestLectureData(req, res) {
       return res.json({
         ok: false,
         needsAppsScriptDeploy: true,
-        fallbackUrl: scriptUrl,
+        ...(isPrivateEnvUrl ? {} : { fallbackUrl: scriptUrl }),
         data: null
       });
     }
@@ -121,7 +124,14 @@ export async function getGuestLectureData(req, res) {
     setCache(SOURCE_SCRIPT_CACHE_KEY, scriptUrl, CACHE_TTL_MS);
     setCache(CACHE_KEY, payload, CACHE_TTL_MS);
     return res.json(payload);
-  } catch {
+  } catch (err) {
+    if (err?.code === 'RELAY_OVERLOADED') {
+      return res.status(503).json({
+        ok: false,
+        code: 'RELAY_OVERLOADED',
+        error: { message: 'Layanan relay kuliah tamu sedang sibuk. Silakan coba lagi sebentar.' }
+      });
+    }
     return res.status(502).json({
       ok: false,
       code: 'RELAY_TIMEOUT',
@@ -131,7 +141,7 @@ export async function getGuestLectureData(req, res) {
 }
 
 export async function submitGuestLecture(req, res) {
-  const scriptUrl = await resolveGuestLectureScriptUrl();
+  const { scriptUrl } = await resolveGuestLectureScriptTarget();
 
   try {
     if (req.body.mode === 'update') {
@@ -159,20 +169,21 @@ export async function submitGuestLecture(req, res) {
       }
     }
 
+    const basePayload = req.body.mode === 'new' ? { ...req.body, rowIndex: null } : req.body;
     const outboundPayload = env.appsScriptRelaySecret
-      ? { ...req.body, relaySecret: env.appsScriptRelaySecret }
-      : req.body;
+      ? { ...basePayload, relaySecret: env.appsScriptRelaySecret }
+      : basePayload;
 
-    const response = await withRelaySlot(() =>
-      fetch(scriptUrl, {
+    const text = await withRelaySlot(async () => {
+      const response = await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(outboundPayload),
         redirect: 'follow',
         signal: AbortSignal.timeout(30000)
-      })
-    );
-    const text = await readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
+      });
+      return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
+    });
     const parsed = tryParseJson(text);
 
     if (!parsed || typeof parsed !== 'object' || typeof parsed.success !== 'boolean') {
@@ -204,7 +215,14 @@ export async function submitGuestLecture(req, res) {
       rowIndex: parsed.rowIndex || null,
       fotoUrl: typeof parsed.fotoUrl === 'string' ? parsed.fotoUrl : ''
     });
-  } catch {
+  } catch (err) {
+    if (err?.code === 'RELAY_OVERLOADED') {
+      return res.status(503).json({
+        ok: false,
+        code: 'RELAY_OVERLOADED',
+        error: { message: 'Antrean layanan kuliah tamu sedang penuh. Silakan coba lagi sebentar.' }
+      });
+    }
     return res.status(502).json({
       ok: false,
       code: 'RELAY_TIMEOUT',

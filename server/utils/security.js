@@ -1,10 +1,11 @@
 const MAX_SAFE_RELAY_TEXT_BYTES = 128 * 1024;
 const MAX_CONCURRENT_RELAY = 6;
+const MAX_RELAY_QUEUE = 24;
 let activeRelayCount = 0;
 const waitingRelayResolvers = [];
 
 export function isSafeHttpUrl(value) {
-  if (typeof value !== 'string') return false;
+  if (typeof value !== 'string' || /[\r\n\t]/.test(value)) return false;
   const trimmed = value.trim();
   if (!trimmed) return false;
   try {
@@ -16,7 +17,7 @@ export function isSafeHttpUrl(value) {
 }
 
 export function isSafeHttpsUrl(value) {
-  if (typeof value !== 'string') return false;
+  if (typeof value !== 'string' || /[\r\n\t]/.test(value)) return false;
   const trimmed = value.trim();
   if (!trimmed) return false;
   try {
@@ -76,7 +77,12 @@ export async function readBoundedResponseText(response, maxBytes = MAX_SAFE_RELA
 }
 
 export async function withRelaySlot(fn) {
-  if (activeRelayCount >= MAX_CONCURRENT_RELAY) {
+  while (activeRelayCount >= MAX_CONCURRENT_RELAY) {
+    if (waitingRelayResolvers.length >= MAX_RELAY_QUEUE) {
+      const overloadedErr = new Error('RELAY_OVERLOADED');
+      overloadedErr.code = 'RELAY_OVERLOADED';
+      throw overloadedErr;
+    }
     await new Promise((resolve) => waitingRelayResolvers.push(resolve));
   }
   activeRelayCount += 1;
