@@ -147,3 +147,75 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     }
   }
 });
+
+test('portal pages cross-locale reset keeps sibling language overrides intact', async ({
+  page,
+  loginViaApi,
+  request
+}) => {
+  const admin = await loginViaApi('tarbiyah@iim.ac.id');
+  const headers = { Authorization: `Bearer ${admin.accessToken}` };
+
+  const initialRes = await request.get('http://localhost:3001/api/v1/admin/settings', { headers });
+  expect(initialRes.ok()).toBeTruthy();
+  const initialSettings = (await initialRes.json()).settings || {};
+  const originalPrograms = initialSettings.cms_programs ?? '';
+
+  try {
+    const dualLocalePrograms = {
+      pai: {
+        badge: 'Akreditasi ID Tersimpan',
+        locales: {
+          en: {
+            badge: 'Accreditation EN Override'
+          }
+        }
+      }
+    };
+
+    const seedRes = await request.patch('http://localhost:3001/api/v1/admin/settings', {
+      headers,
+      data: { cms_programs: JSON.stringify(dualLocalePrograms) }
+    });
+    expect(seedRes.ok()).toBeTruthy();
+
+    await page.goto('/admin');
+    await page.getByRole('button', { name: 'Halaman Portal', exact: true }).click();
+    await expect(page.getByLabel('Badge / Status Akreditasi')).toHaveValue('Akreditasi ID Tersimpan');
+
+    await page.getByTestId('lang-switch-en').click();
+    await expect(page.getByLabel('Badge / Accreditation Status')).toHaveValue('Accreditation EN Override');
+    await page.getByRole('button', { name: 'Restore Default' }).click();
+    await expect(page.getByText('Page restored to default content.')).toBeVisible();
+
+    const afterEnResetRes = await request.get('http://localhost:3001/api/v1/admin/settings', { headers });
+    expect(afterEnResetRes.ok()).toBeTruthy();
+    const afterEnPrograms = JSON.parse((await afterEnResetRes.json()).settings.cms_programs || '{}');
+    expect(afterEnPrograms.pai?.badge).toBe('Akreditasi ID Tersimpan');
+    expect(afterEnPrograms.pai?.locales?.en).toBeUndefined();
+
+    const reseedRes = await request.patch('http://localhost:3001/api/v1/admin/settings', {
+      headers,
+      data: { cms_programs: JSON.stringify(dualLocalePrograms) }
+    });
+    expect(reseedRes.ok()).toBeTruthy();
+
+    await page.reload();
+    await page.getByTestId('lang-switch-id').click();
+    await page.getByRole('button', { name: 'Halaman Portal', exact: true }).click();
+    await expect(page.getByLabel('Badge / Status Akreditasi')).toHaveValue('Akreditasi ID Tersimpan');
+    await page.getByRole('button', { name: 'Kembalikan Default' }).click();
+    await expect(page.getByText('Halaman dikembalikan ke konten bawaan.')).toBeVisible();
+
+    const afterIdResetRes = await request.get('http://localhost:3001/api/v1/admin/settings', { headers });
+    expect(afterIdResetRes.ok()).toBeTruthy();
+    const afterIdPrograms = JSON.parse((await afterIdResetRes.json()).settings.cms_programs || '{}');
+    expect(afterIdPrograms.pai?.badge).toBeUndefined();
+    expect(afterIdPrograms.pai?.locales?.en?.badge).toBe('Accreditation EN Override');
+  } finally {
+    await request.patch('http://localhost:3001/api/v1/admin/settings', {
+      headers,
+      data: { cms_programs: originalPrograms }
+    });
+  }
+});

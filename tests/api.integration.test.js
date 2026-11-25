@@ -3,8 +3,10 @@ import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import app from '../server/app.js';
+import { setCache } from '../server/config/cache.js';
 import { pool } from '../server/config/db.js';
-import { env } from '../server/config/env.js';
+import { env, resolveJwtAccessSecret } from '../server/config/env.js';
+import { isSafeHttpUrl } from '../server/utils/security.js';
 import {
   createUser,
   deleteUserById,
@@ -590,5 +592,108 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .delete(`/api/v1/admin/partners/${partnerId}`)
       .set('Authorization', `Bearer ${adminToken}`);
     expect(deleteRes.status).toBe(200);
+  });
+
+  it('enforces CSP Google Maps frame sources, production JWT placeholder rejection, and URL control sanitization', async () => {
+    const healthRes = await request(app).get('/api/v1/health');
+    expect(healthRes.status).toBe(200);
+    const csp = String(healthRes.headers['content-security-policy'] || '');
+    expect(csp).toContain('https://www.google.com/maps');
+    expect(csp).toContain('https://www.google.com/maps/');
+    expect(csp).toContain('https://maps.google.com');
+    expect(csp).toContain('https://maps.google.com/');
+
+    expect(() => resolveJwtAccessSecret('change_me_with_at_least_32_random_hex_chars', 'production')).toThrow();
+    expect(() => resolveJwtAccessSecret('replace_me_123456789012345678901234', 'production')).toThrow();
+    expect(resolveJwtAccessSecret('b'.repeat(32), 'production')).toBe('b'.repeat(32));
+
+    expect(isSafeHttpUrl('https://example.com/ok')).toBe(true);
+    expect(isSafeHttpUrl('https://example.com/a\nb')).toBe(false);
+    expect(isSafeHttpUrl('https://example.com/a\rb')).toBe(false);
+  });
+
+  it('validates multi-line existingFotoUrl, strips rowIndex on mode new, and suppresses fallbackUrl for private scripts', async () => {
+    const unsafeLineRes = await request(app)
+      .post('/api/v1/guest-lectures')
+      .send({
+        mode: 'update',
+        rowIndex: 52,
+        existingFotoUrl: 'https://drive.google.com/file/d/ok\njavascript:alert(1)'
+      });
+    expect(unsafeLineRes.status).toBe(400);
+
+    const tooManyLinesRes = await request(app)
+      .post('/api/v1/guest-lectures')
+      .send({
+        mode: 'update',
+        rowIndex: 52,
+        existingFotoUrl: [
+          'https://drive.google.com/file/d/1',
+          'https://drive.google.com/file/d/2',
+          'https://drive.google.com/file/d/3',
+          'https://drive.google.com/file/d/4'
+        ].join('\n')
+      });
+    expect(tooManyLinesRes.status).toBe(400);
+
+    const prevFetch = globalThis.fetch;
+    const prevPrivateFlag = env.hasPrivateGuestLectureUrl;
+    let capturedPostBody = null;
+
+    try {
+      env.hasPrivateGuestLectureUrl = true;
+
+      setCache('guest_lecture_data', null, 0);
+      setCache('guest_lecture_source_script', null, 0);
+      globalThis.fetch = async () =>
+        new Response('<html><body>Deploy notice</body></html>', {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' }
+        });
+
+      const deployNoticeRes = await request(app).get('/api/v1/guest-lectures?refresh=1');
+      expect(deployNoticeRes.status).toBe(200);
+      expect(deployNoticeRes.body.needsAppsScriptDeploy).toBe(true);
+      expect(deployNoticeRes.body.fallbackUrl).toBeUndefined();
+
+      setCache('guest_lecture_data', null, 0);
+      setCache('guest_lecture_source_script', null, 0);
+      globalThis.fetch = async () => new Response('Server error', { status: 500 });
+
+      const upstreamErrRes = await request(app).get('/api/v1/guest-lectures?refresh=1');
+      expect(upstreamErrRes.status).toBe(502);
+      expect(upstreamErrRes.body.code).toBe('RELAY_TIMEOUT');
+
+      globalThis.fetch = async (_url, init = {}) => {
+        capturedPostBody = JSON.parse(String(init.body || '{}'));
+        return new Response(
+          JSON.stringify({
+            success: true,
+            isComplete: false,
+            status: 'Not Started',
+            message: 'Tersimpan',
+            rowIndex: 123
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      };
+
+      const newRes = await request(app)
+        .post('/api/v1/guest-lectures')
+        .send({
+          mode: 'new',
+          rowIndex: 99,
+          prodi: 'PAI',
+          mataKuliah: 'Uji Strip RowIndex'
+        });
+      expect(newRes.status).toBe(201);
+      expect(capturedPostBody).toBeTruthy();
+      expect(capturedPostBody.rowIndex).toBeNull();
+    } finally {
+      globalThis.fetch = prevFetch;
+      env.hasPrivateGuestLectureUrl = prevPrivateFlag;
+      setCache('guest_lecture_data', null, 0);
+      setCache('guest_lecture_source_script', null, 0);
+    }
   });
 });

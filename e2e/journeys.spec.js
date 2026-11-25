@@ -577,6 +577,23 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       });
       await page.goto('http://localhost:3001/');
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+      const mapFrame = page.locator('footer iframe').first();
+      await mapFrame.scrollIntoViewIfNeeded();
+      await expect(mapFrame).toBeVisible();
+      await page.waitForTimeout(300);
+
+      await page.getByTestId('search-toggle').click();
+      await page.keyboard.type('Pendidikan Agama Islam');
+      await expect(page.getByTestId('global-search-input')).toHaveValue('Pendidikan Agama Islam');
+      await page.getByRole('button', { name: /Pendidikan Agama Islam/ }).first().click();
+      await expect(page).toHaveURL(/\/program-studi\/pai/);
+
+      await page.getByTestId('theme-toggle').click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
+      await page.goto('http://localhost:3001/privacy');
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
       expect(cspViolations).toHaveLength(0);
     } finally {
       if (createdPartnerId) {

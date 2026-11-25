@@ -198,3 +198,86 @@ test('guest lecture page gracefully falls back when Apps Script JSON is not depl
   await expect(alert.getByRole('button', { name: 'Coba Lagi' })).toBeVisible();
   await page.context().setOffline(false);
 });
+
+test('guest lecture revision mode allows editing all four core fields in drawer', async ({ page }) => {
+  const revisionPayloads = [];
+  const revisionPayload = {
+    ok: true,
+    needsAppsScriptDeploy: false,
+    syncedAt: '2026-11-25T02:00:00.000Z',
+    data: {
+      prodiList: ['PAI', 'PIAUD', 'PGMI'],
+      dosenList: ['Dr. Dosen Pengampu Revisi, M.Pd'],
+      incompleteLectures: [],
+      trackingLectures: [
+        {
+          rowIndex: 77,
+          prodi: 'PAI',
+          dosenPengampu: 'Dr. Dosen Pengampu Revisi, M.Pd',
+          dosenTamu: 'Prof. Tamu Awal',
+          mataKuliah: 'Kurikulum Awal',
+          tema: 'Tema Awal',
+          tanggal: '12/12/2026',
+          jam: '08.00 - 10.00 WIB',
+          peserta: '120',
+          linkZoom: '',
+          permohonanUndanganList: [],
+          flayerList: [],
+          sertifikatList: [],
+          status: 'In Revision'
+        }
+      ]
+    }
+  };
+
+  await page.route('**/api/v1/guest-lectures**', async (route) => {
+    const req = route.request();
+    if (req.method() === 'GET') {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(revisionPayload)
+      });
+    }
+    if (req.method() === 'POST') {
+      const body = req.postDataJSON();
+      revisionPayloads.push(body);
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          isComplete: true,
+          status: 'Process',
+          message: 'Revisi berhasil dikirim.',
+          rowIndex: body.rowIndex
+        })
+      });
+    }
+    return route.continue();
+  });
+
+  await page.goto('/kuliah-tamu');
+  const region = page.getByRole('region', { name: 'Kuliah Tamu', exact: true });
+  await region.getByRole('button', { name: 'Perbaiki Data' }).click();
+
+  const drawer = page.getByRole('dialog');
+  await expect(drawer).toBeVisible();
+  await expect(drawer.locator('#gl-edit-prodi')).toBeVisible();
+  await expect(drawer.locator('#gl-edit-lecturer')).toBeVisible();
+  await expect(drawer.locator('#gl-edit-course')).toBeVisible();
+  await expect(drawer.locator('#gl-edit-speaker')).toBeVisible();
+
+  await drawer.locator('#gl-edit-course').fill('Kurikulum Direvisi');
+  await drawer.locator('#gl-edit-speaker').fill('Prof. Tamu Direvisi');
+  await drawer.getByRole('button', { name: 'Simpan Isian (Set Process)' }).click();
+  await expect(drawer).toHaveCount(0);
+
+  expect(revisionPayloads[0]).toMatchObject({
+    mode: 'update',
+    rowIndex: 77,
+    prodi: 'PAI',
+    mataKuliah: 'Kurikulum Direvisi',
+    dosenTamu: 'Prof. Tamu Direvisi'
+  });
+});
