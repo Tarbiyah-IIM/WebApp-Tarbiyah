@@ -17,7 +17,7 @@ export async function authenticate(req, _res, next) {
     if (!Number.isInteger(subjectId) || subjectId <= 0) {
       return next(new AppError(401, 'INVALID_TOKEN', 'Token tidak valid atau telah kedaluwarsa'));
     }
-    if (isAccessTokenRevoked(subjectId, payload?.iat)) {
+    if (await isAccessTokenRevoked(subjectId, payload?.iat)) {
       return next(new AppError(401, 'INVALID_TOKEN', 'Token tidak valid atau telah kedaluwarsa'));
     }
 

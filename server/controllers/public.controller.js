@@ -7,16 +7,16 @@ let landingInFlight = null;
 
 export async function getLanding(_req, res, next) {
   try {
-    const cached = getCache('landing_bundle');
+    const cached = await getCache('landing_bundle');
     if (cached) {
       return res.json(cached);
     }
     if (!landingInFlight) {
       const startGeneration = getLandingCacheGeneration();
       landingInFlight = getLandingData()
-        .then((data) => {
+        .then(async (data) => {
           if (getLandingCacheGeneration() === startGeneration) {
-            setCache('landing_bundle', data, 60000);
+            await setCache('landing_bundle', data, 60000);
           }
           return data;
         })
@@ -38,7 +38,7 @@ export async function getPublicNewsDetail(req, res, next) {
       return next(new AppError(404, 'NEWS_NOT_FOUND', 'Berita tidak ditemukan'));
     }
     const cacheKey = `news_detail_${id}`;
-    const cached = getCache(cacheKey);
+    const cached = await getCache(cacheKey);
     if (cached) {
       return res.json({ news: cached });
     }
@@ -46,7 +46,7 @@ export async function getPublicNewsDetail(req, res, next) {
     if (!news) {
       return next(new AppError(404, 'NEWS_NOT_FOUND', 'Berita tidak ditemukan'));
     }
-    setCache(cacheKey, news, 30000);
+    await setCache(cacheKey, news, 30000);
     return res.json({ news });
   } catch (err) {
     return next(err);
@@ -75,11 +75,16 @@ export async function getPublicMedia(req, res, next) {
     if (!media) {
       return next(new AppError(404, 'MEDIA_NOT_FOUND', 'Media tidak ditemukan'));
     }
+    const etag = `"${media.id}"`;
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('ETag', etag);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    const ifNoneMatch = req.headers['if-none-match'];
+    if (typeof ifNoneMatch === 'string' && ifNoneMatch.split(',').some((tag) => tag.trim() === etag)) {
+      return res.status(304).end();
+    }
     res.setHeader('Content-Type', media.mime_type);
     res.setHeader('Content-Length', String(media.size_bytes));
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    res.setHeader('ETag', `"${media.id}"`);
-    res.setHeader('X-Content-Type-Options', 'nosniff');
     return res.send(media.data);
   } catch (err) {
     return next(err);

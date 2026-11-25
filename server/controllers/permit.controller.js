@@ -147,7 +147,7 @@ export async function getWorkPermitMeta(_req, res) {
     });
   }
 
-  const cachedMeta = getCache(META_CACHE_KEY);
+  const cachedMeta = await getCache(META_CACHE_KEY);
   if (cachedMeta) {
     return res.json(cachedMeta);
   }
@@ -178,7 +178,7 @@ export async function getWorkPermitMeta(_req, res) {
         needsAppsScriptDeploy: false,
         data: sanitizeWorkPermitMeta(parsed.data)
       };
-      setCache(META_CACHE_KEY, payload, META_CACHE_TTL_MS);
+      await setCache(META_CACHE_KEY, payload, META_CACHE_TTL_MS);
       return res.json(payload);
     }
 

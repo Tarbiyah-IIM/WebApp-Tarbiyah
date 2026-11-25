@@ -1,4 +1,4 @@
-import { getCache, setCache } from '../config/cache.js';
+import { clearCache, getCache, setCache } from '../config/cache.js';
 import { env } from '../config/env.js';
 import { getSettingsMap } from '../models/landing.model.js';
 import { coalesceRelayRead, readBoundedResponseText, withRelaySlot, isSafeHttpsUrl } from '../utils/security.js';
@@ -61,9 +61,9 @@ async function resolveGuestLectureScriptTarget() {
   return { scriptUrl: env.guestLectureScriptUrl, isPrivateEnvUrl: env.hasPrivateGuestLectureUrl };
 }
 
-function invalidateGuestLectureCache() {
-  setCache(CACHE_KEY, null, 0);
-  setCache(SOURCE_SCRIPT_CACHE_KEY, null, 0);
+async function invalidateGuestLectureCache() {
+  await clearCache(CACHE_KEY);
+  await clearCache(SOURCE_SCRIPT_CACHE_KEY);
 }
 
 async function fetchGuestLecturePayload(scriptUrl, clientSignal) {
@@ -110,8 +110,8 @@ function extractEditableRowSet(payloadData) {
 export async function getGuestLectureData(req, res) {
   const { scriptUrl, isPrivateEnvUrl } = await resolveGuestLectureScriptTarget();
   const forceRefresh = req.query?.refresh === '1' || req.query?.refresh === 'true';
-  const cached = getCache(CACHE_KEY);
-  const cachedScriptUrl = getCache(SOURCE_SCRIPT_CACHE_KEY);
+  const cached = await getCache(CACHE_KEY);
+  const cachedScriptUrl = await getCache(SOURCE_SCRIPT_CACHE_KEY);
   const sameUpstream = Boolean(cached && cachedScriptUrl === scriptUrl);
 
   if (!forceRefresh && sameUpstream) {
@@ -157,8 +157,8 @@ export async function getGuestLectureData(req, res) {
     if (forceRefresh) {
       lastManualRefreshAt = Date.now();
     }
-    setCache(SOURCE_SCRIPT_CACHE_KEY, scriptUrl, CACHE_TTL_MS);
-    setCache(CACHE_KEY, payload, CACHE_TTL_MS);
+    await setCache(SOURCE_SCRIPT_CACHE_KEY, scriptUrl, CACHE_TTL_MS);
+    await setCache(CACHE_KEY, payload, CACHE_TTL_MS);
     return res.json(payload);
   } catch (err) {
     if (err?.code === 'RELAY_ABORTED' || res.writableEnded) {
@@ -246,7 +246,7 @@ export async function submitGuestLecture(req, res) {
       });
     }
 
-    invalidateGuestLectureCache();
+    await invalidateGuestLectureCache();
     const statusCode = req.body.mode === 'update' ? 200 : 201;
     const safeFotoUrl = isSafeHttpsUrl(parsed.fotoUrl) ? parsed.fotoUrl.trim() : '';
     return res.status(statusCode).json({

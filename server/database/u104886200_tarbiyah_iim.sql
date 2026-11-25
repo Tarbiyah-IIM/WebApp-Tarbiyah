@@ -26,6 +26,66 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `app_cache`
+--
+
+CREATE TABLE `app_cache` (
+  `cache_key` varchar(191) NOT NULL,
+  `cache_value` mediumtext DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`cache_key`),
+  KEY `idx_app_cache_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `access_token_revocations`
+--
+
+CREATE TABLE `access_token_revocations` (
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `revoked_before` datetime NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `admin_audit_log`
+--
+
+CREATE TABLE `admin_audit_log` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `actor_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `actor_email` varchar(191) NOT NULL,
+  `action` varchar(40) NOT NULL,
+  `entity` varchar(60) NOT NULL,
+  `entity_id` varchar(60) DEFAULT NULL,
+  `detail` mediumtext DEFAULT NULL,
+  `ip` varchar(64) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Indeks untuk tabel `admin_audit_log`
+--
+ALTER TABLE `admin_audit_log`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_admin_audit_created` (`created_at`),
+  ADD KEY `idx_admin_audit_actor` (`actor_id`);
+
+--
+-- AUTO_INCREMENT untuk tabel `admin_audit_log`
+--
+ALTER TABLE `admin_audit_log`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `agendas`
 --
 
@@ -758,7 +818,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `role`, `avatar_url`, `bio`, `is_active`, `created_at`, `updated_at`) VALUES
-(5, 'Admin Fakultas Tarbiyah', 'tarbiyah@iim.ac.id', '$2b$10$K6fR9sEtldyzTSctDWlvT.tj2y8o52Iz8KQVvBazyfHt5Ddx57QJq', 'admin', 'https://api.dicebear.com/9.x/initials/svg?seed=Admin+Tarbiyah', 'Administrator Fakultas Tarbiyah IIM Surakarta', 1, '2026-11-20 10:13:21', '2026-11-20 10:13:21');
+(5, 'Admin Fakultas Tarbiyah', 'tarbiyah@iim.ac.id', '$2b$10$PLACEHOLDER_REPLACE_AT_DEPLOY_TIME_xxxxxxxxxxxxxxxxxxxxxx', 'admin', 'https://api.dicebear.com/9.x/initials/svg?seed=Admin+Tarbiyah', 'Administrator Fakultas Tarbiyah IIM Surakarta', 1, '2026-11-20 10:13:21', '2026-11-20 10:13:21');
 
 --
 -- Indexes for dumped tables

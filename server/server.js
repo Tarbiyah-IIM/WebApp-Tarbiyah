@@ -1,5 +1,7 @@
 import app from './app.js';
 import { pool } from './config/db.js';
+import { logger } from './utils/logger.js';
+import { purgeExpiredCache } from './config/cache.js';
 import { env } from './config/env.js';
 import { purgeExpiredAuthTokens } from './models/user.model.js';
 
@@ -9,18 +11,18 @@ async function start() {
   await pool.query('SELECT 1');
   if (env.nodeEnv !== 'test') {
     purgeExpiredAuthTokens().catch(() => {});
+    purgeExpiredCache().catch(() => {});
   }
 
   const server = app.listen(env.port, '0.0.0.0', () => {
-    console.log(
-      `Tarbiyah API listening on 0.0.0.0:${env.port} (PORT env: ${process.env.PORT ?? 'unset'})`
-    );
+    logger.info('server_listening', { port: env.port, nodeEnv: env.nodeEnv });
   });
 
   const purgeTimer =
     env.nodeEnv !== 'test'
       ? setInterval(() => {
           purgeExpiredAuthTokens().catch(() => {});
+          purgeExpiredCache().catch(() => {});
         }, TOKEN_PURGE_INTERVAL_MS)
       : null;
   if (purgeTimer?.unref) {
@@ -31,7 +33,7 @@ async function start() {
   const gracefulShutdown = (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
-    console.log(`Received ${signal}, closing Tarbiyah API gracefully...`);
+    logger.info('graceful_shutdown_started', { signal });
     if (purgeTimer) clearInterval(purgeTimer);
     server.close(async () => {
       try {
@@ -50,6 +52,6 @@ async function start() {
 }
 
 start().catch((err) => {
-  console.error('Failed to start Tarbiyah API:', err?.message || err);
+  logger.error('server_start_failed', { message: err?.message || String(err) });
   process.exit(1);
 });

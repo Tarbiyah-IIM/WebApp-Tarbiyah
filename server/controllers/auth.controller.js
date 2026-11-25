@@ -267,7 +267,7 @@ export async function resetPassword(req, res, next) {
       await updateUserPassword(resetRow.user_id, passwordHash, conn);
       await revokeAllUserRefreshTokens(resetRow.user_id, conn);
     });
-    markUserAccessTokensRevoked(resetRow.user_id);
+    await markUserAccessTokensRevoked(resetRow.user_id);
 
     return res.json({ message: 'Password berhasil diperbarui. Silakan login kembali.' });
   } catch (err) {
@@ -314,7 +314,7 @@ export async function updateMe(req, res, next) {
     });
 
     if (newPassword) {
-      markUserAccessTokensRevoked(req.user.id);
+      await markUserAccessTokensRevoked(req.user.id);
       const accessToken = issueAccessToken(updated);
       const { rawToken, expiresAt } = await issueAndStoreRefreshToken(updated);
       setRefreshCookie(res, rawToken, expiresAt);
