@@ -107,7 +107,7 @@ function validateLocal() {
   const nim = String(form.value.nim || '').trim();
   if (!errs.nim) {
     if (nim.length < 3) errs.nim = t('workPermit.validationNimMin');
-    else if (!NIM_REGEX.test(nim)) errs.nim = t('workPermit.validationNimFormat');
+    else if (/^[=+\-@\t\r]/.test(nim) || !NIM_REGEX.test(nim)) errs.nim = t('workPermit.validationNimFormat');
   }
   fieldErrors.value = errs;
   return Object.keys(errs).length === 0;
@@ -186,7 +186,7 @@ function resetForm() {
 </script>
 
 <template>
-  <ModalDialog :open="open" :title="t('workPermit.modalTitle')" header-variant="macos" @close="emit('close')">
+  <ModalDialog :open="open" :title="t('workPermit.modalTitle')" header-variant="macos" @close="!submitting && emit('close')">
     <div class="space-y-4">
       <p class="text-xs leading-relaxed text-slate-600">{{ t('workPermit.subtitle') }}</p>
 

@@ -231,6 +231,7 @@ useFocusTrap(
                   v-model="form.dosenPengampu"
                   list="gl-dosen-datalist"
                   type="text"
+                  maxlength="160"
                   required
                   class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
                 />
@@ -244,6 +245,7 @@ useFocusTrap(
                   id="gl-edit-course"
                   v-model="form.mataKuliah"
                   type="text"
+                  maxlength="200"
                   required
                   class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
                 />
@@ -257,6 +259,7 @@ useFocusTrap(
                   id="gl-edit-speaker"
                   v-model="form.dosenTamu"
                   type="text"
+                  maxlength="240"
                   required
                   class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
                 />
@@ -270,6 +273,7 @@ useFocusTrap(
                   id="gl-edit-topic"
                   v-model="form.tema"
                   rows="3"
+                  maxlength="1000"
                   required
                   :placeholder="t('guestLecture.placeholders.topic')"
                   class="mt-1.5 w-full rounded-xl border border-surface-border bg-white p-3 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
@@ -301,6 +305,7 @@ useFocusTrap(
                   id="gl-edit-time"
                   v-model="form.jam"
                   type="text"
+                  maxlength="80"
                   required
                   :placeholder="t('guestLecture.placeholders.time')"
                   class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"

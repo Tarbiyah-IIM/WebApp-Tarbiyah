@@ -35,22 +35,26 @@ const contactKeys = [
   'guestLectureUrl'
 ];
 
-function hydrate(source) {
-  const navOverride = safeParseCmsJson(source?.cms_nav_links, {});
+function hydrateNav(rawNav) {
+  const navOverride = safeParseCmsJson(rawNav, {});
   for (const key of navKeys) {
     navForm[key] = navOverride[key] !== undefined ? String(navOverride[key]) : DEFAULT_NAV_LINKS[key];
   }
-  const contactOverride = safeParseCmsJson(source?.cms_contacts, {});
+}
+
+function hydrateContacts(rawContacts) {
+  const contactOverride = safeParseCmsJson(rawContacts, {});
   for (const key of contactKeys) {
-    contactForm[key] = contactOverride[key] !== undefined ? String(contactOverride[key]) : DEFAULT_CONTACTS[key];
+    if (key === 'guestLectureUrl') {
+      contactForm[key] = contactOverride[key] !== undefined ? String(contactOverride[key]) : '';
+    } else {
+      contactForm[key] = contactOverride[key] !== undefined ? String(contactOverride[key]) : DEFAULT_CONTACTS[key];
+    }
   }
 }
 
-watch(
-  () => props.settings,
-  (next) => hydrate(next),
-  { immediate: true, deep: true }
-);
+watch(() => props.settings?.cms_nav_links, hydrateNav, { immediate: true });
+watch(() => props.settings?.cms_contacts, hydrateContacts, { immediate: true });
 
 function saveNav() {
   const payload = {};
@@ -134,6 +138,7 @@ function saveContacts() {
             :id="`cms-contact-${key}`"
             v-model="contactForm[key]"
             type="text"
+            :placeholder="key === 'guestLectureUrl' ? DEFAULT_CONTACTS.guestLectureUrl : ''"
             class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
           />
         </div>

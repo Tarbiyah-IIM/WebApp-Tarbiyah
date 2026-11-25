@@ -73,6 +73,11 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   function addToast({ type = 'info', title = '', message, duration = 4200 }) {
+    const duplicate = toasts.value.some((item) => item.type === type && item.message === message);
+    if (duplicate) return;
+    while (toasts.value.length >= 5) {
+      toasts.value.shift();
+    }
     const id = Date.now() + Math.random();
     toasts.value.push({ id, type, title, message });
     if (duration > 0) {

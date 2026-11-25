@@ -11,6 +11,7 @@ import {
 } from 'lucide-vue-next';
 import ModalDialog from '../ModalDialog.vue';
 import { useI18n } from '../../composables/useI18n.js';
+import { adminService } from '../../services/admin.service.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -37,6 +38,7 @@ const categoryMenuOpen = ref(false);
 const categoryError = ref(false);
 const selectedCoverName = ref('');
 const dateValue = ref('');
+const pendingUploads = new Set();
 
 const form = reactive({
   id: null,
@@ -165,6 +167,29 @@ function removeCategory(catId) {
   form.categoryIds = form.categoryIds.filter((id) => id !== numericId);
 }
 
+function cleanupPendingUrl(url) {
+  if (pendingUploads.delete(url)) {
+    adminService.cleanupMediaByUrl(url);
+  }
+}
+
+function cleanupAllPendingUploads() {
+  for (const url of Array.from(pendingUploads)) {
+    pendingUploads.delete(url);
+    adminService.cleanupMediaByUrl(url);
+  }
+}
+
+function handleClose() {
+  if (isBusy.value) return;
+  cleanupAllPendingUploads();
+  emit('close');
+}
+
+onBeforeUnmount(() => {
+  cleanupAllPendingUploads();
+});
+
 async function handleCoverFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -172,6 +197,10 @@ async function handleCoverFile(event) {
   try {
     const uploadedUrl = await props.uploadHandler(file);
     if (uploadedUrl) {
+      if (form.avatarUrl && form.avatarUrl !== uploadedUrl) {
+        cleanupPendingUrl(form.avatarUrl);
+      }
+      pendingUploads.add(uploadedUrl);
       form.avatarUrl = uploadedUrl;
       selectedCoverName.value = file.name;
     }
@@ -195,6 +224,7 @@ async function handleGalleryFiles(event) {
       try {
         const uploadedUrl = await props.uploadHandler(file);
         if (uploadedUrl && !form.galleryUrls.includes(uploadedUrl)) {
+          pendingUploads.add(uploadedUrl);
           form.galleryUrls.push(uploadedUrl);
         }
       } catch {
@@ -216,10 +246,12 @@ function moveGalleryPhoto(index, delta) {
 }
 
 function removeGalleryPhoto(index) {
-  form.galleryUrls.splice(index, 1);
+  const [removed] = form.galleryUrls.splice(index, 1);
+  if (removed) cleanupPendingUrl(removed);
 }
 
 function clearCover() {
+  if (form.avatarUrl) cleanupPendingUrl(form.avatarUrl);
   form.avatarUrl = '';
   selectedCoverName.value = '';
 }
@@ -231,6 +263,7 @@ function submit() {
     return;
   }
   const finalDate = dateValue.value ? formatIsoToReadableDate(dateValue.value) : form.jobTitle.trim();
+  pendingUploads.clear();
   emit('save', {
     id: form.id,
     name: form.name.trim(),
@@ -252,7 +285,7 @@ function submit() {
   <ModalDialog
     :open="open"
     :title="form.id ? t('adminDashboard.cmsPanel.newsModalTitleEdit') : t('adminDashboard.cmsPanel.newsModalTitleAdd')"
-    @close="!isBusy && emit('close')"
+    @close="handleClose"
   >
     <form class="space-y-4" @submit.prevent="submit">
       <div>
@@ -543,7 +576,7 @@ function submit() {
           type="button"
           :disabled="isBusy"
           class="min-h-[42px] rounded-xl border border-surface-border bg-white px-5 text-xs font-bold text-slate-700 transition hover:bg-surface-muted disabled:opacity-50"
-          @click="emit('close')"
+          @click="handleClose"
         >
           {{ t('adminDashboard.cancelBtn') }}
         </button>

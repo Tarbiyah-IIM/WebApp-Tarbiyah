@@ -39,6 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref('');
   const hydrated = ref(false);
   const checkedCookieRefresh = ref(false);
+  let initPromise = null;
 
   const isAuthenticated = computed(() => Boolean(user.value && accessToken.value));
   const isAdmin = computed(() => user.value?.role === 'admin');
@@ -61,32 +62,54 @@ export const useAuthStore = defineStore('auth', () => {
     onUnauthorized: () => {
       clearSession();
       unauthorizedRedirectFn?.();
+    },
+    onForbidden: async (requestConfig) => {
+      if (!requestConfig?.url?.includes('/admin') || !accessToken.value) return;
+      try {
+        await refreshProfile();
+      } catch {
+        clearSession();
+      }
+      unauthorizedRedirectFn?.();
     }
   });
 
   async function initSession({ forceRefreshCheck = false } = {}) {
     if (hydrated.value && (!forceRefreshCheck || checkedCookieRefresh.value)) return;
-    try {
-      if (accessToken.value) {
-        const res = await authService.getMe();
-        user.value = res.user;
-      } else if (forceRefreshCheck || readSessionHint()) {
-        checkedCookieRefresh.value = true;
-        const res = await authService.refresh();
-        setSession(res);
-        await authService.getMe();
-      }
-    } catch {
-      clearSession();
-    } finally {
-      hydrated.value = true;
+    if (initPromise) {
+      await initPromise;
+      if (!forceRefreshCheck || checkedCookieRefresh.value || accessToken.value) return;
     }
+    initPromise = (async () => {
+      try {
+        if (accessToken.value) {
+          const res = await authService.getMe();
+          user.value = res.user;
+        } else if (forceRefreshCheck || readSessionHint()) {
+          checkedCookieRefresh.value = true;
+          const res = await authService.refresh();
+          setSession(res);
+          await authService.getMe();
+        }
+      } catch {
+        clearSession();
+      } finally {
+        hydrated.value = true;
+        initPromise = null;
+      }
+    })();
+    return initPromise;
   }
 
   async function login(payload) {
     const res = await authService.login(payload);
     setSession(res);
-    await authService.getMe();
+    try {
+      await authService.getMe();
+    } catch (err) {
+      clearSession();
+      throw err;
+    }
     return res.user;
   }
 
@@ -99,6 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     try {
       await authService.logout();
+    } catch {
     } finally {
       clearSession();
     }

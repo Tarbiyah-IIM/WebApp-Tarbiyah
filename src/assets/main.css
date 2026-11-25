@@ -284,6 +284,56 @@ html[data-theme="night"] textarea::placeholder {
   color: #64748b;
 }
 
+html[data-theme="night"] {
+  scrollbar-color: #334155 #0b1120;
+}
+
+html[data-theme="night"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html[data-theme="night"] ::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+
+html[data-theme="night"] ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+
+html[data-theme="night"] .text-slate-800 {
+  color: #f1f5f9;
+}
+
+html[data-theme="night"] .bg-sky-50 {
+  background-color: rgba(14, 165, 233, 0.14);
+}
+
+html[data-theme="night"] .border-sky-200 {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+html[data-theme="night"] .text-sky-700,
+html[data-theme="night"] .text-sky-800 {
+  color: #7dd3fc;
+}
+
+html[data-theme="night"] .bg-rose-600,
+html[data-theme="night"] button.bg-rose-600,
+html[data-theme="night"] .bg-amber-600,
+html[data-theme="night"] button.bg-amber-600 {
+  color: #ffffff;
+}
+
+html[data-theme="night"] input:disabled,
+html[data-theme="night"] select:disabled,
+html[data-theme="night"] textarea:disabled {
+  background-color: #162033;
+  color: #94a3b8;
+  opacity: 0.7;
+}
+
 html[data-theme="night"] :focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 2px;

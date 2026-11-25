@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import heroTarbiyahImage from '../assets/hero-tarbiyah.webp';
-import strukturOrganisasiImage from '../assets/struktur-organisasi.jpg';
+import strukturOrganisasiImage from '../assets/struktur-organisasi.webp';
 import ModalDialog from './ModalDialog.vue';
 import ScholarshipModal from './ScholarshipModal.vue';
 import { useI18n } from '../composables/useI18n.js';

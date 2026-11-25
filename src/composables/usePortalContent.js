@@ -37,9 +37,9 @@ export function safeParseCmsJson(raw, fallback) {
 }
 
 export function sanitizePortalUrl(value, fallback = '') {
-  if (typeof value !== 'string') return fallback;
+  if (typeof value !== 'string' || /[\r\n\t]/.test(value)) return fallback;
   const trimmed = value.trim();
-  if (!trimmed) return fallback;
+  if (!trimmed || trimmed.includes('\\')) return fallback;
   if (trimmed.startsWith('/')) {
     return trimmed.startsWith('//') ? fallback : trimmed;
   }
@@ -54,10 +54,31 @@ export function sanitizePortalUrl(value, fallback = '') {
   }
 }
 
-function sanitizeHostUrl(value, prefix, fallback) {
+function sanitizeMapsEmbedUrl(value, fallback) {
   const safe = sanitizePortalUrl(value, '');
-  if (!safe || !safe.startsWith(prefix)) return fallback;
-  return safe;
+  if (!safe) return fallback;
+  try {
+    const parsed = new URL(safe);
+    if (parsed.protocol !== 'https:') return fallback;
+    if (parsed.hostname === 'maps.google.com') return safe;
+    if (parsed.hostname === 'www.google.com' && (parsed.pathname === '/maps' || parsed.pathname.startsWith('/maps/'))) {
+      return safe;
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function sanitizeAppsScriptUrl(value, fallback) {
+  const safe = sanitizePortalUrl(value, '');
+  if (!safe) return fallback;
+  try {
+    const parsed = new URL(safe);
+    return parsed.protocol === 'https:' && parsed.hostname === 'script.google.com' ? safe : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function nonEmptyString(value, fallback) {
@@ -102,16 +123,8 @@ export function usePortalContent() {
       campusBuilding: nonEmptyString(override.campusBuilding, ''),
       addressText: nonEmptyString(override.addressText, ''),
       phoneText: nonEmptyString(override.phoneText, ''),
-      mapsEmbedUrl: sanitizeHostUrl(
-        override.mapsEmbedUrl,
-        'https://www.google.com/maps',
-        DEFAULT_CONTACTS.mapsEmbedUrl
-      ),
-      guestLectureUrl: sanitizeHostUrl(
-        override.guestLectureUrl,
-        'https://script.google.com/',
-        DEFAULT_CONTACTS.guestLectureUrl
-      )
+      mapsEmbedUrl: sanitizeMapsEmbedUrl(override.mapsEmbedUrl, DEFAULT_CONTACTS.mapsEmbedUrl),
+      guestLectureUrl: sanitizeAppsScriptUrl(override.guestLectureUrl, DEFAULT_CONTACTS.guestLectureUrl)
     };
   });
 

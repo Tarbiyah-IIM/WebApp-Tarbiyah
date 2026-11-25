@@ -97,6 +97,8 @@ onBeforeUnmount(clearTimer);
           class="w-full border-0 bg-white"
           :class="iframeLoading ? 'h-0 opacity-0' : 'h-[58vh] min-h-[320px] opacity-100'"
           loading="eager"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+          referrerpolicy="strict-origin-when-cross-origin"
           @load="handleIframeLoad"
         />
       </div>

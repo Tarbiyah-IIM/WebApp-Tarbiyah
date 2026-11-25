@@ -92,7 +92,7 @@ function statusMeta(rawStatus) {
       bannerText: t('guestLecture.bannerDone')
     };
   }
-  if (lower === 'in revision') {
+  if (lower === 'in revision' || lower === 'revision') {
     return {
       badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
       label: t('guestLecture.statusRevision'),
@@ -413,7 +413,7 @@ function getCertificateDocs(item) {
           </span>
 
           <button
-            v-if="String(item.status || '').trim().toLowerCase() === 'in revision'"
+            v-if="['in revision', 'revision'].includes(String(item.status || '').trim().toLowerCase())"
             type="button"
             class="ml-auto inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-rose-600 px-3.5 text-xs font-bold text-white transition hover:bg-rose-700"
             @click="emit('edit', item)"

@@ -9,12 +9,14 @@ const api = axios.create({
 let getTokenFn = () => '';
 let onTokenRefreshedFn = null;
 let onUnauthorizedFn = null;
+let onForbiddenFn = null;
 let refreshPromise = null;
 
-export function configureApiAuth({ getToken, onTokenRefreshed, onUnauthorized }) {
+export function configureApiAuth({ getToken, onTokenRefreshed, onUnauthorized, onForbidden }) {
   getTokenFn = getToken;
   onTokenRefreshedFn = onTokenRefreshed;
   onUnauthorizedFn = onUnauthorized;
+  onForbiddenFn = onForbidden;
 }
 
 api.interceptors.request.use((config) => {
@@ -39,7 +41,7 @@ api.interceptors.response.use(
       try {
         if (!refreshPromise) {
           refreshPromise = axios
-            .post('/api/v1/auth/refresh', {}, { withCredentials: true })
+            .post('/api/v1/auth/refresh', {}, { withCredentials: true, timeout: 15000 })
             .finally(() => {
               refreshPromise = null;
             });
@@ -57,6 +59,10 @@ api.interceptors.response.use(
         }
         return Promise.reject(refreshError);
       }
+    }
+
+    if (error.response?.status === 403 && !originalRequest?.url?.includes('/auth/') && onForbiddenFn) {
+      onForbiddenFn(originalRequest);
     }
 
     return Promise.reject(error);

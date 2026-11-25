@@ -1,8 +1,10 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { ImagePlus, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { safeParseCmsJson } from '../../composables/usePortalContent.js';
 import { useI18n } from '../../composables/useI18n.js';
+import { useToast } from '../../composables/useToast.js';
+import { adminService } from '../../services/admin.service.js';
 import { useUiStore } from '../../stores/ui.store.js';
 
 const props = defineProps({
@@ -13,12 +15,14 @@ const props = defineProps({
 
 const emit = defineEmits(['save-settings']);
 const { t } = useI18n();
+const toast = useToast();
 const ui = useUiStore();
 
 const selectedKey = ref('program:pai');
 const uploading = ref(false);
 const fileInputRef = ref(null);
 const draft = ref({});
+const pendingStructureUploads = new Set();
 
 const programSlugs = ['pai', 'pgmi', 'piaud'];
 const infoPageKeys = ['administrasi-persuratan', 'ujian-komprehensif', 'ppl', 'pkn', 'jurnal'];
@@ -152,18 +156,66 @@ function removeHighlightItem(index) {
   draft.value.highlights.splice(index, 1);
 }
 
+function stripIdLocale(localesObj) {
+  if (!localesObj || typeof localesObj !== 'object') return undefined;
+  const next = { ...localesObj };
+  delete next.id;
+  return Object.keys(next).length > 0 ? next : undefined;
+}
+
+function buildSavedEntry(existing, activeLocale, localized) {
+  if (activeLocale === 'en') {
+    const nextLocales = { ...(existing?.locales || {}), en: localized };
+    return { ...(existing || {}), locales: nextLocales };
+  }
+  const preservedLocales = stripIdLocale(existing?.locales);
+  const { locales: _dropLocales, ...cleanRoot } = existing || {};
+  return {
+    ...cleanRoot,
+    ...localized,
+    ...(preservedLocales ? { locales: preservedLocales } : {})
+  };
+}
+
+function cleanupPendingStructureUploads(keepUrl = '') {
+  for (const url of Array.from(pendingStructureUploads)) {
+    if (url !== keepUrl) {
+      pendingStructureUploads.delete(url);
+      adminService.cleanupMediaByUrl(url);
+    }
+  }
+}
+
+onBeforeUnmount(() => {
+  cleanupPendingStructureUploads('');
+});
+
 async function handleStructureUpload(event) {
   const file = event.target.files?.[0];
   if (!file) return;
   uploading.value = true;
   try {
     const url = await props.uploadHandler(file);
-    if (url) draft.value.structureImageUrl = url;
+    if (url) {
+      cleanupPendingStructureUploads(url);
+      pendingStructureUploads.add(url);
+      draft.value.structureImageUrl = url;
+    }
   } catch {
   } finally {
     uploading.value = false;
     if (fileInputRef.value) fileInputRef.value.value = '';
   }
+}
+
+function emitWithSizeCheck(settingKey, payloadObj, successToast) {
+  const serialized = JSON.stringify(payloadObj);
+  if (new TextEncoder().encode(serialized).length > 60000) {
+    toast.error('Ukuran konten melebihi batas maksimal 60 KB.');
+    return false;
+  }
+  emit('save-settings', { [settingKey]: serialized }, successToast);
+  return true;
 }
 
 function saveCurrent() {
@@ -183,12 +235,8 @@ function saveCurrent() {
       highlights: textToLines(draft.value.highlightsText),
       careers: textToLines(draft.value.careersText)
     };
-    const nextLocales = { ...(existing.locales || {}), [activeLocale]: localized };
-    all[targetId.value] =
-      activeLocale === 'id'
-        ? { ...existing, ...localized, locales: nextLocales }
-        : { ...existing, pmbUrl: localized.pmbUrl || existing.pmbUrl, locales: nextLocales };
-    emit('save-settings', { cms_programs: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.savedToast'));
+    all[targetId.value] = buildSavedEntry(existing, activeLocale, localized);
+    emitWithSizeCheck('cms_programs', all, t('adminDashboard.cmsPanel.portalPages.savedToast'));
     return;
   }
 
@@ -227,13 +275,13 @@ function saveCurrent() {
         href: draft.value.sidebarHref.trim()
       };
     }
-    if (Array.isArray(existing.customOtherLinks)) {
-      localized.customOtherLinks = existing.customOtherLinks;
+    const existingCustomLinks =
+      activeLocale === 'en' ? existing.locales?.en?.customOtherLinks : existing.customOtherLinks;
+    if (Array.isArray(existingCustomLinks)) {
+      localized.customOtherLinks = existingCustomLinks;
     }
-    const nextLocales = { ...(existing.locales || {}), [activeLocale]: localized };
-    all[targetId.value] =
-      activeLocale === 'id' ? { ...existing, ...localized, locales: nextLocales } : { ...existing, locales: nextLocales };
-    emit('save-settings', { cms_info_pages: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.savedToast'));
+    all[targetId.value] = buildSavedEntry(existing, activeLocale, localized);
+    emitWithSizeCheck('cms_info_pages', all, t('adminDashboard.cmsPanel.portalPages.savedToast'));
     return;
   }
 
@@ -243,12 +291,11 @@ function saveCurrent() {
     missions: textToLines(draft.value.missionsText),
     structureImageUrl: draft.value.structureImageUrl.trim()
   };
-  const nextLocales = { ...(rawProfile.locales || {}), [activeLocale]: localizedProfile };
-  const profilePayload =
-    activeLocale === 'id'
-      ? { ...rawProfile, ...localizedProfile, locales: nextLocales }
-      : { ...rawProfile, structureImageUrl: localizedProfile.structureImageUrl, locales: nextLocales };
-  emit('save-settings', { cms_profile: JSON.stringify(profilePayload) }, t('adminDashboard.cmsPanel.portalPages.savedToast'));
+  const profilePayload = buildSavedEntry(rawProfile, activeLocale, localizedProfile);
+  if (emitWithSizeCheck('cms_profile', profilePayload, t('adminDashboard.cmsPanel.portalPages.savedToast'))) {
+    pendingStructureUploads.delete(localizedProfile.structureImageUrl);
+    cleanupPendingStructureUploads('');
+  }
 }
 
 function resetLocalizedEntry(all, key, activeLocale) {

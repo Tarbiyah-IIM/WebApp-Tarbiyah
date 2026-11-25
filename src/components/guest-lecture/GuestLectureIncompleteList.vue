@@ -75,7 +75,7 @@ function missingBadges(item) {
               <span
                 class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold"
                 :class="
-                  String(item.status || '').toLowerCase() === 'in revision'
+                  ['in revision', 'revision'].includes(String(item.status || '').trim().toLowerCase())
                     ? 'bg-rose-50 text-rose-700'
                     : 'bg-amber-50 text-amber-800'
                 "

@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Calendar, ChevronRight } from 'lucide-vue-next';
-import gedungIimFallback from '../assets/gedung-iim.jpg';
+import gedungIimFallback from '../assets/gedung-iim.webp';
 import NewsDetailModal from './NewsDetailModal.vue';
 import PaginationControls from './PaginationControls.vue';
 import { useI18n } from '../composables/useI18n.js';

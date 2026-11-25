@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Calendar, Clock } from 'lucide-vue-next';
-import gedungIimFallback from '../assets/gedung-iim.jpg';
+import gedungIimFallback from '../assets/gedung-iim.webp';
 import ModalDialog from './ModalDialog.vue';
 import NewsGallerySlideshow from './NewsGallerySlideshow.vue';
 import { useI18n } from '../composables/useI18n.js';

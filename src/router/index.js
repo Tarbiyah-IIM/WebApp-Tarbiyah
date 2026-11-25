@@ -127,9 +127,14 @@ router.beforeEach(async (to) => {
 });
 
 registerUnauthorizedRedirect(() => {
+  const auth = useAuthStore();
   const current = router.currentRoute.value;
-  if (current?.meta?.requiresAuth && current.path !== '/login') {
+  if (!auth.isAuthenticated && current?.meta?.requiresAuth && current.path !== '/login') {
     router.push({ path: '/login', query: { redirect: current.fullPath } }).catch(() => {});
+    return;
+  }
+  if (current?.meta?.roles && !current.meta.roles.includes(auth.user?.role)) {
+    router.push('/').catch(() => {});
   }
 });
 

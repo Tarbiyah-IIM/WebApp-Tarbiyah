@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { LogIn } from 'lucide-vue-next';
-import gedungIimBg from '../assets/gedung-iim.jpg';
+import gedungIimBg from '../assets/gedung-iim.webp';
 import { useAuthStore } from '../stores/auth.store.js';
 import { extractApiError } from '../services/api.js';
 import { useToast } from '../composables/useToast.js';

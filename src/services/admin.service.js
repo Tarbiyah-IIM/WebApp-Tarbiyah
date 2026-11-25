@@ -136,5 +136,18 @@ export const adminService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return data;
+  },
+  async deleteMediaUpload(id) {
+    const { data } = await api.delete(`/admin/uploads/${id}`);
+    return data;
+  },
+  async cleanupMediaByUrl(url) {
+    const match = String(url || '')
+      .trim()
+      .match(/^\/api\/v1\/media\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+    if (!match) return;
+    try {
+      await api.delete(`/admin/uploads/${match[1]}`);
+    } catch {}
   }
 };

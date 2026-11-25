@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { KeyRound } from 'lucide-vue-next';
-import gedungIimBg from '../assets/gedung-iim.jpg';
+import gedungIimBg from '../assets/gedung-iim.webp';
 import { authService } from '../services/auth.service.js';
 import { extractApiError } from '../services/api.js';
 import { useToast } from '../composables/useToast.js';

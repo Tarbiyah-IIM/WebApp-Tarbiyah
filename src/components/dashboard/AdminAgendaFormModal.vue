@@ -1,8 +1,9 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { ImagePlus, Trash2 } from 'lucide-vue-next';
 import ModalDialog from '../ModalDialog.vue';
 import { useI18n } from '../../composables/useI18n.js';
+import { adminService } from '../../services/admin.service.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -23,6 +24,7 @@ const uploadingCover = ref(false);
 const coverInputRef = ref(null);
 const selectedCoverName = ref('');
 const dateValue = ref('');
+const pendingUploads = new Set();
 
 const form = reactive({
   id: null,
@@ -93,6 +95,29 @@ watch(
   { immediate: true }
 );
 
+function cleanupPendingUrl(url) {
+  if (pendingUploads.delete(url)) {
+    adminService.cleanupMediaByUrl(url);
+  }
+}
+
+function cleanupAllPendingUploads() {
+  for (const url of Array.from(pendingUploads)) {
+    pendingUploads.delete(url);
+    adminService.cleanupMediaByUrl(url);
+  }
+}
+
+function handleClose() {
+  if (isBusy.value) return;
+  cleanupAllPendingUploads();
+  emit('close');
+}
+
+onBeforeUnmount(() => {
+  cleanupAllPendingUploads();
+});
+
 async function handleCoverFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -100,6 +125,10 @@ async function handleCoverFile(event) {
   try {
     const uploadedUrl = await props.uploadHandler(file);
     if (uploadedUrl) {
+      if (form.coverUrl && form.coverUrl !== uploadedUrl) {
+        cleanupPendingUrl(form.coverUrl);
+      }
+      pendingUploads.add(uploadedUrl);
       form.coverUrl = uploadedUrl;
       selectedCoverName.value = file.name;
     }
@@ -114,12 +143,14 @@ async function handleCoverFile(event) {
 }
 
 function clearCover() {
+  if (form.coverUrl) cleanupPendingUrl(form.coverUrl);
   form.coverUrl = '';
   selectedCoverName.value = '';
 }
 
 function submit() {
   const finalDate = dateValue.value ? formatIsoToReadableDate(dateValue.value) : form.eventDate.trim();
+  pendingUploads.clear();
   emit('save', {
     id: form.id,
     title: form.title.trim(),
@@ -137,7 +168,7 @@ function submit() {
   <ModalDialog
     :open="open"
     :title="form.id ? t('adminDashboard.cmsPanel.agendaModalTitleEdit') : t('adminDashboard.cmsPanel.agendaModalTitleAdd')"
-    @close="!isBusy && emit('close')"
+    @close="handleClose"
   >
     <form class="space-y-4" @submit.prevent="submit">
       <div>
@@ -281,7 +312,7 @@ function submit() {
           type="button"
           :disabled="isBusy"
           class="min-h-[42px] rounded-xl border border-surface-border bg-white px-5 text-xs font-bold text-slate-700 transition hover:bg-surface-muted disabled:opacity-50"
-          @click="emit('close')"
+          @click="handleClose"
         >
           {{ t('adminDashboard.cancelBtn') }}
         </button>

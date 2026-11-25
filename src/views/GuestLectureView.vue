@@ -92,7 +92,12 @@ async function loadData(forceRefresh = false, { silentToast = false } = {}) {
       resolvedScriptUrl.value = res.fallbackUrl;
     }
     if (res?.needsAppsScriptDeploy) {
-      needsAppsScriptDeploy.value = true;
+      if (res?.fallbackUrl) {
+        needsAppsScriptDeploy.value = true;
+      } else {
+        needsAppsScriptDeploy.value = false;
+        errorMessage.value = 'Layanan integrasi Kuliah Tamu belum siap atau sedang dalam pemeliharaan.';
+      }
       return;
     }
     needsAppsScriptDeploy.value = false;

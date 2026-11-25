@@ -171,6 +171,7 @@ function handleSubmit() {
             v-model="form.dosenPengampu"
             list="gl-new-dosen-list"
             type="text"
+            maxlength="160"
             :placeholder="t('guestLecture.placeholders.lecturer')"
             class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
@@ -187,6 +188,7 @@ function handleSubmit() {
             id="gl-new-course"
             v-model="form.mataKuliah"
             type="text"
+            maxlength="200"
             :placeholder="t('guestLecture.placeholders.course')"
             class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
@@ -200,6 +202,7 @@ function handleSubmit() {
             id="gl-new-speaker"
             v-model="form.dosenTamu"
             type="text"
+            maxlength="240"
             :placeholder="t('guestLecture.placeholders.speaker')"
             class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
@@ -213,6 +216,7 @@ function handleSubmit() {
             id="gl-new-topic"
             v-model="form.tema"
             rows="3"
+            maxlength="1000"
             :placeholder="t('guestLecture.placeholders.topic')"
             class="mt-1.5 w-full rounded-xl border border-surface-border bg-white p-3 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />
@@ -240,6 +244,7 @@ function handleSubmit() {
             id="gl-new-time"
             v-model="form.jam"
             type="text"
+            maxlength="80"
             :placeholder="t('guestLecture.placeholders.time')"
             class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3.5 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
           />

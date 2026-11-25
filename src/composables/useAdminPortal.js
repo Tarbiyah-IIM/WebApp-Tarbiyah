@@ -70,12 +70,16 @@ export function useAdminPortal() {
   }
 
   async function refreshOverviewAndLanding() {
-    const [ovRes] = await Promise.all([
-      adminService.getOverview(),
-      landingStore.fetchLanding(true)
-    ]);
-    overviewStats.value = ovRes.stats;
-    lastSyncedAt.value = new Date();
+    try {
+      const ovRes = await adminService.getOverview();
+      overviewStats.value = ovRes.stats;
+      lastSyncedAt.value = new Date();
+    } catch {}
+    try {
+      await landingStore.fetchLanding(true);
+    } catch {
+      toast.info('Perubahan tersimpan. Muat ulang halaman jika portal publik belum menampilkan pembaruan.');
+    }
   }
 
   async function withSync(action, successMessage) {
@@ -105,16 +109,22 @@ export function useAdminPortal() {
     return withSync(async () => {
       if (payload.id) await adminService.updateFaq(payload.id, payload);
       else await adminService.createFaq(payload);
-      const [res] = await Promise.all([adminService.listFaqs(), refreshOverviewAndLanding()]);
-      faqs.value = res.items;
+      try {
+        const res = await adminService.listFaqs();
+        faqs.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
   async function removeFaq(id, successMessage) {
     return withSync(async () => {
       await adminService.deleteFaq(id);
-      const [res] = await Promise.all([adminService.listFaqs(), refreshOverviewAndLanding()]);
-      faqs.value = res.items;
+      try {
+        const res = await adminService.listFaqs();
+        faqs.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
@@ -122,16 +132,22 @@ export function useAdminPortal() {
     return withSync(async () => {
       if (payload.id) await adminService.updateStat(payload.id, payload);
       else await adminService.createStat(payload);
-      const [res] = await Promise.all([adminService.listStats(), refreshOverviewAndLanding()]);
-      stats.value = res.items;
+      try {
+        const res = await adminService.listStats();
+        stats.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
   async function removeStat(id, successMessage) {
     return withSync(async () => {
       await adminService.deleteStat(id);
-      const [res] = await Promise.all([adminService.listStats(), refreshOverviewAndLanding()]);
-      stats.value = res.items;
+      try {
+        const res = await adminService.listStats();
+        stats.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
@@ -139,16 +155,22 @@ export function useAdminPortal() {
     return withSync(async () => {
       if (payload.id) await adminService.updatePartner(payload.id, payload);
       else await adminService.createPartner(payload);
-      const [res] = await Promise.all([adminService.listPartners(), refreshOverviewAndLanding()]);
-      partners.value = res.items;
+      try {
+        const res = await adminService.listPartners();
+        partners.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
   async function removePartner(id, successMessage) {
     return withSync(async () => {
       await adminService.deletePartner(id);
-      const [res] = await Promise.all([adminService.listPartners(), refreshOverviewAndLanding()]);
-      partners.value = res.items;
+      try {
+        const res = await adminService.listPartners();
+        partners.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
@@ -156,16 +178,22 @@ export function useAdminPortal() {
     return withSync(async () => {
       if (payload.id) await adminService.updateFeature(payload.id, payload);
       else await adminService.createFeature(payload);
-      const [res] = await Promise.all([adminService.listFeatures(), refreshOverviewAndLanding()]);
-      features.value = res.items;
+      try {
+        const res = await adminService.listFeatures();
+        features.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
   async function removeFeature(id, successMessage) {
     return withSync(async () => {
       await adminService.deleteFeature(id);
-      const [res] = await Promise.all([adminService.listFeatures(), refreshOverviewAndLanding()]);
-      features.value = res.items;
+      try {
+        const res = await adminService.listFeatures();
+        features.value = res.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
@@ -173,21 +201,26 @@ export function useAdminPortal() {
     return withSync(async () => {
       if (payload.id) await adminService.updateTestimonial(payload.id, payload);
       else await adminService.createTestimonial(payload);
-      const [nRes, cRes] = await Promise.all([
-        adminService.listTestimonials(),
-        adminService.listNewsCategories(),
-        refreshOverviewAndLanding()
-      ]);
-      news.value = nRes.items;
-      categories.value = cRes.items;
+      try {
+        const [nRes, cRes] = await Promise.all([
+          adminService.listTestimonials(),
+          adminService.listNewsCategories()
+        ]);
+        news.value = nRes.items;
+        categories.value = cRes.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
   async function removeNews(id, successMessage) {
     return withSync(async () => {
       await adminService.deleteTestimonial(id);
-      const [nRes] = await Promise.all([adminService.listTestimonials(), refreshOverviewAndLanding()]);
-      news.value = nRes.items;
+      try {
+        const nRes = await adminService.listTestimonials();
+        news.value = nRes.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
@@ -195,16 +228,22 @@ export function useAdminPortal() {
     return withSync(async () => {
       if (payload.id) await adminService.updateAgenda(payload.id, payload);
       else await adminService.createAgenda(payload);
-      const [aRes] = await Promise.all([adminService.listAgendas(), refreshOverviewAndLanding()]);
-      agendas.value = aRes.items;
+      try {
+        const aRes = await adminService.listAgendas();
+        agendas.value = aRes.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
   async function removeAgenda(id, successMessage) {
     return withSync(async () => {
       await adminService.deleteAgenda(id);
-      const [aRes] = await Promise.all([adminService.listAgendas(), refreshOverviewAndLanding()]);
-      agendas.value = aRes.items;
+      try {
+        const aRes = await adminService.listAgendas();
+        agendas.value = aRes.items;
+      } catch {}
+      await refreshOverviewAndLanding();
     }, successMessage);
   }
 
