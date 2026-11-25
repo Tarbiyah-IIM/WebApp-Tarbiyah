@@ -1,4 +1,5 @@
 const store = new Map();
+let landingCacheGeneration = 0;
 
 export function getCache(key) {
   const entry = store.get(key);
@@ -17,6 +18,16 @@ export function setCache(key, value, ttlMs = 60000) {
   });
 }
 
+export function getLandingCacheGeneration() {
+  return landingCacheGeneration;
+}
+
 export function invalidateLandingCache() {
+  landingCacheGeneration += 1;
   store.delete('landing_bundle');
+  for (const key of store.keys()) {
+    if (key.startsWith('news_detail_')) {
+      store.delete(key);
+    }
+  }
 }

@@ -18,7 +18,33 @@ function tryParseJson(rawText) {
   }
 }
 
+function createRelayAbortTracker(res) {
+  const clientAbortController = new AbortController();
+  const onClose = () => {
+    if (!res.writableEnded) {
+      clientAbortController.abort();
+    }
+  };
+  res.on('close', onClose);
+  return {
+    signal: clientAbortController.signal,
+    cleanup() {
+      res.off('close', onClose);
+    }
+  };
+}
+
+function buildUpstreamSignal(timeoutMs, clientSignal) {
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  return clientSignal && typeof AbortSignal.any === 'function'
+    ? AbortSignal.any([timeoutSignal, clientSignal])
+    : timeoutSignal;
+}
+
 async function resolveGuestLectureScriptTarget() {
+  if (env.hasPrivateGuestLectureUrl) {
+    return { scriptUrl: env.guestLectureScriptUrl, isPrivateEnvUrl: true };
+  }
   try {
     const settings = await getSettingsMap();
     const rawContacts = settings?.cms_contacts;
@@ -40,19 +66,22 @@ function invalidateGuestLectureCache() {
   setCache(SOURCE_SCRIPT_CACHE_KEY, null, 0);
 }
 
-async function fetchGuestLecturePayload(scriptUrl) {
+async function fetchGuestLecturePayload(scriptUrl, clientSignal) {
   const separator = scriptUrl.includes('?') ? '&' : '?';
-  const text = await withRelaySlot(async () => {
-    const response = await fetch(`${scriptUrl}${separator}api=data`, {
-      method: 'GET',
-      redirect: 'follow',
-      signal: AbortSignal.timeout(15000)
-    });
-    if (!response.ok) {
-      throw new Error('UPSTREAM_HTTP_ERROR');
-    }
-    return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
-  });
+  const text = await withRelaySlot(
+    async () => {
+      const response = await fetch(`${scriptUrl}${separator}api=data`, {
+        method: 'GET',
+        redirect: 'follow',
+        signal: buildUpstreamSignal(15000, clientSignal)
+      });
+      if (!response.ok) {
+        throw new Error('UPSTREAM_HTTP_ERROR');
+      }
+      return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
+    },
+    { signal: clientSignal }
+  );
   return tryParseJson(text);
 }
 
@@ -86,8 +115,9 @@ export async function getGuestLectureData(req, res) {
     return res.json(cached);
   }
 
+  const abortTracker = createRelayAbortTracker(res);
   try {
-    const parsed = await fetchGuestLecturePayload(scriptUrl);
+    const parsed = await fetchGuestLecturePayload(scriptUrl, abortTracker.signal);
 
     if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.trackingLectures)) {
       return res.json({
@@ -125,6 +155,9 @@ export async function getGuestLectureData(req, res) {
     setCache(CACHE_KEY, payload, CACHE_TTL_MS);
     return res.json(payload);
   } catch (err) {
+    if (err?.code === 'RELAY_ABORTED' || res.writableEnded) {
+      return undefined;
+    }
     if (err?.code === 'RELAY_OVERLOADED') {
       return res.status(503).json({
         ok: false,
@@ -137,17 +170,20 @@ export async function getGuestLectureData(req, res) {
       code: 'RELAY_TIMEOUT',
       error: { message: 'Gagal terhubung ke layanan Google Sheets Kuliah Tamu. Silakan coba lagi.' }
     });
+  } finally {
+    abortTracker.cleanup();
   }
 }
 
 export async function submitGuestLecture(req, res) {
   const { scriptUrl } = await resolveGuestLectureScriptTarget();
+  const abortTracker = createRelayAbortTracker(res);
 
   try {
     if (req.body.mode === 'update') {
       let cached = getCache(CACHE_KEY);
       if (!cached?.data || getCache(SOURCE_SCRIPT_CACHE_KEY) !== scriptUrl) {
-        const latestParsed = await fetchGuestLecturePayload(scriptUrl);
+        const latestParsed = await fetchGuestLecturePayload(scriptUrl, abortTracker.signal);
         if (latestParsed?.success && Array.isArray(latestParsed.trackingLectures)) {
           cached = {
             data: {
@@ -174,16 +210,22 @@ export async function submitGuestLecture(req, res) {
       ? { ...basePayload, relaySecret: env.appsScriptRelaySecret }
       : basePayload;
 
-    const text = await withRelaySlot(async () => {
-      const response = await fetch(scriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(outboundPayload),
-        redirect: 'follow',
-        signal: AbortSignal.timeout(30000)
-      });
-      return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
-    });
+    const text = await withRelaySlot(
+      async () => {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(outboundPayload),
+          redirect: 'follow',
+          signal: buildUpstreamSignal(30000, abortTracker.signal)
+        });
+        if (!response.ok) {
+          throw new Error('UPSTREAM_HTTP_ERROR');
+        }
+        return readBoundedResponseText(response, MAX_GUEST_RESPONSE_BYTES);
+      },
+      { signal: abortTracker.signal }
+    );
     const parsed = tryParseJson(text);
 
     if (!parsed || typeof parsed !== 'object' || typeof parsed.success !== 'boolean') {
@@ -216,6 +258,9 @@ export async function submitGuestLecture(req, res) {
       fotoUrl: typeof parsed.fotoUrl === 'string' ? parsed.fotoUrl : ''
     });
   } catch (err) {
+    if (err?.code === 'RELAY_ABORTED' || res.writableEnded) {
+      return undefined;
+    }
     if (err?.code === 'RELAY_OVERLOADED') {
       return res.status(503).json({
         ok: false,
@@ -228,5 +273,7 @@ export async function submitGuestLecture(req, res) {
       code: 'RELAY_TIMEOUT',
       error: { message: 'Koneksi ke Google Sheets terputus saat menyimpan agenda. Silakan coba lagi.' }
     });
+  } finally {
+    abortTracker.cleanup();
   }
 }

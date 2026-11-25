@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -10,16 +11,17 @@ import adminRoutes from './routes/admin.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import publicRoutes from './routes/public.routes.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-app.set('trust proxy', 1);
+app.set('trust proxy', env.trustProxy);
 
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     contentSecurityPolicy: {
       directives: {
-        imgSrc: ["'self'", 'data:', 'https:'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
         frameSrc: [
           "'self'",
           'https://drive.google.com',
@@ -30,7 +32,8 @@ app.use(
           'https://www.google.com/maps/',
           'https://maps.google.com',
           'https://maps.google.com/'
-        ]
+        ],
+        ...(env.nodeEnv === 'production' ? {} : { upgradeInsecureRequests: null })
       }
     }
   })
@@ -46,7 +49,7 @@ app.use(
     credentials: true
   })
 );
-app.use('/api/v1/guest-lectures', express.json({ limit: '6mb' }));
+app.use('/api/v1/guest-lectures', express.json({ limit: '10mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
@@ -58,7 +61,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1', publicRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
-const distDir = path.resolve(process.cwd(), 'dist');
+const distDir = path.resolve(__dirname, '../dist');
 if (fs.existsSync(distDir)) {
   app.use(
     '/assets',

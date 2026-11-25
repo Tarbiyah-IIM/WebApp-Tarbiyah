@@ -113,6 +113,29 @@ function sanitizeWorkPermitSubmitResponse(parsed) {
   };
 }
 
+function createRelayAbortTracker(res) {
+  const clientAbortController = new AbortController();
+  const onClose = () => {
+    if (!res.writableEnded) {
+      clientAbortController.abort();
+    }
+  };
+  res.on('close', onClose);
+  return {
+    signal: clientAbortController.signal,
+    cleanup() {
+      res.off('close', onClose);
+    }
+  };
+}
+
+function buildUpstreamSignal(timeoutMs, clientSignal) {
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  return clientSignal && typeof AbortSignal.any === 'function'
+    ? AbortSignal.any([timeoutSignal, clientSignal])
+    : timeoutSignal;
+}
+
 export async function getWorkPermitMeta(_req, res) {
   const scriptUrl = env.pplWorkPermitScriptUrl;
   if (!scriptUrl) {
@@ -129,19 +152,23 @@ export async function getWorkPermitMeta(_req, res) {
     return res.json(cachedMeta);
   }
 
+  const abortTracker = createRelayAbortTracker(res);
   try {
     const separator = scriptUrl.includes('?') ? '&' : '?';
-    const text = await withRelaySlot(async () => {
-      const response = await fetch(`${scriptUrl}${separator}api=meta`, {
-        method: 'GET',
-        redirect: 'follow',
-        signal: AbortSignal.timeout(12000)
-      });
-      if (!response.ok) {
-        throw new Error('UPSTREAM_HTTP_ERROR');
-      }
-      return readBoundedResponseText(response, MAX_META_RESPONSE_BYTES);
-    });
+    const text = await withRelaySlot(
+      async () => {
+        const response = await fetch(`${scriptUrl}${separator}api=meta`, {
+          method: 'GET',
+          redirect: 'follow',
+          signal: buildUpstreamSignal(12000, abortTracker.signal)
+        });
+        if (!response.ok) {
+          throw new Error('UPSTREAM_HTTP_ERROR');
+        }
+        return readBoundedResponseText(response, MAX_META_RESPONSE_BYTES);
+      },
+      { signal: abortTracker.signal }
+    );
     const parsed = tryParseJson(text);
 
     if (parsed && parsed.ok && parsed.data) {
@@ -168,6 +195,8 @@ export async function getWorkPermitMeta(_req, res) {
       needsAppsScriptDeploy: true,
       data: buildFallbackMeta()
     });
+  } finally {
+    abortTracker.cleanup();
   }
 }
 
@@ -181,21 +210,28 @@ export async function submitWorkPermit(req, res) {
     });
   }
 
+  const abortTracker = createRelayAbortTracker(res);
   try {
     const outboundPayload = env.appsScriptRelaySecret
       ? { ...req.body, relaySecret: env.appsScriptRelaySecret }
       : req.body;
 
-    const text = await withRelaySlot(async () => {
-      const response = await fetch(scriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(outboundPayload),
-        redirect: 'follow',
-        signal: AbortSignal.timeout(25000)
-      });
-      return readBoundedResponseText(response, MAX_SUBMIT_RESPONSE_BYTES);
-    });
+    const text = await withRelaySlot(
+      async () => {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(outboundPayload),
+          redirect: 'follow',
+          signal: buildUpstreamSignal(25000, abortTracker.signal)
+        });
+        if (!response.ok) {
+          throw new Error('UPSTREAM_HTTP_ERROR');
+        }
+        return readBoundedResponseText(response, MAX_SUBMIT_RESPONSE_BYTES);
+      },
+      { signal: abortTracker.signal }
+    );
     const parsed = tryParseJson(text);
 
     if (!parsed) {
@@ -222,6 +258,9 @@ export async function submitWorkPermit(req, res) {
 
     return res.status(201).json(sanitizeWorkPermitSubmitResponse(parsed));
   } catch (err) {
+    if (err?.code === 'RELAY_ABORTED' || res.writableEnded) {
+      return undefined;
+    }
     if (err?.code === 'RELAY_OVERLOADED') {
       return res.status(503).json({
         ok: false,
@@ -234,5 +273,7 @@ export async function submitWorkPermit(req, res) {
       code: 'RELAY_TIMEOUT',
       error: { message: 'Gagal terhubung ke layanan penerbitan surat Google Apps Script. Silakan coba lagi.' }
     });
+  } finally {
+    abortTracker.cleanup();
   }
 }

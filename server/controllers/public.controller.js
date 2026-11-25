@@ -1,7 +1,9 @@
-import { getCache, setCache } from '../config/cache.js';
+import { getCache, getLandingCacheGeneration, setCache } from '../config/cache.js';
 import { AppError } from '../middlewares/error.middleware.js';
 import { createSubscriber, getLandingData, getPublishedNewsById } from '../models/landing.model.js';
 import { findMediaFileById } from '../models/media.model.js';
+
+let landingInFlight = null;
 
 export async function getLanding(_req, res, next) {
   try {
@@ -9,8 +11,20 @@ export async function getLanding(_req, res, next) {
     if (cached) {
       return res.json(cached);
     }
-    const data = await getLandingData();
-    setCache('landing_bundle', data, 60000);
+    if (!landingInFlight) {
+      const startGeneration = getLandingCacheGeneration();
+      landingInFlight = getLandingData()
+        .then((data) => {
+          if (getLandingCacheGeneration() === startGeneration) {
+            setCache('landing_bundle', data, 60000);
+          }
+          return data;
+        })
+        .finally(() => {
+          landingInFlight = null;
+        });
+    }
+    const data = await landingInFlight;
     return res.json(data);
   } catch (err) {
     return next(err);
@@ -20,13 +34,19 @@ export async function getLanding(_req, res, next) {
 export async function getPublicNewsDetail(req, res, next) {
   try {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
+    if (!Number.isSafeInteger(id) || id <= 0 || id > 4294967295) {
       return next(new AppError(404, 'NEWS_NOT_FOUND', 'Berita tidak ditemukan'));
+    }
+    const cacheKey = `news_detail_${id}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      return res.json({ news: cached });
     }
     const news = await getPublishedNewsById(id);
     if (!news) {
       return next(new AppError(404, 'NEWS_NOT_FOUND', 'Berita tidak ditemukan'));
     }
+    setCache(cacheKey, news, 30000);
     return res.json({ news });
   } catch (err) {
     return next(err);

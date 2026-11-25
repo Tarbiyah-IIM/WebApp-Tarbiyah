@@ -8,13 +8,14 @@ export const pool = mysql.createPool({
   password: env.db.password,
   database: env.db.database,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: env.db.connectionLimit,
   queueLimit: 25,
   connectTimeout: 10000,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000,
   namedPlaceholders: false,
-  decimalNumbers: true
+  decimalNumbers: true,
+  timezone: 'Z'
 });
 
 export async function withTransaction(callback) {
@@ -25,7 +26,9 @@ export async function withTransaction(callback) {
     await connection.commit();
     return result;
   } catch (error) {
-    await connection.rollback();
+    try {
+      await connection.rollback();
+    } catch {}
     throw error;
   } finally {
     connection.release();

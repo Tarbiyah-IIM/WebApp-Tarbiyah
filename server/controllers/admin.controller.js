@@ -7,7 +7,8 @@ import {
   extractMediaId,
   findAgendaMediaUrls,
   findPartnerLogoUrl,
-  findTestimonialMediaUrls
+  findTestimonialMediaUrls,
+  isValidMediaId
 } from '../models/media.model.js';
 import {
   createAgenda,
@@ -45,7 +46,7 @@ import { listUsersAdmin, revokeAllUserRefreshTokens, updateUserRoleAndStatusAdmi
 
 function parsePositiveId(rawValue) {
   const numeric = Number(rawValue);
-  if (!Number.isInteger(numeric) || numeric <= 0) {
+  if (!Number.isSafeInteger(numeric) || numeric <= 0 || numeric > 4294967295) {
     throw new AppError(400, 'INVALID_ID', 'Parameter ID harus berupa bilangan bulat positif');
   }
   return numeric;
@@ -489,6 +490,19 @@ export async function adminUploadImage(req, res, next) {
       sizeBytes: created.sizeBytes,
       storage: 'mysql'
     });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminDeleteUploadedImage(req, res, next) {
+  try {
+    const id = String(req.params.id || '').trim();
+    if (!isValidMediaId(id)) {
+      return next(new AppError(400, 'INVALID_ID', 'ID media tidak valid'));
+    }
+    const deleted = await deleteMediaFileIfUnreferenced(id);
+    return res.json({ deleted });
   } catch (err) {
     return next(err);
   }

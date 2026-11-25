@@ -8,8 +8,8 @@ export async function findUserByEmail(email) {
   return rows[0] || null;
 }
 
-export async function findUserById(id) {
-  const [rows] = await pool.execute(
+export async function findUserById(id, executor = pool) {
+  const [rows] = await executor.execute(
     'SELECT id, name, email, role, avatar_url, bio, is_active, created_at FROM users WHERE id = ? LIMIT 1',
     [id]
   );
@@ -24,12 +24,12 @@ export async function createUser({ name, email, passwordHash, role = 'student', 
   return findUserById(result.insertId);
 }
 
-export async function updateUserProfile(id, { name, avatarUrl, bio }) {
-  await pool.execute(
+export async function updateUserProfile(id, { name, avatarUrl, bio }, executor = pool) {
+  await executor.execute(
     'UPDATE users SET name = ?, avatar_url = ?, bio = ? WHERE id = ?',
     [name, avatarUrl, bio, id]
   );
-  return findUserById(id);
+  return findUserById(id, executor);
 }
 
 export async function updateUserPassword(id, passwordHash, executor = pool) {

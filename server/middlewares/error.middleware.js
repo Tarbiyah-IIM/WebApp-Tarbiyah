@@ -42,6 +42,26 @@ export function errorHandler(err, req, res, next) {
     });
   }
 
+  if (err && err.code === 'ER_NET_PACKET_TOO_LARGE') {
+    return res.status(413).json({
+      error: {
+        code: 'PACKET_TOO_LARGE',
+        message: 'Ukuran paket data melebihi kapasitas database',
+        details: []
+      }
+    });
+  }
+
+  if (err && err.code === 'ER_DATA_TOO_LONG') {
+    return res.status(400).json({
+      error: {
+        code: 'DATA_TOO_LONG',
+        message: 'Panjang data melebihi kapasitas kolom database',
+        details: []
+      }
+    });
+  }
+
   if (err && err.name === 'MulterError') {
     const message =
       err.code === 'LIMIT_FILE_SIZE'

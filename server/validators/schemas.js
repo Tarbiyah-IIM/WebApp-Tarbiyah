@@ -57,12 +57,14 @@ export const subscribeSchema = z.object({
   source: z.string().trim().max(60).optional()
 });
 
-function isSafeNewsLink(value) {
+function isSafeNewsLink(value, { allowHash = false } = {}) {
   if (typeof value !== 'string') return false;
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '#') return true;
+  if (!trimmed) return true;
+  if (/[\r\n\t]/.test(trimmed)) return false;
+  if (allowHash && trimmed === '#') return true;
   if (trimmed.startsWith('/')) {
-    return !trimmed.startsWith('//');
+    return !trimmed.startsWith('//') && !trimmed.includes('\\');
   }
   try {
     const parsed = new URL(trimmed);
@@ -102,7 +104,7 @@ export const testimonialBodySchema = z
     categoryId: z.coerce.number().int().positive().optional(),
     categoryIds: z.array(z.coerce.number().int().positive()).max(20).optional(),
     isVisible: z.boolean().default(true),
-    sortOrder: z.coerce.number().int().min(0).default(0)
+    sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
   })
   .superRefine((data, ctx) => {
     const hasCategoryIds = Array.isArray(data.categoryIds) && data.categoryIds.length > 0;
@@ -141,13 +143,13 @@ export const agendaBodySchema = z.object({
     .optional()
     .refine((v) => !v || isSafeNewsLink(v), 'URL gambar cover agenda tidak valid'),
   isVisible: z.boolean().default(true),
-  sortOrder: z.coerce.number().int().min(0).default(0)
+  sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
 });
 
 export const faqBodySchema = z.object({
   question: z.string().trim().min(5).max(255),
   answer: z.string().trim().min(5).max(5000),
-  sortOrder: z.coerce.number().int().min(0).default(0)
+  sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
 });
 
 export const statBodySchema = z.object({
@@ -155,14 +157,14 @@ export const statBodySchema = z.object({
   label: z.string().trim().min(2).max(120),
   valueNum: z.string().trim().min(1).max(40),
   suffix: z.string().trim().max(20).default(''),
-  sortOrder: z.coerce.number().int().min(0).default(0)
+  sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
 });
 
 export const featureBodySchema = z.object({
   title: z.string().trim().min(2).max(160),
   description: z.string().trim().min(5).max(2000),
   icon: z.string().trim().max(60).default('check'),
-  sortOrder: z.coerce.number().int().min(0).default(0)
+  sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
 });
 
 export const partnerBodySchema = z.object({
@@ -181,7 +183,7 @@ export const partnerBodySchema = z.object({
     .nullable()
     .optional()
     .refine((v) => !v || isSafeAppUrl(v, { allowEmpty: true, allowHash: true }), 'URL tujuan layanan tidak valid'),
-  sortOrder: z.coerce.number().int().min(0).default(0)
+  sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
 });
 
 export const adminUserUpdateSchema = z.object({
@@ -207,11 +209,24 @@ function isSafePortalUrl(value, key) {
   if (typeof value !== 'string') return false;
   const trimmed = value.trim();
   if (!trimmed) return true;
+  if (/[\r\n\t]/.test(trimmed) || trimmed.includes('\\')) return false;
   if (key === 'guestLectureUrl') {
-    return trimmed.startsWith('https://script.google.com/');
+    try {
+      const parsed = new URL(trimmed);
+      return parsed.protocol === 'https:' && parsed.hostname === 'script.google.com';
+    } catch {
+      return false;
+    }
   }
   if (key === 'mapsEmbedUrl') {
-    return trimmed.startsWith('https://www.google.com/maps');
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol !== 'https:') return false;
+      if (parsed.hostname === 'maps.google.com') return true;
+      return parsed.hostname === 'www.google.com' && (parsed.pathname === '/maps' || parsed.pathname.startsWith('/maps/'));
+    } catch {
+      return false;
+    }
   }
   if (trimmed.startsWith('/')) {
     return !trimmed.startsWith('//');
@@ -256,10 +271,18 @@ const ALLOWED_STATIC_SETTING_KEYS = new Set([
   'footer_cta_subtitle'
 ]);
 
+const ALLOWED_CMS_SETTING_KEYS = new Set([
+  'cms_nav_links',
+  'cms_contacts',
+  'cms_programs',
+  'cms_info_pages',
+  'cms_profile'
+]);
+
 const MAX_GUEST_PHOTO_BYTES = 1650000;
 
 function isAllowedSettingKey(key) {
-  return ALLOWED_STATIC_SETTING_KEYS.has(key) || /^cms_[a-z0-9_]{1,60}$/.test(key);
+  return ALLOWED_STATIC_SETTING_KEYS.has(key) || ALLOWED_CMS_SETTING_KEYS.has(key);
 }
 
 function decodeBase64ImageBuffer(rawBase64) {
@@ -293,11 +316,11 @@ export const adminSettingsUpdateSchema = z
       if (key.startsWith('cms_') && value.trim()) {
         try {
           const parsed = JSON.parse(value);
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            ctx.addIssue({ code: 'custom', path: [key], message: `Format ${key} harus berupa objek JSON` });
+            continue;
+          }
           if (key === 'cms_nav_links') {
-            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-              ctx.addIssue({ code: 'custom', path: [key], message: 'Format cms_nav_links harus objek' });
-              continue;
-            }
             for (const [navKey, navVal] of Object.entries(parsed)) {
               if (navVal !== null && navVal !== undefined && !isSafePortalUrl(String(navVal), navKey)) {
                 ctx.addIssue({ code: 'custom', path: [key, navKey], message: `URL tidak valid pada ${key}.${navKey}` });
@@ -337,7 +360,7 @@ export const pplWorkPermitSchema = z.object({
 });
 
 const guestLectureFotoFileSchema = z.object({
-  filename: z.string().trim().min(1).max(200),
+  filename: z.string().trim().min(1).max(200).transform(sanitizeSpreadsheetCell),
   mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
   base64: z
     .string()
@@ -395,6 +418,17 @@ export const guestLectureSubmitSchema = z
         code: 'custom',
         path: ['mataKuliah'],
         message: 'Isi minimal satu informasi agenda kuliah tamu.'
+      });
+    }
+    const existingLines = (data.existingFotoUrl || '')
+      .split(/[\r\n]+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (existingLines.length + data.fotoFiles.length > 3) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['fotoFiles'],
+        message: 'Total foto narasumber (lama + baru) maksimal 3 file.'
       });
     }
     data.fotoFiles.forEach((file, index) => {

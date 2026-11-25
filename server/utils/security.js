@@ -32,6 +32,7 @@ export function isSafeAppUrl(value, { allowEmpty = true, allowHash = false } = {
   if (typeof value !== 'string') return false;
   const trimmed = value.trim();
   if (!trimmed) return allowEmpty;
+  if (/[\r\n\t]/.test(trimmed)) return false;
   if (allowHash && trimmed === '#') return true;
   if (trimmed.startsWith('/')) {
     return !trimmed.startsWith('//') && !trimmed.includes('\\');
@@ -76,14 +77,57 @@ export async function readBoundedResponseText(response, maxBytes = MAX_SAFE_RELA
   return result;
 }
 
-export async function withRelaySlot(fn) {
+export async function withRelaySlot(fn, { signal, waitTimeoutMs = 20000 } = {}) {
+  if (signal?.aborted) {
+    const abortedErr = new Error('RELAY_ABORTED');
+    abortedErr.code = 'RELAY_ABORTED';
+    throw abortedErr;
+  }
   while (activeRelayCount >= MAX_CONCURRENT_RELAY) {
     if (waitingRelayResolvers.length >= MAX_RELAY_QUEUE) {
       const overloadedErr = new Error('RELAY_OVERLOADED');
       overloadedErr.code = 'RELAY_OVERLOADED';
       throw overloadedErr;
     }
-    await new Promise((resolve) => waitingRelayResolvers.push(resolve));
+    await new Promise((resolve, reject) => {
+      let settled = false;
+      let timer = null;
+      const cleanup = () => {
+        if (timer) clearTimeout(timer);
+        if (signal) signal.removeEventListener('abort', onAbort);
+      };
+      const wake = () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve();
+      };
+      const fail = (err) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        const idx = waitingRelayResolvers.indexOf(wake);
+        if (idx !== -1) waitingRelayResolvers.splice(idx, 1);
+        reject(err);
+      };
+      const onAbort = () => {
+        const abortedErr = new Error('RELAY_ABORTED');
+        abortedErr.code = 'RELAY_ABORTED';
+        fail(abortedErr);
+      };
+      if (Number.isFinite(waitTimeoutMs) && waitTimeoutMs > 0) {
+        timer = setTimeout(() => {
+          const timeoutErr = new Error('RELAY_OVERLOADED');
+          timeoutErr.code = 'RELAY_OVERLOADED';
+          fail(timeoutErr);
+        }, waitTimeoutMs);
+        timer.unref?.();
+      }
+      if (signal) {
+        signal.addEventListener('abort', onAbort, { once: true });
+      }
+      waitingRelayResolvers.push(wake);
+    });
   }
   activeRelayCount += 1;
   try {
@@ -104,13 +148,17 @@ export function normalizeOriginHeader(rawHeader) {
   }
 }
 
-export function isTrustedMutationOrigin(req, allowedOrigins = []) {
+export function isTrustedMutationOrigin(req, allowedOrigins = [], { isProduction = false } = {}) {
   const fetchSite = String(req.get('sec-fetch-site') || '').trim().toLowerCase();
   if (fetchSite === 'cross-site') {
     return false;
   }
 
-  const originHeader = normalizeOriginHeader(req.get('origin'));
+  const rawOrigin = req.get('origin');
+  const originHeader = normalizeOriginHeader(rawOrigin);
+  if (rawOrigin !== undefined && !originHeader) {
+    return false;
+  }
   const refererOrigin = normalizeOriginHeader(req.get('referer'));
   const candidateOrigin = originHeader || refererOrigin;
   if (!candidateOrigin) {
@@ -123,7 +171,9 @@ export function isTrustedMutationOrigin(req, allowedOrigins = []) {
     const proto = req.protocol === 'https' ? 'https' : 'http';
     normalizedAllowed.add(`${proto}://${host}`.toLowerCase());
     normalizedAllowed.add(`https://${host}`.toLowerCase());
-    normalizedAllowed.add(`http://${host}`.toLowerCase());
+    if (!isProduction) {
+      normalizedAllowed.add(`http://${host}`.toLowerCase());
+    }
   }
 
   return normalizedAllowed.has(candidateOrigin);

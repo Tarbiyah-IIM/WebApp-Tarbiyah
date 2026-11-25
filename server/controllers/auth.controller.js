@@ -21,6 +21,8 @@ import {
   updateUserProfile
 } from '../models/user.model.js';
 
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
+
 function hashToken(raw) {
   return crypto.createHash('sha256').update(raw).digest('hex');
 }
@@ -99,13 +101,9 @@ export async function login(req, res, next) {
     const { email, password } = req.body;
     const normalizedEmail = email.trim().toLowerCase();
     const userRow = await findUserByEmail(normalizedEmail);
+    const match = await bcrypt.compare(password, userRow?.password_hash || DUMMY_PASSWORD_HASH);
 
-    if (!userRow || !userRow.is_active) {
-      return next(new AppError(401, 'INVALID_CREDENTIALS', 'Email atau password salah'));
-    }
-
-    const match = await bcrypt.compare(password, userRow.password_hash);
-    if (!match) {
+    if (!userRow || !userRow.is_active || !match) {
       return next(new AppError(401, 'INVALID_CREDENTIALS', 'Email atau password salah'));
     }
 
@@ -135,7 +133,7 @@ export async function login(req, res, next) {
 
 export async function refresh(req, res, next) {
   try {
-    if (!isTrustedMutationOrigin(req, env.clientOrigins)) {
+    if (!isTrustedMutationOrigin(req, env.clientOrigins, { isProduction: env.nodeEnv === 'production' })) {
       return next(new AppError(403, 'CSRF_ORIGIN_REJECTED', 'Origin permintaan tidak diizinkan'));
     }
 
@@ -147,7 +145,6 @@ export async function refresh(req, res, next) {
     const tokenHash = hashToken(rawCookie);
     const stored = await findValidRefreshToken(tokenHash);
     if (!stored) {
-      clearRefreshCookie(res);
       return next(new AppError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token tidak valid'));
     }
 
@@ -181,7 +178,7 @@ export async function refresh(req, res, next) {
 
 export async function logout(req, res, next) {
   try {
-    if (!isTrustedMutationOrigin(req, env.clientOrigins)) {
+    if (!isTrustedMutationOrigin(req, env.clientOrigins, { isProduction: env.nodeEnv === 'production' })) {
       return next(new AppError(403, 'CSRF_ORIGIN_REJECTED', 'Origin permintaan tidak diizinkan'));
     }
 
@@ -251,6 +248,11 @@ export async function resetPassword(req, res, next) {
       return next(new AppError(400, 'INVALID_RESET_TOKEN', 'Token pemulihan tidak valid atau kedaluwarsa'));
     }
 
+    const resetUser = await findUserById(resetRow.user_id);
+    if (!resetUser || !resetUser.is_active) {
+      return next(new AppError(400, 'INVALID_RESET_TOKEN', 'Token pemulihan tidak valid atau kedaluwarsa'));
+    }
+
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await withTransaction(async (conn) => {
       const consumed = await markPasswordResetUsed(resetRow.id, conn);
@@ -285,17 +287,25 @@ export async function updateMe(req, res, next) {
       }
     }
 
-    const updated = await updateUserProfile(req.user.id, {
-      name: name ? name.trim() : req.user.name,
-      avatarUrl: avatarUrl !== undefined ? avatarUrl : req.user.avatar_url,
-      bio: bio !== undefined ? bio : req.user.bio
-    });
+    const updated = await withTransaction(async (conn) => {
+      const profile = await updateUserProfile(
+        req.user.id,
+        {
+          name: name ? name.trim() : req.user.name,
+          avatarUrl: avatarUrl !== undefined ? avatarUrl : req.user.avatar_url,
+          bio: bio !== undefined ? bio : req.user.bio
+        },
+        conn
+      );
 
-    if (newPassword) {
-      const hash = await bcrypt.hash(newPassword, 10);
-      await updateUserPassword(req.user.id, hash);
-      await revokeAllUserRefreshTokens(req.user.id);
-    }
+      if (newPassword) {
+        const hash = await bcrypt.hash(newPassword, 10);
+        await updateUserPassword(req.user.id, hash, conn);
+        await revokeAllUserRefreshTokens(req.user.id, conn);
+      }
+
+      return profile;
+    });
 
     return res.json({ user: updated });
   } catch (err) {

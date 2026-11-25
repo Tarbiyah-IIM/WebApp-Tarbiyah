@@ -54,6 +54,34 @@ const mediaReadLimiter = rateLimit({
   }
 });
 
+const publicReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 120,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Terlalu banyak permintaan data halaman, silakan tunggu sebentar',
+      details: []
+    }
+  }
+});
+
+const profileWriteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Terlalu banyak pembaruan profil, silakan tunggu beberapa menit lagi',
+      details: []
+    }
+  }
+});
+
 function ensureSubscribersEnabled(_req, _res, next) {
   if (!env.allowPublicRegister) {
     return next(new AppError(403, 'ENDPOINT_DISABLED', 'Endpoint pendaftaran newsletter dinonaktifkan'));
@@ -61,8 +89,8 @@ function ensureSubscribersEnabled(_req, _res, next) {
   return next();
 }
 
-router.get('/landing', getLanding);
-router.get('/news/:id', getPublicNewsDetail);
+router.get('/landing', publicReadLimiter, getLanding);
+router.get('/news/:id', publicReadLimiter, getPublicNewsDetail);
 router.get('/media/:id', mediaReadLimiter, getPublicMedia);
 router.post('/subscribers', ensureSubscribersEnabled, relayWriteLimiter, validateBody(subscribeSchema), subscribeNewsletter);
 router.get('/permits/work-permit/meta', relayReadLimiter, getWorkPermitMeta);
@@ -71,7 +99,7 @@ router.get('/guest-lectures', relayReadLimiter, getGuestLectureData);
 router.post('/guest-lectures', relayWriteLimiter, validateBody(guestLectureSubmitSchema), submitGuestLecture);
 
 router.get('/me', authenticate, getMe);
-router.patch('/me', authenticate, validateBody(updateProfileSchema), updateMe);
+router.patch('/me', profileWriteLimiter, authenticate, validateBody(updateProfileSchema), updateMe);
 router.delete('/me', authenticate, deleteMe);
 
 export default router;

@@ -39,6 +39,7 @@ async function start() {
       } catch {}
       process.exit(0);
     });
+    server.closeIdleConnections?.();
     setTimeout(() => {
       process.exit(1);
     }, 10000).unref();

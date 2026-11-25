@@ -31,6 +31,7 @@ import {
   adminUpdateStat,
   adminUpdateTestimonial,
   adminUpdateUser,
+  adminDeleteUploadedImage,
   adminUploadImage,
   getAdminOverview
 } from '../controllers/admin.controller.js';
@@ -95,5 +96,6 @@ router.get('/settings', adminGetSettings);
 router.patch('/settings', validateBody(adminSettingsUpdateSchema), adminUpdateSettings);
 
 router.post('/uploads', uploadImage.single('file'), adminUploadImage);
+router.delete('/uploads/:id', adminDeleteUploadedImage);
 
 export default router;
