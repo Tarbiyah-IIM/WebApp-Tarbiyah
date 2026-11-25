@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { CheckCircle2, Download, Loader2, Lock, RotateCcw, WifiOff } from 'lucide-vue-next';
 import ModalDialog from './ModalDialog.vue';
 import { publicService } from '../services/public.service.js';
@@ -16,6 +16,7 @@ const { t } = useI18n();
 const toast = useToast();
 
 const NIM_REGEX = /^[A-Za-z0-9.\-\/]+$/;
+const DOWNLOAD_UNAVAILABLE_LABEL = 'Unduh PDF tidak tersedia';
 const emptyForm = () => ({
   kepada: '',
   nama_mahasiswa: '',
@@ -53,6 +54,7 @@ function syncOnline() {
 }
 
 async function fetchMeta() {
+  if (metaLoading.value) return;
   metaLoading.value = true;
   globalError.value = '';
   try {
@@ -68,23 +70,31 @@ async function fetchMeta() {
   }
 }
 
+function handleOnline() {
+  syncOnline();
+  if (props.open) {
+    fetchMeta();
+  }
+}
+
+onMounted(() => {
+  syncOnline();
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', syncOnline);
+});
+
 watch(
   () => props.open,
   (isOpen) => {
     if (isOpen) {
       syncOnline();
-      window.addEventListener('online', syncOnline);
-      window.addEventListener('offline', syncOnline);
       fetchMeta();
-    } else {
-      window.removeEventListener('online', syncOnline);
-      window.removeEventListener('offline', syncOnline);
     }
   }
 );
 
 onUnmounted(() => {
-  window.removeEventListener('online', syncOnline);
+  window.removeEventListener('online', handleOnline);
   window.removeEventListener('offline', syncOnline);
 });
 
@@ -152,6 +162,11 @@ function downloadLastPdf() {
     window.open(resultData.value.download_url, '_blank', 'noopener,noreferrer');
   }
 }
+
+const canDownload = computed(() => {
+  if (!resultData.value) return false;
+  return Boolean(resultData.value.pdf_base64) || isSafeHttpsUrl(resultData.value.download_url);
+});
 
 async function handleSubmit() {
   if (submitting.value) return;
@@ -236,10 +251,23 @@ function resetForm() {
         </dl>
 
         <div class="flex flex-wrap items-center gap-2.5">
-          <button type="button" class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white hover:bg-brand-700" @click="downloadLastPdf">
+          <button
+            v-if="canDownload"
+            type="button"
+            class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white hover:bg-brand-700"
+            @click="downloadLastPdf"
+          >
             <Download class="h-4 w-4" />
             <span>{{ t('workPermit.downloadAgainBtn') }}</span>
           </button>
+          <span
+            v-else
+            class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-dashed border-surface-border bg-surface-page px-4 text-xs font-semibold text-slate-500"
+            role="status"
+          >
+            <Download class="h-4 w-4" />
+            <span>{{ DOWNLOAD_UNAVAILABLE_LABEL }}</span>
+          </span>
           <button type="button" class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-surface-border bg-white px-4 text-xs font-semibold text-slate-700 hover:bg-surface-muted" @click="resetForm">
             <RotateCcw class="h-3.5 w-3.5" />
             <span>{{ t('workPermit.newSubmissionBtn') }}</span>
@@ -247,7 +275,7 @@ function resetForm() {
         </div>
       </section>
 
-      <form v-else class="space-y-4" novalidate @submit.prevent="handleSubmit">
+      <form v-else-if="!metaLoading" class="space-y-4" novalidate @submit.prevent="handleSubmit">
         <div class="grid grid-cols-1 gap-3 rounded-xl border border-surface-border bg-surface-page p-3.5 sm:grid-cols-2">
           <div>
             <label for="wp-tahun" class="block text-[11px] font-bold uppercase text-slate-500 mb-1">{{ t('workPermit.academicYearLabel') }}</label>

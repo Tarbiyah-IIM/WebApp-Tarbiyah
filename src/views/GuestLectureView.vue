@@ -313,6 +313,7 @@ onUnmounted(() => {
     <GuestLectureDrawer
       :open="Boolean(selectedIncomplete)"
       :item="selectedIncomplete"
+      :prodi-list="prodiList"
       :dosen-list="dosenList"
       :submitting="submitting"
       @close="selectedIncomplete = null"

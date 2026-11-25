@@ -74,7 +74,14 @@ async function handlePhotoSelect(event) {
   processingPhotos.value = true;
   try {
     for (const file of files.slice(0, slotsLeft)) {
-      const prepared = await prepareGuestLecturePhoto(file);
+      const prepared = await prepareGuestLecturePhoto(file, {
+        readFailed: t('guestLecture.photoValidation.readFailed'),
+        invalidFile: t('guestLecture.photoValidation.invalidFile'),
+        unsupportedType: t('guestLecture.photoValidation.unsupportedType'),
+        gifTooLarge: t('guestLecture.photoValidation.gifTooLarge'),
+        tooLarge: t('guestLecture.photoValidation.tooLarge'),
+        convertFailed: t('guestLecture.photoValidation.convertFailed')
+      });
       photos.value.push(prepared);
     }
   } catch (err) {

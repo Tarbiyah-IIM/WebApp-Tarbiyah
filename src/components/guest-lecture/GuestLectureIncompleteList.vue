@@ -81,7 +81,7 @@ function missingBadges(item) {
                 "
               >
                 <AlertCircle class="h-3 w-3" aria-hidden="true" />
-                <span>{{ item.status || 'Not Started' }}</span>
+                <span>{{ item.status || t('guestLecture.statusNotStarted') }}</span>
               </span>
             </div>
 

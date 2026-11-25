@@ -4,9 +4,7 @@ import { ExternalLink, ImagePlus, Trash2, X } from 'lucide-vue-next';
 import { useI18n } from '../../composables/useI18n.js';
 import { useFocusTrap } from '../../composables/useFocusTrap.js';
 import {
-  formatIsoToDmy,
   isSafeExternalHttpUrl,
-  parseDmyToIso,
   prepareGuestLecturePhoto
 } from '../../services/guestLecture.service.js';
 
@@ -14,6 +12,7 @@ const props = defineProps({
   open: { type: Boolean, default: false },
   item: { type: Object, default: null },
   dosenList: { type: Array, default: () => [] },
+  prodiList: { type: Array, default: () => ['PAI', 'PIAUD', 'PGMI'] },
   submitting: { type: Boolean, default: false }
 });
 
@@ -29,8 +28,37 @@ const newPhotos = ref([]);
 const existingFotoUrls = ref([]);
 const nativeDate = ref('');
 
+const ID_MONTH_NAMES = [
+  'januari',
+  'februari',
+  'maret',
+  'april',
+  'mei',
+  'juni',
+  'juli',
+  'agustus',
+  'september',
+  'oktober',
+  'november',
+  'desember'
+];
+const EN_MONTH_NAMES = [
+  'january',
+  'february',
+  'march',
+  'april',
+  'may',
+  'june',
+  'july',
+  'august',
+  'september',
+  'october',
+  'november',
+  'december'
+];
+
 const form = reactive({
-  prodi: 'PAI',
+  prodi: '',
   dosenPengampu: '',
   dosenTamu: '',
   mataKuliah: '',
@@ -42,18 +70,80 @@ const form = reactive({
 
 const totalPhotoCount = computed(() => existingFotoUrls.value.length + newPhotos.value.length);
 const isBusy = computed(() => props.submitting || processingPhotos.value);
+const isProdiMissing = computed(() => !String(form.prodi || '').trim());
+
+function buildStrictDate(year, month, day) {
+  const y = Number(year);
+  const m = Number(month);
+  const d = Number(day);
+  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) return null;
+  if (y < 1900 || y > 2200 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) {
+    return null;
+  }
+  return date;
+}
+
+function monthIndexFromName(name) {
+  const key = String(name || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\.$/, '');
+  const idIndex = ID_MONTH_NAMES.indexOf(key);
+  if (idIndex >= 0) return idIndex;
+  return EN_MONTH_NAMES.indexOf(key);
+}
+
+function parseFlexibleDate(rawValue) {
+  const raw = String(rawValue ?? '').trim();
+  if (!raw) return null;
+
+  const isoMatch = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s].*)?$/);
+  if (isoMatch) return buildStrictDate(isoMatch[1], isoMatch[2], isoMatch[3]);
+
+  const dmyMatch = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (dmyMatch) return buildStrictDate(dmyMatch[3], dmyMatch[2], dmyMatch[1]);
+
+  const textualMatch = raw.match(/^(\d{1,2})\s+([A-Za-z]+)\.?\s+(\d{4})$/);
+  if (textualMatch) {
+    const monthIndex = monthIndexFromName(textualMatch[2]);
+    if (monthIndex < 0) return null;
+    return buildStrictDate(textualMatch[3], monthIndex + 1, textualMatch[1]);
+  }
+
+  return null;
+}
+
+function toIsoDateValue(rawValue) {
+  const parsed = parseFlexibleDate(rawValue);
+  if (!parsed) return '';
+  return parsed.toISOString().slice(0, 10);
+}
+
+function toDisplayDate(rawValue) {
+  const raw = String(rawValue ?? '').trim();
+  if (!raw) return '';
+  const parsed = parseFlexibleDate(raw);
+  if (!parsed) return raw;
+  const dd = String(parsed.getUTCDate()).padStart(2, '0');
+  const mm = String(parsed.getUTCMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${parsed.getUTCFullYear()}`;
+}
+
+const displayTanggal = computed(() => toDisplayDate(form.tanggal));
 
 watch(
   () => [props.open, props.item],
   ([isOpen, nextItem]) => {
     if (!isOpen || !nextItem) return;
-    form.prodi = nextItem.prodi || 'PAI';
+    form.prodi = String(nextItem.prodi || '').trim();
     form.dosenPengampu = nextItem.dosenPengampu || '';
     form.dosenTamu = nextItem.dosenTamu || '';
     form.mataKuliah = nextItem.mataKuliah || '';
     form.tema = nextItem.tema || '';
     form.tanggal = nextItem.tanggal || '';
-    nativeDate.value = parseDmyToIso(nextItem.tanggal || '');
+    nativeDate.value = toIsoDateValue(nextItem.tanggal || '');
     form.jam = nextItem.jam || '';
     form.peserta = nextItem.peserta || '100';
     existingFotoUrls.value = String(nextItem.fotoNarsum || '')
@@ -68,7 +158,11 @@ watch(
 
 function handleDateChange(event) {
   nativeDate.value = event.target.value;
-  form.tanggal = formatIsoToDmy(nativeDate.value);
+  form.tanggal = toDisplayDate(nativeDate.value);
+}
+
+function handleProdiChange(event) {
+  form.prodi = event.target.value;
 }
 
 async function handlePhotoSelect(event) {
@@ -86,7 +180,14 @@ async function handlePhotoSelect(event) {
   processingPhotos.value = true;
   try {
     for (const file of files.slice(0, slotsLeft)) {
-      const prepared = await prepareGuestLecturePhoto(file);
+      const prepared = await prepareGuestLecturePhoto(file, {
+        readFailed: t('guestLecture.photoValidation.readFailed'),
+        invalidFile: t('guestLecture.photoValidation.invalidFile'),
+        unsupportedType: t('guestLecture.photoValidation.unsupportedType'),
+        gifTooLarge: t('guestLecture.photoValidation.gifTooLarge'),
+        tooLarge: t('guestLecture.photoValidation.tooLarge'),
+        convertFailed: t('guestLecture.photoValidation.convertFailed')
+      });
       newPhotos.value.push(prepared);
     }
   } catch (err) {
@@ -105,11 +206,11 @@ function clearExistingPhotos() {
 }
 
 function handleSubmit() {
-  if (!props.item || isBusy.value) return;
+  if (!props.item || isBusy.value || isProdiMissing.value) return;
   emit('submit', {
     mode: 'update',
     rowIndex: props.item.rowIndex,
-    prodi: form.prodi,
+    prodi: form.prodi.trim(),
     dosenPengampu: form.dosenPengampu.trim(),
     dosenTamu: form.dosenTamu.trim(),
     mataKuliah: form.mataKuliah.trim(),
@@ -130,6 +231,13 @@ const isRevisionMode = computed(() => {
   const status = String(props.item?.status || '').trim().toLowerCase();
   return status === 'in revision' || status === 'revision';
 });
+
+const isProdiFieldVisible = computed(() => isRevisionMode.value || !props.item?.prodi);
+const prodiError = computed(() =>
+  isProdiFieldVisible.value && isProdiMissing.value
+    ? `${t('guestLecture.fields.prodi')} ${t('workPermit.validationRequired')}`
+    : ''
+);
 
 useFocusTrap(
   drawerRef,
@@ -206,20 +314,26 @@ useFocusTrap(
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div v-if="isRevisionMode || !item.prodi">
+              <div v-if="isProdiFieldVisible">
                 <label for="gl-edit-prodi" class="block text-xs font-bold text-brand-900">
                   {{ t('guestLecture.fields.prodi') }} <span class="text-rose-600">*</span>
                 </label>
                 <select
                   id="gl-edit-prodi"
-                  v-model="form.prodi"
+                  :value="form.prodi"
                   required
                   class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
+                  @change="handleProdiChange"
                 >
-                  <option value="PAI">PAI</option>
-                  <option value="PIAUD">PIAUD</option>
-                  <option value="PGMI">PGMI</option>
+                  <option value="" disabled>{{ t('workPermit.prodiPlaceholder') }}</option>
+                  <option v-if="form.prodi && !prodiList.includes(form.prodi)" :value="form.prodi">
+                    {{ form.prodi }}
+                  </option>
+                  <option v-for="prodi in prodiList" :key="prodi" :value="prodi">{{ prodi }}</option>
                 </select>
+                <p v-if="prodiError" role="alert" class="mt-1 text-xs font-semibold text-rose-600">
+                  {{ prodiError }}
+                </p>
               </div>
 
               <div v-if="isRevisionMode || item.needsDosenPengampu || !item.dosenPengampu">
@@ -292,8 +406,8 @@ useFocusTrap(
                   class="mt-1.5 min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3 text-sm text-brand-900 focus:border-brand-600 focus:outline-none"
                   @input="handleDateChange"
                 />
-                <p v-if="form.tanggal" class="mt-1 text-[11px] font-semibold text-slate-500">
-                  {{ form.tanggal }}
+                <p v-if="displayTanggal" class="mt-1 text-[11px] font-semibold text-slate-500">
+                  {{ displayTanggal }}
                 </p>
               </div>
 
@@ -413,7 +527,7 @@ useFocusTrap(
             </button>
             <button
               type="submit"
-              :disabled="isBusy"
+              :disabled="isBusy || isProdiMissing"
               class="min-h-[42px] rounded-xl bg-brand-600 px-5 text-xs font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
             >
               {{ submitting ? t('guestLecture.savingBtn') : t('guestLecture.saveCompleteBtn') }}

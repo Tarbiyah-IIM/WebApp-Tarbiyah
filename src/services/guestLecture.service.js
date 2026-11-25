@@ -98,18 +98,28 @@ export function normalizeDocItems(list, fallbackLink, fallbackText, baseLabel, i
   };
 }
 
-function readFileAsDataUrl(file) {
+const DEFAULT_PHOTO_MESSAGES = {
+  readFailed: 'Gagal membaca berkas gambar.',
+  invalidFile: 'Berkas gambar tidak valid.',
+  unsupportedType: 'Hanya gambar JPG, PNG, WebP, atau GIF yang didukung.',
+  gifTooLarge: 'Ukuran file GIF maksimal 1,5 MB. Silakan gunakan JPG, PNG, atau WebP.',
+  tooLarge: 'Ukuran gambar melebihi batas maksimal 1,6 MB setelah optimasi.',
+  convertFailed: 'Gagal mengonversi gambar.'
+};
+
+function readFileAsDataUrl(file, messages = DEFAULT_PHOTO_MESSAGES) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('Gagal membaca berkas gambar.'));
+    reader.onerror = () => reject(new Error(messages.readFailed));
     reader.readAsDataURL(file);
   });
 }
 
-export async function prepareGuestLecturePhoto(file) {
+export async function prepareGuestLecturePhoto(file, overrides = {}) {
+  const messages = { ...DEFAULT_PHOTO_MESSAGES, ...overrides };
   if (!file || typeof file !== 'object') {
-    throw new Error('Berkas gambar tidak valid.');
+    throw new Error(messages.invalidFile);
   }
   const optimized = await optimizeImageForUpload(file, {
     maxDimension: 1280,
@@ -118,20 +128,20 @@ export async function prepareGuestLecturePhoto(file) {
   });
   const mimeType = String(optimized.type || file.type || 'image/jpeg').toLowerCase();
   if (!ALLOWED_PHOTO_MIMES.has(mimeType)) {
-    throw new Error('Hanya gambar JPG, PNG, WebP, atau GIF yang didukung.');
+    throw new Error(messages.unsupportedType);
   }
   const effectiveSize = optimized.size || file.size || 0;
   if (mimeType === 'image/gif' && effectiveSize > 1500 * 1024) {
-    throw new Error('Ukuran file GIF maksimal 1,5 MB. Silakan gunakan JPG, PNG, atau WebP.');
+    throw new Error(messages.gifTooLarge);
   }
   if (effectiveSize > 1600 * 1024) {
-    throw new Error('Ukuran gambar melebihi batas maksimal 1,6 MB setelah optimasi.');
+    throw new Error(messages.tooLarge);
   }
-  const dataUrl = await readFileAsDataUrl(optimized);
+  const dataUrl = await readFileAsDataUrl(optimized, messages);
   const commaIndex = dataUrl.indexOf(',');
   const base64 = commaIndex >= 0 ? dataUrl.slice(commaIndex + 1) : '';
   if (!base64) {
-    throw new Error('Gagal mengonversi gambar.');
+    throw new Error(messages.convertFailed);
   }
   return {
     filename: optimized.name || file.name || 'narasumber.webp',

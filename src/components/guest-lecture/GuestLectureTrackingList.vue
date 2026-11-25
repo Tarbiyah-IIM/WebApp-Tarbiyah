@@ -269,7 +269,7 @@ function getCertificateDocs(item) {
               <span class="text-slate-700">{{ item.tema }}</span>
             </div>
           </div>
-          <div v-if="item.tanggal || item.jam" class="flex flex-wrap items-center gap-x-4 gap-y-1 pt-0.5">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 pt-0.5">
             <span class="inline-flex items-center gap-1.5 font-bold text-brand-900">
               <Calendar class="h-4 w-4 text-brand-600" aria-hidden="true" />
               <span>{{ item.tanggal || '—' }}</span>
@@ -279,11 +279,10 @@ function getCertificateDocs(item) {
               <span>{{ item.jam }}</span>
             </span>
             <span
-              v-if="item.peserta"
               class="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2.5 py-0.5 text-[11px] font-semibold text-slate-600"
             >
               <MapPin v-if="isOfflineEvent(item)" class="h-3 w-3 text-emerald-600" aria-hidden="true" />
-              <span>{{ isOfflineEvent(item) ? t('guestLecture.offlineBadge') : `${item.peserta} ${t('guestLecture.participantsUnit')}` }}</span>
+              <span>{{ isOfflineEvent(item) ? t('guestLecture.offlineBadge') : item.peserta ? `${item.peserta} ${t('guestLecture.participantsUnit')}` : '—' }}</span>
             </span>
           </div>
         </dl>
