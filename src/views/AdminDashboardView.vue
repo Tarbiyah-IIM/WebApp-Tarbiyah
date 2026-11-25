@@ -75,9 +75,10 @@ const navGroups = computed(() => [
 
 async function runSafeAction(action) {
   try {
-    return await action();
+    const data = await action();
+    return { ok: true, data };
   } catch {
-    return undefined;
+    return { ok: false, data: undefined };
   }
 }
 
@@ -89,37 +90,37 @@ async function handleSaveSettings(patch, customMessage) {
 
 async function handleSaveNews(payload, onDone) {
   const res = await runSafeAction(() => portal.saveNews(payload, t('adminDashboard.cmsPanel.toasts.newsSaved')));
-  if (res !== undefined && onDone) onDone();
+  if (res.ok && onDone) onDone();
 }
 
 async function handleSaveAgenda(payload, onDone) {
   const res = await runSafeAction(() => portal.saveAgenda(payload, t('adminDashboard.cmsPanel.toasts.agendaSaved')));
-  if (res !== undefined && onDone) onDone();
+  if (res.ok && onDone) onDone();
 }
 
 async function handleAddCategory(name, onDone) {
-  const created = await runSafeAction(() => portal.addCategory(name, t('adminDashboard.cmsPanel.toasts.categorySaved')));
-  if (created && onDone) onDone(created);
+  const res = await runSafeAction(() => portal.addCategory(name, t('adminDashboard.cmsPanel.toasts.categorySaved')));
+  if (res.ok && res.data && onDone) onDone(res.data);
 }
 
 async function handleSaveFaq(payload, onDone) {
   const res = await runSafeAction(() => portal.saveFaq(payload, t('adminDashboard.cmsPanel.toasts.faqSaved')));
-  if (res !== undefined && onDone) onDone();
+  if (res.ok && onDone) onDone();
 }
 
 async function handleSaveStat(payload, onDone) {
   const res = await runSafeAction(() => portal.saveStat(payload, t('adminDashboard.cmsPanel.toasts.statSaved')));
-  if (res !== undefined && onDone) onDone();
+  if (res.ok && onDone) onDone();
 }
 
 async function handleSavePartner(payload, onDone) {
   const res = await runSafeAction(() => portal.savePartner(payload, t('adminDashboard.cmsPanel.toasts.partnerSaved')));
-  if (res !== undefined && onDone) onDone();
+  if (res.ok && onDone) onDone();
 }
 
 async function handleSaveFeature(payload, onDone) {
   const res = await runSafeAction(() => portal.saveFeature(payload, t('adminDashboard.cmsPanel.toasts.featureSaved')));
-  if (res !== undefined && onDone) onDone();
+  if (res.ok && onDone) onDone();
 }
 
 async function handleUpdateUserRole(user, role) {

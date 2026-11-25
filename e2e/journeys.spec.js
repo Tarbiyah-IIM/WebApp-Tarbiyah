@@ -154,7 +154,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       'href',
       'https://jurnal.iimsurakarta.ac.id/index.php/emerald'
     );
-    await expect(footerSection.getByRole('link', { name: /Mamba'ul 'Ulum/ })).toHaveAttribute(
+    await expect(footerSection.getByRole('link', { name: /Institut \(Mamba'ul 'Ulum\)/ })).toHaveAttribute(
       'href',
       'https://jurnal.iimsurakarta.ac.id/index.php/mu'
     );
@@ -557,7 +557,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       await page.goto('/admin');
       await page.getByRole('button', { name: 'Layanan & Mitra', exact: true }).click();
       await page.getByPlaceholder('Nama Layanan / Mitra').fill(partnerName);
-      await page.getByPlaceholder('https://...').fill('https://ft.iim.ac.id/layanan-uji');
+      await page.getByPlaceholder('https://...', { exact: true }).fill('https://ft.iim.ac.id/layanan-uji');
       await page.getByRole('button', { name: 'Simpan', exact: true }).click();
 
       await expect(page.getByText('Layanan/Mitra disimpan & disinkronkan.')).toBeVisible();
