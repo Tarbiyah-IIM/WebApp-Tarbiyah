@@ -12,26 +12,29 @@ function resolvePath(source, path) {
   }, source);
 }
 
-const ID_MONTHS_TO_EN = {
-  januari: 'January',
-  februari: 'February',
-  maret: 'March',
-  april: 'April',
-  mei: 'May',
-  juni: 'June',
-  juli: 'July',
-  agustus: 'August',
-  september: 'September',
-  oktober: 'October',
-  november: 'November',
-  desember: 'December'
-};
+const MONTH_PAIRS = [
+  ['Januari', 'January'],
+  ['Februari', 'February'],
+  ['Maret', 'March'],
+  ['April', 'April'],
+  ['Mei', 'May'],
+  ['Juni', 'June'],
+  ['Juli', 'July'],
+  ['Agustus', 'August'],
+  ['September', 'September'],
+  ['Oktober', 'October'],
+  ['November', 'November'],
+  ['Desember', 'December']
+];
 
-function translateIndonesianDateText(text) {
-  return text.replace(
-    /\b(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\b/gi,
-    (match) => ID_MONTHS_TO_EN[match.toLowerCase()] || match
-  );
+const ID_MONTHS_TO_EN = Object.fromEntries(MONTH_PAIRS.map(([idName, enName]) => [idName.toLowerCase(), enName]));
+const ID_MONTH_NAMES = MONTH_PAIRS.map(([idName]) => idName);
+const EN_MONTH_NAMES = MONTH_PAIRS.map(([, enName]) => enName);
+const ID_MONTH_PATTERN = new RegExp(`\\b(${ID_MONTH_NAMES.join('|')})\\b`, 'gi');
+const DATE_LIKE_PATTERN = new RegExp(`(\\d{1,2}\\s+)?(${ID_MONTH_NAMES.join('|')})\\s+(19|20)\\d{2}`, 'i');
+
+function translateIndonesianMonthNames(text) {
+  return text.replace(ID_MONTH_PATTERN, (match) => ID_MONTHS_TO_EN[match.toLowerCase()] || match);
 }
 
 export function useI18n() {
@@ -46,13 +49,25 @@ export function useI18n() {
     return fallback || key;
   }
 
+  function formatDate(rawDate) {
+    if (rawDate === null || rawDate === undefined) return '';
+    const text = String(rawDate);
+    const iso = text.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (iso) {
+      const monthNames = ui.locale === 'en' ? EN_MONTH_NAMES : ID_MONTH_NAMES;
+      const month = monthNames[Number(iso[2]) - 1];
+      return month ? `${Number(iso[3])} ${month} ${iso[1]}` : text;
+    }
+    return ui.locale === 'en' ? translateIndonesianMonthNames(text) : text;
+  }
+
   function tr(rawText) {
     if (rawText === null || rawText === undefined) return '';
     const text = String(rawText);
     if (ui.locale !== 'en') return text;
     const trimmed = text.trim();
     if (dynamicEn[trimmed]) return dynamicEn[trimmed];
-    return translateIndonesianDateText(text);
+    return DATE_LIKE_PATTERN.test(text) ? translateIndonesianMonthNames(text) : text;
   }
 
   function setLocale(nextLocale) {
@@ -63,6 +78,7 @@ export function useI18n() {
     locale,
     setLocale,
     t,
-    tr
+    tr,
+    formatDate
   };
 }

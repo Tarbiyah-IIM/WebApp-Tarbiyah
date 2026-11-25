@@ -178,6 +178,7 @@ export default {
     statusDone: 'Completed',
     statusRevision: 'Needs Revision',
     statusProcess: 'In Admin Process',
+    statusNotStarted: 'Not Started',
     bannerDone: 'Administration completed by Faculty Admin',
     bannerRevision: 'Revision requested from course lecturer',
     bannerProcess: 'Being processed by Faculty Admin',
@@ -229,6 +230,14 @@ export default {
     photoHint: 'JPG/PNG/WebP images are automatically optimized before uploading to Google Drive.',
     photoMaxReached: 'Maximum 3 speaker photos per schedule.',
     photoError: 'Failed to process photo file.',
+    photoValidation: {
+      readFailed: 'Failed to read the image file.',
+      invalidFile: 'The image file is not valid.',
+      unsupportedType: 'Only JPG, PNG, WebP, or GIF images are supported.',
+      gifTooLarge: 'GIF files are limited to 1.5 MB. Please use JPG, PNG, or WebP.',
+      tooLarge: 'The image exceeds the 1.6 MB limit after optimization.',
+      convertFailed: 'Failed to convert the image.'
+    },
     savedPhotosLabel: 'Saved photos',
     clearSavedPhotosBtn: 'Clear Saved Photos',
     removePhotoAria: 'Remove photo',
@@ -288,7 +297,8 @@ export default {
     },
     campusMapTitle: 'Campus Location',
     mapIframeTitle: 'Map of Faculty of Tarbiyah IIM Surakarta Campus',
-    rightsText: 'Faculty of Tarbiyah, Mambaul Ulum Islamic Institute of Surakarta. All rights reserved.'
+    rightsText: 'Faculty of Tarbiyah, Mambaul Ulum Islamic Institute of Surakarta. All rights reserved.',
+    versionLabel: 'Website Version'
   },
   auth: {
     welcomePrefix: 'Welcome back, ',
@@ -618,5 +628,15 @@ export default {
         featureDeleted: 'Feature deleted.'
       }
     }
+  },
+  toast: {
+    success: 'Success',
+    error: 'Something Went Wrong',
+    info: 'Info'
+  },
+  apiError: {
+    unexpected: 'An unexpected error occurred.',
+    network: 'The connection to the server was lost. Check your network and try again.',
+    requestFailed: 'The request could not be processed.'
   }
 };

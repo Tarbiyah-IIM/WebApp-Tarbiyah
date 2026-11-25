@@ -5,6 +5,7 @@ import { Search, ArrowRight, CalendarDays, Compass, Newspaper, HelpCircle } from
 import ModalDialog from './ModalDialog.vue';
 import { useLandingStore } from '../stores/landing.store.js';
 import { useI18n } from '../composables/useI18n.js';
+import { dynamicEn } from '../i18n/dynamicEn.js';
 import { usePortalContent } from '../composables/usePortalContent.js';
 
 const props = defineProps({
@@ -15,8 +16,23 @@ const emit = defineEmits(['close']);
 
 const router = useRouter();
 const landingStore = useLandingStore();
-const { t, tr } = useI18n();
+const { t, tr, formatDate } = useI18n();
 const { mergeProgramCard, mergeProgramDetail, mergeInfoPage } = usePortalContent();
+
+function localizedText(rawText) {
+  if (rawText === null || rawText === undefined) return '';
+  const text = String(rawText);
+  const english = dynamicEn[text.trim()];
+  return english ? `${text} ${english}` : text;
+}
+
+function localizedList(list) {
+  return Array.isArray(list) ? list.map(localizedText).join(' ') : localizedText(list);
+}
+
+function toSearchBlob(values) {
+  return values.map(localizedText).filter(Boolean).join(' ').toLowerCase();
+}
 
 const query = ref('');
 const inputRef = ref(null);
@@ -78,7 +94,7 @@ const portalSearchIndex = computed(() => {
       key: `prodi-${slug}`,
       title: mergedCard.title || slug.toUpperCase(),
       subtitle: mergedCard.badge || mergedDetail?.degree || t('nav.programs'),
-      keywords: [
+      keywords: toSearchBlob([
         mergedCard.title,
         mergedCard.badge,
         mergedCard.description,
@@ -88,9 +104,7 @@ const portalSearchIndex = computed(() => {
         highlightsText,
         careersText,
         slug
-      ]
-        .filter(Boolean)
-        .join(' '),
+      ]),
       to
     };
   });
@@ -107,16 +121,14 @@ const portalSearchIndex = computed(() => {
       .filter(Boolean)
       .join(' ');
     const highlightsText = Array.isArray(mergedPage?.highlights)
-      ? mergedPage.highlights.map((h) => [h?.title, h?.desc].filter(Boolean).join(' ')).join(' ')
+      ? localizedList(mergedPage.highlights.map((h) => [h?.title, h?.desc].filter(Boolean).join(' ')))
       : '';
-    const stepsText = Array.isArray(mergedPage?.steps) ? mergedPage.steps.join(' ') : '';
+    const stepsText = Array.isArray(mergedPage?.steps) ? localizedList(mergedPage.steps) : '';
     return {
       key: `page-${key}`,
       title: mergedPage?.title || key,
       subtitle: mergedPage?.badge || '',
-      keywords: [mergedPage?.title, mergedPage?.badge, summaryText, highlightsText, stepsText, key]
-        .filter(Boolean)
-        .join(' '),
+      keywords: toSearchBlob([mergedPage?.title, mergedPage?.badge, summaryText, highlightsText, stepsText, key]),
       to
     };
   });
@@ -128,9 +140,7 @@ const portalSearchIndex = computed(() => {
       key: 'page-kuliah-tamu',
       title: t('guestLecture.title'),
       subtitle: t('guestLecture.heroHeading'),
-      keywords: [t('guestLecture.title'), t('guestLecture.heroHeading'), t('guestLecture.heroSubtitle')]
-        .filter(Boolean)
-        .join(' '),
+      keywords: toSearchBlob([t('guestLecture.title'), t('guestLecture.heroHeading'), t('guestLecture.heroSubtitle')]),
       to: '/kuliah-tamu'
     }
   ];
@@ -140,16 +150,30 @@ const pageMatches = computed(() => {
   if (!normalizedQuery.value) return [];
   return portalSearchIndex.value
     .filter((entry) =>
-      `${entry.title} ${entry.subtitle} ${entry.keywords}`.toLowerCase().includes(normalizedQuery.value)
+      toSearchBlob([entry.title, entry.subtitle, entry.keywords]).includes(normalizedQuery.value)
     )
     .slice(0, 4);
 });
+
+function categoryNames(item) {
+  const list = Array.isArray(item?.categories) ? item.categories : [];
+  return [...list.map((cat) => cat?.name), ...(Array.isArray(item?.category_names) ? item.category_names : [])];
+}
 
 const newsMatches = computed(() => {
   const list = landingStore.data?.testimonials || [];
   if (!normalizedQuery.value) return [];
   return list
-    .filter((n) => `${n.name} ${tr(n.name)} ${n.category_name || ''} ${n.job_title || ''} ${n.quote} ${tr(n.quote)} ${n.full_content || ''} ${tr(n.full_content)}`.toLowerCase().includes(normalizedQuery.value))
+    .filter((n) =>
+      toSearchBlob([
+        n.name,
+        n.category_name,
+        ...categoryNames(n),
+        n.job_title,
+        n.quote,
+        n.full_content
+      ]).includes(normalizedQuery.value)
+    )
     .slice(0, 4);
 });
 
@@ -157,7 +181,16 @@ const agendaMatches = computed(() => {
   const list = landingStore.data?.agendas || [];
   if (!normalizedQuery.value) return [];
   return list
-    .filter((a) => `${a.title} ${tr(a.title)} ${a.event_date || ''} ${a.excerpt || ''} ${a.description || ''}`.toLowerCase().includes(normalizedQuery.value))
+    .filter((a) =>
+      toSearchBlob([
+        a.title,
+        a.event_date,
+        formatDate(a.event_date),
+        a.event_time,
+        a.excerpt,
+        a.description
+      ]).includes(normalizedQuery.value)
+    )
     .slice(0, 4);
 });
 
@@ -165,7 +198,7 @@ const faqMatches = computed(() => {
   const list = landingStore.data?.faqs || [];
   if (!normalizedQuery.value) return [];
   return list
-    .filter((f) => `${f.question} ${tr(f.question)} ${f.answer} ${tr(f.answer)}`.toLowerCase().includes(normalizedQuery.value))
+    .filter((f) => toSearchBlob([f.question, f.answer]).includes(normalizedQuery.value))
     .slice(0, 4);
 });
 
@@ -296,7 +329,7 @@ function handleFormSubmit() {
             >
               <div class="min-w-0">
                 <p class="text-xs font-bold text-brand-900">{{ tr(item.title) }}</p>
-                <p class="mt-0.5 line-clamp-1 text-[11px] text-slate-500">{{ tr(item.event_date) }}</p>
+                <p class="mt-0.5 line-clamp-1 text-[11px] text-slate-500">{{ formatDate(item.event_date) }}</p>
               </div>
               <ArrowRight class="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
             </button>

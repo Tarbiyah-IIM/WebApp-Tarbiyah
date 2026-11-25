@@ -178,6 +178,7 @@ export default {
     statusDone: 'Selesai',
     statusRevision: 'Perlu Revisi',
     statusProcess: 'Sedang Diproses Admin',
+    statusNotStarted: 'Belum Dimulai',
     bannerDone: 'Administrasi selesai diproses Admin Fakultas',
     bannerRevision: 'Perlu revisi data dari Dosen Pengampu',
     bannerProcess: 'Sedang diproses Admin Fakultas',
@@ -229,6 +230,14 @@ export default {
     photoHint: 'JPG/PNG/WebP otomatis dioptimasi sebelum diunggah ke Google Drive.',
     photoMaxReached: 'Maksimal 3 foto narasumber per agenda.',
     photoError: 'Gagal memproses file foto.',
+    photoValidation: {
+      readFailed: 'Gagal membaca berkas gambar.',
+      invalidFile: 'Berkas gambar tidak valid.',
+      unsupportedType: 'Hanya gambar JPG, PNG, WebP, atau GIF yang didukung.',
+      gifTooLarge: 'Ukuran file GIF maksimal 1,5 MB. Silakan gunakan JPG, PNG, atau WebP.',
+      tooLarge: 'Ukuran gambar melebihi batas maksimal 1,6 MB setelah optimasi.',
+      convertFailed: 'Gagal mengonversi gambar.'
+    },
     savedPhotosLabel: 'Foto tersimpan',
     clearSavedPhotosBtn: 'Hapus Foto Tersimpan',
     removePhotoAria: 'Hapus foto',
@@ -288,7 +297,8 @@ export default {
     },
     campusMapTitle: 'Lokasi Kampus',
     mapIframeTitle: 'Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta',
-    rightsText: 'Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. Hak cipta dilindungi.'
+    rightsText: 'Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. Hak cipta dilindungi.',
+    versionLabel: 'Versi Website'
   },
   auth: {
     welcomePrefix: 'Selamat datang, ',
@@ -618,5 +628,15 @@ export default {
         featureDeleted: 'Keunggulan dihapus.'
       }
     }
+  },
+  toast: {
+    success: 'Berhasil',
+    error: 'Terjadi Kesalahan',
+    info: 'Info'
+  },
+  apiError: {
+    unexpected: 'Terjadi kesalahan tidak terduga.',
+    network: 'Koneksi ke server terputus. Periksa jaringan Anda lalu coba lagi.',
+    requestFailed: 'Permintaan gagal diproses.'
   }
 };

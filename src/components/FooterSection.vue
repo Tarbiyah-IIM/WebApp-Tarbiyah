@@ -161,7 +161,7 @@ const phoneText = computed(() => contacts.value.phoneText || t('footer.phoneText
         <span
           class="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-bold text-slate-300"
         >
-          Version Website v{{ appVersion }}
+          {{ t('footer.versionLabel') }} v{{ appVersion }}
         </span>
       </div>
     </div>
