@@ -14,7 +14,7 @@ const emit = defineEmits(['update:page']);
 
 const visiblePages = computed(() => {
   const total = props.totalPages;
-  if (total <= 3) {
+  if (total <= 4) {
     return Array.from({ length: total }, (_, idx) => idx + 1);
   }
   if (props.currentPage <= 3) {
@@ -25,11 +25,11 @@ const visiblePages = computed(() => {
   return Array.from({ length: end - start + 1 }, (_, idx) => start + idx);
 });
 
-const showLeadingOne = computed(() => props.totalPages > 3 && props.currentPage > 3);
+const showLeadingOne = computed(() => props.totalPages > 4 && props.currentPage > 3);
 
 const showTrailingEllipsis = computed(() => {
   const lastVisible = visiblePages.value[visiblePages.value.length - 1] || 1;
-  return props.totalPages > 3 && lastVisible < props.totalPages;
+  return props.totalPages > 4 && lastVisible < props.totalPages;
 });
 
 function goToPage(page) {

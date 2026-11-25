@@ -1,6 +1,7 @@
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { ref } from 'vue';
 import { X } from 'lucide-vue-next';
+import { useFocusTrap } from '../composables/useFocusTrap.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -14,72 +15,10 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 const panelRef = ref(null);
-let lastFocusedElement = null;
 
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled]):not([type="hidden"])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])'
-].join(', ');
-
-function getFocusableElements() {
-  if (!panelRef.value) return [];
-  return Array.from(panelRef.value.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
-    (el) => el.offsetParent !== null || el === document.activeElement
-  );
-}
-
-watch(
-  () => props.open,
-  async (isOpen) => {
-    if (typeof document === 'undefined') return;
-    if (isOpen) {
-      lastFocusedElement = document.activeElement;
-      await nextTick();
-      const focusables = getFocusableElements();
-      if (focusables.length > 0) {
-        focusables[0].focus();
-      } else {
-        panelRef.value?.focus();
-      }
-    } else if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
-      lastFocusedElement.focus();
-      lastFocusedElement = null;
-    }
-  }
-);
-
-function handleKey(e) {
-  if (!props.open) return;
-  if (e.key === 'Escape') {
-    emit('close');
-    return;
-  }
-  if (e.key === 'Tab') {
-    const focusables = getFocusableElements();
-    if (!focusables.length) {
-      e.preventDefault();
-      return;
-    }
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (e.shiftKey) {
-      if (document.activeElement === first || !panelRef.value?.contains(document.activeElement)) {
-        e.preventDefault();
-        last.focus();
-      }
-    } else if (document.activeElement === last || !panelRef.value?.contains(document.activeElement)) {
-      e.preventDefault();
-      first.focus();
-    }
-  }
-}
-
-onMounted(() => window.addEventListener('keydown', handleKey));
-onBeforeUnmount(() => window.removeEventListener('keydown', handleKey));
+useFocusTrap(panelRef, () => props.open, {
+  onEscape: () => emit('close')
+});
 </script>
 
 <template>

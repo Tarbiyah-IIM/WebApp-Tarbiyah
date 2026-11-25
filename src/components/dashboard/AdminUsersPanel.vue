@@ -91,7 +91,7 @@ function confirmSuspend() {
                 :value="u.role"
                 :disabled="syncing || auth.user?.id === u.id"
                 class="min-h-[36px] rounded-xl border border-surface-border px-3 text-xs font-semibold disabled:opacity-60"
-                @change="emit('update-role', u, $event.target.value)"
+                @change="emit('update-role', u, $event.target.value, () => { $event.target.value = u.role; })"
               >
                 <option value="student">student</option>
                 <option value="mentor">mentor</option>

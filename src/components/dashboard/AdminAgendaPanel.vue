@@ -191,6 +191,7 @@ function confirmDelete() {
         :current-page="currentPage"
         :total-pages="totalPages"
         :aria-label="t('agenda.navAria')"
+        :prev-label="t('news.prevLabel')"
         :next-label="t('news.nextLabel')"
         @update:page="currentPage = $event"
       />

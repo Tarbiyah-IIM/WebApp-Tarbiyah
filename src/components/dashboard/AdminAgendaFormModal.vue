@@ -96,12 +96,16 @@ watch(
 async function handleCoverFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  selectedCoverName.value = file.name;
   uploadingCover.value = true;
   try {
     const uploadedUrl = await props.uploadHandler(file);
     if (uploadedUrl) {
       form.coverUrl = uploadedUrl;
+      selectedCoverName.value = file.name;
+    }
+  } catch {
+    if (!form.coverUrl) {
+      selectedCoverName.value = '';
     }
   } finally {
     uploadingCover.value = false;

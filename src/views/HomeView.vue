@@ -18,7 +18,10 @@ const landingStore = useLandingStore();
 const { loading, error, isOffline, run } = useAsyncState();
 
 async function loadLanding(force = false) {
-  await run(() => landingStore.fetchLanding(force));
+  try {
+    await run(() => landingStore.fetchLanding(force));
+  } catch {
+  }
 }
 
 onMounted(() => {

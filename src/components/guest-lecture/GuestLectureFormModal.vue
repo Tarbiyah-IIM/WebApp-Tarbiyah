@@ -101,7 +101,7 @@ function handleSubmit() {
       form.jam.trim()
   );
   if (!hasCore) {
-    formError.value = 'Isi minimal satu informasi agenda kuliah tamu sebelum mengirim.';
+    formError.value = t('guestLecture.emptyFormError');
     return;
   }
   emit('submit', {

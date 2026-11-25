@@ -35,7 +35,7 @@ export function parseDmyToIso(dmyValue) {
 }
 
 export function isSafeExternalHttpUrl(rawUrl) {
-  if (typeof rawUrl !== 'string') return false;
+  if (typeof rawUrl !== 'string' || /[\r\n\t]/.test(rawUrl)) return false;
   const trimmed = rawUrl.trim();
   if (!trimmed) return false;
   try {

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { ChevronLeft, ChevronRight, Images } from 'lucide-vue-next';
+import { useI18n } from '../composables/useI18n.js';
 
 const props = defineProps({
   images: { type: Array, required: true },
@@ -8,6 +9,7 @@ const props = defineProps({
   heading: { type: String, required: true }
 });
 
+const { t } = useI18n();
 const activeSlide = ref(0);
 
 watch(
@@ -44,13 +46,13 @@ function nextSlide() {
     <div class="relative overflow-hidden rounded-2xl border border-surface-border bg-slate-100">
       <img
         :src="images[activeSlide]"
-        :alt="`${title} - Foto ${activeSlide + 1}`"
+        :alt="`${title} - ${t('news.photoAltLabel')} ${activeSlide + 1}`"
         class="aspect-[16/9] w-full object-cover"
       />
       <button
         v-if="images.length > 1"
         type="button"
-        aria-label="Foto sebelumnya"
+        :aria-label="t('news.prevPhotoAria')"
         class="absolute left-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-brand-900 shadow hover:bg-white"
         @click="prevSlide"
       >
@@ -59,7 +61,7 @@ function nextSlide() {
       <button
         v-if="images.length > 1"
         type="button"
-        aria-label="Foto berikutnya"
+        :aria-label="t('news.nextPhotoAria')"
         class="absolute right-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-brand-900 shadow hover:bg-white"
         @click="nextSlide"
       >

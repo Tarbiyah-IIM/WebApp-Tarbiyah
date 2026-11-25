@@ -16,6 +16,7 @@ import {
 } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth.store.js';
 import { useI18n } from '../composables/useI18n.js';
+import { useFocusTrap } from '../composables/useFocusTrap.js';
 
 const props = defineProps({
   navMenus: {
@@ -39,6 +40,11 @@ const auth = useAuthStore();
 const { t } = useI18n();
 
 const expandedMoreGroup = ref(null);
+const sheetRef = ref(null);
+
+useFocusTrap(sheetRef, () => Boolean(props.activeSheet), {
+  onEscape: () => emit('close-sheet')
+});
 
 watch(
   () => props.activeSheet,
@@ -114,6 +120,8 @@ function handleSearchClick() {
     <section
       v-if="activeSheet"
       id="mobile-bottom-sheet"
+      ref="sheetRef"
+      tabindex="-1"
       role="dialog"
       aria-modal="true"
       :aria-label="sheetHeading"

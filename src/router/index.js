@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '../stores/auth.store.js';
+import { registerUnauthorizedRedirect, useAuthStore } from '../stores/auth.store.js';
 
 const routes = [
   {
@@ -84,7 +84,13 @@ const router = createRouter({
       return new Promise((resolve) => {
         let attempts = 0;
         const tryFind = () => {
-          const el = document.querySelector(to.hash);
+          let el = null;
+          try {
+            el = document.querySelector(to.hash);
+          } catch {
+            resolve({ top: 0 });
+            return;
+          }
           if (el || attempts >= 24) {
             resolve(el ? { el: to.hash, behavior: 'smooth' } : { top: 0 });
             return;
@@ -118,6 +124,13 @@ router.beforeEach(async (to) => {
   }
 
   return true;
+});
+
+registerUnauthorizedRedirect(() => {
+  const current = router.currentRoute.value;
+  if (current?.meta?.requiresAuth && current.path !== '/login') {
+    router.push({ path: '/login', query: { redirect: current.fullPath } }).catch(() => {});
+  }
 });
 
 export default router;

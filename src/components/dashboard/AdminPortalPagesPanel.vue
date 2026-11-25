@@ -159,6 +159,7 @@ async function handleStructureUpload(event) {
   try {
     const url = await props.uploadHandler(file);
     if (url) draft.value.structureImageUrl = url;
+  } catch {
   } finally {
     uploading.value = false;
     if (fileInputRef.value) fileInputRef.value.value = '';
@@ -250,37 +251,59 @@ function saveCurrent() {
   emit('save-settings', { cms_profile: JSON.stringify(profilePayload) }, t('adminDashboard.cmsPanel.portalPages.savedToast'));
 }
 
+function resetLocalizedEntry(all, key, activeLocale) {
+  const entry = all[key];
+  if (!entry || typeof entry !== 'object') return;
+  if (activeLocale === 'en') {
+    if (entry.locales?.en) {
+      delete entry.locales.en;
+      if (Object.keys(entry.locales).length === 0) {
+        delete entry.locales;
+      }
+      if (Object.keys(entry).length === 0) {
+        delete all[key];
+      }
+    }
+    return;
+  }
+  const enOverride = entry.locales?.en;
+  if (enOverride && Object.keys(enOverride).length > 0) {
+    all[key] = { locales: { en: enOverride } };
+  } else {
+    delete all[key];
+  }
+}
+
 function resetCurrentDefault() {
   const activeLocale = ui.locale === 'en' ? 'en' : 'id';
   if (mode.value === 'program') {
     const all = { ...safeParseCmsJson(props.settings?.cms_programs, {}) };
-    if (activeLocale === 'en' && all[targetId.value]?.locales?.en) {
-      delete all[targetId.value].locales.en;
-    } else {
-      delete all[targetId.value];
-    }
+    resetLocalizedEntry(all, targetId.value, activeLocale);
     emit('save-settings', { cms_programs: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
     return;
   }
   if (mode.value === 'page') {
     const all = { ...safeParseCmsJson(props.settings?.cms_info_pages, {}) };
-    if (activeLocale === 'en' && all[targetId.value]?.locales?.en) {
-      delete all[targetId.value].locales.en;
-    } else {
-      delete all[targetId.value];
-    }
+    resetLocalizedEntry(all, targetId.value, activeLocale);
     emit('save-settings', { cms_info_pages: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
     return;
   }
+  const rawProfile = { ...safeParseCmsJson(props.settings?.cms_profile, {}) };
   if (activeLocale === 'en') {
-    const rawProfile = { ...safeParseCmsJson(props.settings?.cms_profile, {}) };
     if (rawProfile.locales?.en) {
       delete rawProfile.locales.en;
+      if (Object.keys(rawProfile.locales).length === 0) {
+        delete rawProfile.locales;
+      }
     }
     emit('save-settings', { cms_profile: JSON.stringify(rawProfile) }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
     return;
   }
-  emit('save-settings', { cms_profile: '{}' }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
+  const enOverride = rawProfile.locales?.en;
+  const nextProfile = enOverride && Object.keys(enOverride).length > 0
+    ? { locales: { en: enOverride } }
+    : {};
+  emit('save-settings', { cms_profile: JSON.stringify(nextProfile) }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
 }
 </script>
 

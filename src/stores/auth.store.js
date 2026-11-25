@@ -28,6 +28,12 @@ function writeSessionHint(active) {
   } catch {}
 }
 
+let unauthorizedRedirectFn = null;
+
+export function registerUnauthorizedRedirect(fn) {
+  unauthorizedRedirectFn = typeof fn === 'function' ? fn : null;
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
   const accessToken = ref('');
@@ -54,6 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
     },
     onUnauthorized: () => {
       clearSession();
+      unauthorizedRedirectFn?.();
     }
   });
 

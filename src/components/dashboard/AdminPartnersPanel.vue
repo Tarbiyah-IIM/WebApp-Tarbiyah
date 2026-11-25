@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
 
-defineProps({
+const props = defineProps({
   partners: { type: Array, required: true },
   syncing: { type: Boolean, default: false }
 });
@@ -13,6 +13,16 @@ const { t } = useI18n();
 
 const form = ref(emptyForm());
 const pendingDelete = ref(null);
+
+watch(
+  () => props.partners,
+  (list) => {
+    if (form.value.id && !list.some((item) => item.id === form.value.id)) {
+      form.value = emptyForm();
+    }
+  },
+  { deep: true }
+);
 
 function emptyForm() {
   return { id: null, name: '', logoUrl: '', url: '', sortOrder: 0 };

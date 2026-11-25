@@ -168,12 +168,16 @@ function removeCategory(catId) {
 async function handleCoverFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  selectedCoverName.value = file.name;
   uploadingCover.value = true;
   try {
     const uploadedUrl = await props.uploadHandler(file);
     if (uploadedUrl) {
       form.avatarUrl = uploadedUrl;
+      selectedCoverName.value = file.name;
+    }
+  } catch {
+    if (!form.avatarUrl) {
+      selectedCoverName.value = '';
     }
   } finally {
     uploadingCover.value = false;
@@ -188,9 +192,12 @@ async function handleGalleryFiles(event) {
   try {
     for (const file of files) {
       if (form.galleryUrls.length >= 20) break;
-      const uploadedUrl = await props.uploadHandler(file);
-      if (uploadedUrl && !form.galleryUrls.includes(uploadedUrl)) {
-        form.galleryUrls.push(uploadedUrl);
+      try {
+        const uploadedUrl = await props.uploadHandler(file);
+        if (uploadedUrl && !form.galleryUrls.includes(uploadedUrl)) {
+          form.galleryUrls.push(uploadedUrl);
+        }
+      } catch {
       }
     }
   } finally {
@@ -270,43 +277,48 @@ function submit() {
           {{ t('adminDashboard.cmsPanel.newsCategoryLabel') }}
           <span class="text-rose-500" aria-hidden="true">*</span>
         </label>
-        <button
-          id="news-modal-category-trigger"
-          type="button"
-          aria-labelledby="news-modal-category-label"
-          :aria-expanded="categoryMenuOpen"
-          class="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border bg-white px-3.5 py-2 text-left text-sm transition"
+        <div
+          class="overflow-hidden rounded-xl border bg-white transition"
           :class="categoryError ? 'border-rose-400 ring-1 ring-rose-300' : 'border-surface-border hover:border-brand-300'"
-          @click="categoryMenuOpen = !categoryMenuOpen"
         >
-          <span v-if="selectedCategories.length === 0" class="text-slate-400">
-            {{ t('adminDashboard.cmsPanel.selectCategoryMulti') }}
-          </span>
-          <span v-else class="flex flex-wrap items-center gap-1.5">
+          <div
+            v-if="selectedCategories.length > 0"
+            class="flex flex-wrap items-center gap-1.5 border-b border-surface-border/70 px-3 py-2"
+          >
             <span
               v-for="cat in selectedCategories"
               :key="cat.id"
               class="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700"
             >
               <span>{{ cat.name }}</span>
-              <span
-                role="button"
-                tabindex="0"
+              <button
+                type="button"
                 :aria-label="'Hapus ' + cat.name"
                 class="rounded-full p-0.5 hover:bg-brand-100"
-                @click.stop="removeCategory(cat.id)"
-                @keydown.enter.stop.prevent="removeCategory(cat.id)"
+                @click="removeCategory(cat.id)"
               >
                 <X class="h-3 w-3" aria-hidden="true" />
-              </span>
+              </button>
             </span>
-          </span>
-          <ChevronDown
-            class="h-4 w-4 shrink-0 text-slate-400 transition"
-            :class="{ 'rotate-180': categoryMenuOpen }"
-            aria-hidden="true"
-          />
-        </button>
+          </div>
+          <button
+            id="news-modal-category-trigger"
+            type="button"
+            aria-labelledby="news-modal-category-label"
+            :aria-expanded="categoryMenuOpen"
+            class="flex min-h-[42px] w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-sm focus:outline-none"
+            @click="categoryMenuOpen = !categoryMenuOpen"
+          >
+            <span class="text-slate-400">
+              {{ t('adminDashboard.cmsPanel.selectCategoryMulti') }}
+            </span>
+            <ChevronDown
+              class="h-4 w-4 shrink-0 text-slate-400 transition"
+              :class="{ 'rotate-180': categoryMenuOpen }"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
 
         <div
           v-if="categoryMenuOpen"

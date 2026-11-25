@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
 
-defineProps({
+const props = defineProps({
   features: { type: Array, required: true },
   syncing: { type: Boolean, default: false }
 });
@@ -13,6 +13,16 @@ const { t } = useI18n();
 
 const form = ref(emptyForm());
 const pendingDelete = ref(null);
+
+watch(
+  () => props.features,
+  (list) => {
+    if (form.value.id && !list.some((item) => item.id === form.value.id)) {
+      form.value = emptyForm();
+    }
+  },
+  { deep: true }
+);
 
 function emptyForm() {
   return { id: null, title: '', description: '', icon: 'check', sortOrder: 0 };
@@ -70,10 +80,13 @@ function confirmDelete() {
             <option value="check">Check</option>
             <option value="award">Award</option>
             <option value="book">Book</option>
+            <option value="compass">Compass</option>
             <option value="graduation">Graduation</option>
+            <option value="layout-dashboard">Dashboard</option>
             <option value="sparkles">Sparkles</option>
             <option value="shield">Shield</option>
             <option value="users">Users</option>
+            <option value="video">Video</option>
           </select>
           <input
             v-model.number="form.sortOrder"

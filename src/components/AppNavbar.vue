@@ -67,6 +67,7 @@ watch(
   () => route.fullPath,
   () => {
     closeAllMenus();
+    searchModalOpen.value = false;
   }
 );
 

@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { ref } from 'vue';
 import { AlertTriangle, X } from 'lucide-vue-next';
+import { useFocusTrap } from '../../composables/useFocusTrap.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -12,15 +13,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['confirm', 'cancel']);
+const dialogRef = ref(null);
 
-function handleKeydown(event) {
-  if (props.open && event.key === 'Escape' && !props.busy) {
-    emit('cancel');
+useFocusTrap(dialogRef, () => props.open, {
+  onEscape: () => {
+    if (!props.busy) emit('cancel');
   }
-}
-
-onMounted(() => document.addEventListener('keydown', handleKeydown));
-onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
+});
 </script>
 
 <template>
@@ -31,10 +30,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
       @click.self="!busy && emit('cancel')"
     >
       <div
+        ref="dialogRef"
+        tabindex="-1"
         role="dialog"
         aria-modal="true"
         :aria-label="title"
-        class="w-full max-w-md rounded-2xl border border-surface-border bg-white p-6 shadow-float"
+        class="w-full max-w-md rounded-2xl border border-surface-border bg-white p-6 shadow-float focus:outline-none"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-start gap-3">

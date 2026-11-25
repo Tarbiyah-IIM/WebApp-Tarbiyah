@@ -1,7 +1,8 @@
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { ExternalLink, ImagePlus, Trash2, X } from 'lucide-vue-next';
 import { useI18n } from '../../composables/useI18n.js';
+import { useFocusTrap } from '../../composables/useFocusTrap.js';
 import {
   formatIsoToDmy,
   isSafeExternalHttpUrl,
@@ -21,6 +22,7 @@ const { t } = useI18n();
 
 const MAX_PHOTOS = 3;
 const fileInputRef = ref(null);
+const drawerRef = ref(null);
 const processingPhotos = ref(false);
 const photoError = ref('');
 const newPhotos = ref([]);
@@ -124,14 +126,22 @@ function handleSubmit() {
   });
 }
 
-function handleKeydown(event) {
-  if (props.open && event.key === 'Escape' && !isBusy.value) {
-    emit('close');
-  }
-}
+const isRevisionMode = computed(() => {
+  const status = String(props.item?.status || '').trim().toLowerCase();
+  return status === 'in revision' || status === 'revision';
+});
 
-onMounted(() => document.addEventListener('keydown', handleKeydown));
-onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
+useFocusTrap(
+  drawerRef,
+  () => Boolean(props.open && props.item),
+  {
+    onEscape: () => {
+      if (!isBusy.value) {
+        emit('close');
+      }
+    }
+  }
+);
 </script>
 
 <template>
@@ -142,6 +152,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
       @click.self="!isBusy && emit('close')"
     >
       <aside
+        ref="drawerRef"
+        tabindex="-1"
         role="dialog"
         aria-modal="true"
         :aria-label="t('guestLecture.drawerTitle')"
@@ -194,7 +206,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div v-if="!item.prodi">
+              <div v-if="isRevisionMode || !item.prodi">
                 <label for="gl-edit-prodi" class="block text-xs font-bold text-brand-900">
                   {{ t('guestLecture.fields.prodi') }} <span class="text-rose-600">*</span>
                 </label>
@@ -210,7 +222,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
                 </select>
               </div>
 
-              <div v-if="item.needsDosenPengampu || !item.dosenPengampu">
+              <div v-if="isRevisionMode || item.needsDosenPengampu || !item.dosenPengampu">
                 <label for="gl-edit-lecturer" class="block text-xs font-bold text-brand-900">
                   {{ t('guestLecture.fields.lecturer') }} <span class="text-rose-600">*</span>
                 </label>
@@ -224,7 +236,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
                 />
               </div>
 
-              <div v-if="item.needsMataKuliah || !item.mataKuliah" class="sm:col-span-2">
+              <div v-if="isRevisionMode || item.needsMataKuliah || !item.mataKuliah" class="sm:col-span-2">
                 <label for="gl-edit-course" class="block text-xs font-bold text-brand-900">
                   {{ t('guestLecture.fields.course') }} <span class="text-rose-600">*</span>
                 </label>
@@ -237,7 +249,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
                 />
               </div>
 
-              <div v-if="item.needsDosenTamu || !item.dosenTamu" class="sm:col-span-2">
+              <div v-if="isRevisionMode || item.needsDosenTamu || !item.dosenTamu" class="sm:col-span-2">
                 <label for="gl-edit-speaker" class="block text-xs font-bold text-brand-900">
                   {{ t('guestLecture.fields.speaker') }} <span class="text-rose-600">*</span>
                 </label>

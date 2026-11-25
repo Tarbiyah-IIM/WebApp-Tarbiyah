@@ -5,6 +5,7 @@ import { Search, ArrowRight, CalendarDays, Compass, Newspaper, HelpCircle } from
 import ModalDialog from './ModalDialog.vue';
 import { useLandingStore } from '../stores/landing.store.js';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false }
@@ -15,6 +16,7 @@ const emit = defineEmits(['close']);
 const router = useRouter();
 const landingStore = useLandingStore();
 const { t, tr } = useI18n();
+const { mergeProgramCard, mergeProgramDetail, mergeInfoPage } = usePortalContent();
 
 const query = ref('');
 const inputRef = ref(null);
@@ -33,20 +35,62 @@ watch(
 
 const normalizedQuery = computed(() => query.value.trim().toLowerCase());
 
+function flattenSummaryBlocks(blocks) {
+  if (!Array.isArray(blocks)) return '';
+  return blocks
+    .map((block) => {
+      if (typeof block?.text === 'string') return block.text;
+      if (Array.isArray(block?.segments)) {
+        return block.segments.map((seg) => seg?.text || seg?.label || '').join(' ');
+      }
+      return '';
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
 const portalSearchIndex = computed(() => {
   const prodiPrograms = t('portalPages.programs') || {};
   const infoPages = t('portalPages.infoPages') || {};
+  const courseCards = t('courses.cards') || [];
+  const cardsById = Object.fromEntries(courseCards.map((card) => [card.id, card]));
+
   const prodiItems = [
     { slug: 'pai', to: '/program-studi/pai' },
     { slug: 'pgmi', to: '/program-studi/pgmi' },
     { slug: 'piaud', to: '/program-studi/piaud' }
   ].map(({ slug, to }) => {
-    const p = prodiPrograms[slug] || {};
+    const baseCard = cardsById[slug] || {
+      id: slug,
+      badge: t('nav.programs'),
+      title: slug.toUpperCase(),
+      description: ''
+    };
+    const mergedCard = mergeProgramCard(baseCard);
+    const mergedDetail = mergeProgramDetail(slug, prodiPrograms[slug] || {});
+    const highlightsText = Array.isArray(mergedDetail?.highlights)
+      ? mergedDetail.highlights.join(' ')
+      : '';
+    const careersText = Array.isArray(mergedDetail?.careers)
+      ? mergedDetail.careers.join(' ')
+      : '';
     return {
       key: `prodi-${slug}`,
-      title: p.title || slug.toUpperCase(),
-      subtitle: p.badge || t('nav.programs'),
-      keywords: `${p.title || ''} ${p.overview || ''} ${slug}`,
+      title: mergedCard.title || slug.toUpperCase(),
+      subtitle: mergedCard.badge || mergedDetail?.degree || t('nav.programs'),
+      keywords: [
+        mergedCard.title,
+        mergedCard.badge,
+        mergedCard.description,
+        mergedDetail?.degree,
+        mergedDetail?.studyMode,
+        mergedDetail?.overview,
+        highlightsText,
+        careersText,
+        slug
+      ]
+        .filter(Boolean)
+        .join(' '),
       to
     };
   });
@@ -58,12 +102,21 @@ const portalSearchIndex = computed(() => {
     { key: 'pkn', to: '/publikasi/pkn' },
     { key: 'jurnal', to: '/publikasi/jurnal' }
   ].map(({ key, to }) => {
-    const p = infoPages[key] || {};
+    const mergedPage = mergeInfoPage(key, infoPages[key] || { title: key });
+    const summaryText = [mergedPage?.summary, flattenSummaryBlocks(mergedPage?.summaryBlocks)]
+      .filter(Boolean)
+      .join(' ');
+    const highlightsText = Array.isArray(mergedPage?.highlights)
+      ? mergedPage.highlights.map((h) => [h?.title, h?.desc].filter(Boolean).join(' ')).join(' ')
+      : '';
+    const stepsText = Array.isArray(mergedPage?.steps) ? mergedPage.steps.join(' ') : '';
     return {
       key: `page-${key}`,
-      title: p.title || key,
-      subtitle: p.badge || '',
-      keywords: `${p.title || ''} ${p.badge || ''} ${p.summary || ''} ${key}`,
+      title: mergedPage?.title || key,
+      subtitle: mergedPage?.badge || '',
+      keywords: [mergedPage?.title, mergedPage?.badge, summaryText, highlightsText, stepsText, key]
+        .filter(Boolean)
+        .join(' '),
       to
     };
   });
@@ -75,7 +128,9 @@ const portalSearchIndex = computed(() => {
       key: 'page-kuliah-tamu',
       title: t('guestLecture.title'),
       subtitle: t('guestLecture.heroHeading'),
-      keywords: `${t('guestLecture.title')} ${t('guestLecture.heroHeading')} ${t('guestLecture.heroSubtitle')}`,
+      keywords: [t('guestLecture.title'), t('guestLecture.heroHeading'), t('guestLecture.heroSubtitle')]
+        .filter(Boolean)
+        .join(' '),
       to: '/kuliah-tamu'
     }
   ];

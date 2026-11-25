@@ -1,5 +1,5 @@
 <script setup>
-import { Award, BookOpen, CheckCircle2, GraduationCap, ShieldCheck, Sparkles, Users } from 'lucide-vue-next';
+import { Award, BookOpen, CheckCircle2, Compass, GraduationCap, LayoutDashboard, ShieldCheck, Sparkles, Users, Video } from 'lucide-vue-next';
 import howTarbiyahImage from '../assets/how-tarbiyah.webp';
 import { useI18n } from '../composables/useI18n.js';
 
@@ -13,10 +13,13 @@ const ICON_MAP = {
   check: CheckCircle2,
   award: Award,
   book: BookOpen,
+  compass: Compass,
   graduation: GraduationCap,
+  'layout-dashboard': LayoutDashboard,
   sparkles: Sparkles,
   shield: ShieldCheck,
-  users: Users
+  users: Users,
+  video: Video
 };
 
 function resolveFeatureIcon(iconKey) {

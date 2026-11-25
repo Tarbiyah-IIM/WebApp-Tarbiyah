@@ -237,6 +237,7 @@ export default {
     savingBtn: 'Menyimpan...',
     saveCompleteBtn: 'Simpan Isian (Set Process)',
     saveNewBtn: 'Simpan Agenda',
+    emptyFormError: 'Isi minimal satu informasi agenda kuliah tamu sebelum mengirim.',
     editRevisionBtn: 'Perbaiki Data',
     zoomModalTitle: 'Salin Undangan Rapat',
     zoomCopyBtn: 'Salin Undangan Rapat',
@@ -253,7 +254,10 @@ export default {
     nextLabel: 'Berikutnya',
     readMore: 'Baca Selengkapnya',
     galleryHeading: 'Dokumentasi Kegiatan',
-    photosCountBadge: 'Foto'
+    photosCountBadge: 'Foto',
+    photoAltLabel: 'Foto',
+    prevPhotoAria: 'Foto sebelumnya',
+    nextPhotoAria: 'Foto berikutnya'
   },
   agenda: {
     badge: 'Jadwal & Kegiatan',

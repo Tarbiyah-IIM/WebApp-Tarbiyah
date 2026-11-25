@@ -123,14 +123,17 @@ async function handleSaveFeature(payload, onDone) {
   if (res.ok && onDone) onDone();
 }
 
-async function handleUpdateUserRole(user, role) {
-  await runSafeAction(() =>
+async function handleUpdateUserRole(user, role, onError) {
+  const res = await runSafeAction(() =>
     portal.updateUser(
       user.id,
       { role, isActive: Boolean(user.is_active) },
       user.name + t('adminDashboard.toasts.roleUpdatedSuffix') + role + '.'
     )
   );
+  if (!res.ok && onError) {
+    onError();
+  }
 }
 
 async function handleToggleUserActive(user) {
@@ -149,7 +152,7 @@ async function handleLogout() {
 }
 
 onMounted(() => {
-  portal.loadAll();
+  portal.loadAll().catch(() => {});
 });
 </script>
 
@@ -165,7 +168,7 @@ onMounted(() => {
       :loading="portal.loading.value"
       :error="portal.error.value"
       :offline="portal.isOffline.value"
-      @retry="portal.loadAll"
+      @retry="() => portal.loadAll().catch(() => {})"
     >
       <AdminOverviewPanel
         v-if="activeTab === 'overview'"

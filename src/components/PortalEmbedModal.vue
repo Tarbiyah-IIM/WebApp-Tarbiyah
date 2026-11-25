@@ -96,7 +96,7 @@ onBeforeUnmount(clearTimer);
           :title="item.label"
           class="w-full border-0 bg-white"
           :class="iframeLoading ? 'h-0 opacity-0' : 'h-[58vh] min-h-[320px] opacity-100'"
-          loading="lazy"
+          loading="eager"
           @load="handleIframeLoad"
         />
       </div>

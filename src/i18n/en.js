@@ -237,6 +237,7 @@ export default {
     savingBtn: 'Saving...',
     saveCompleteBtn: 'Save Details (Set Process)',
     saveNewBtn: 'Save Schedule',
+    emptyFormError: 'Fill in at least one guest lecture detail before submitting.',
     editRevisionBtn: 'Edit Revision',
     zoomModalTitle: 'Copy Meeting Invitation',
     zoomCopyBtn: 'Copy Meeting Invitation',
@@ -253,7 +254,10 @@ export default {
     nextLabel: 'Next',
     readMore: 'Read More',
     galleryHeading: 'Event Documentation',
-    photosCountBadge: 'Photos'
+    photosCountBadge: 'Photos',
+    photoAltLabel: 'Photo',
+    prevPhotoAria: 'Previous photo',
+    nextPhotoAria: 'Next photo'
   },
   agenda: {
     badge: 'Schedules & Events',

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { ArrowLeft, CheckCircle2, Download, ExternalLink, FileText, Lock } from 'lucide-vue-next';
 import PortalEmbedModal from '../components/PortalEmbedModal.vue';
 import PortalPageShell from '../components/PortalPageShell.vue';
@@ -17,6 +17,14 @@ const { mergeInfoPage } = usePortalContent();
 const toast = useToast();
 const activePopupItem = ref(null);
 const workPermitModalOpen = ref(false);
+
+watch(
+  () => props.pageKey,
+  () => {
+    activePopupItem.value = null;
+    workPermitModalOpen.value = false;
+  }
+);
 
 const infoPages = computed(() => t('portalPages.infoPages') || {});
 const pageData = computed(() => mergeInfoPage(props.pageKey, infoPages.value[props.pageKey] || null));

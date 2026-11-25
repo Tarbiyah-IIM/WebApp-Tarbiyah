@@ -74,7 +74,7 @@ function syncOfflineState() {
   }
 }
 
-async function loadData(forceRefresh = false) {
+async function loadData(forceRefresh = false, { silentToast = false } = {}) {
   if (offline.value) {
     loading.value = false;
     return;
@@ -108,7 +108,7 @@ async function loadData(forceRefresh = false) {
     if (!forceRefresh && trackingLectures.value.length === 0 && incompleteLectures.value.length > 0) {
       activeTab.value = 'incomplete';
     }
-    if (forceRefresh) {
+    if (forceRefresh && !silentToast) {
       toast.success(t('guestLecture.refreshSuccessToast'));
     }
   } catch (err) {
@@ -127,7 +127,7 @@ async function handleSubmitAgenda(payload) {
     selectedIncomplete.value = null;
     newModalOpen.value = false;
     activeTab.value = res?.isComplete ? 'tracking' : 'incomplete';
-    await loadData(true);
+    await loadData(true, { silentToast: true });
   } catch (err) {
     toast.error(extractApiError(err));
   } finally {

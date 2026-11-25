@@ -26,6 +26,19 @@ const modalOpen = ref(false);
 const editingItem = ref(null);
 const confirmState = ref({ open: false, type: '', payload: null, description: '' });
 
+watch(
+  () => props.categories,
+  (list) => {
+    if (
+      filterCategoryId.value !== 'all' &&
+      !list.some((cat) => String(cat.id) === String(filterCategoryId.value))
+    ) {
+      filterCategoryId.value = 'all';
+    }
+  },
+  { deep: true }
+);
+
 function getItemCategories(item) {
   if (Array.isArray(item.categories) && item.categories.length > 0) {
     return item.categories;
@@ -298,6 +311,7 @@ function confirmDelete() {
         :current-page="currentPage"
         :total-pages="totalPages"
         :aria-label="t('news.navAria')"
+        :prev-label="t('news.prevLabel')"
         :next-label="t('news.nextLabel')"
         @update:page="currentPage = $event"
       />
