@@ -96,13 +96,44 @@ export function usePortalContent() {
   const uiStore = useUiStore();
   const settings = computed(() => landingStore.data?.settings || {});
 
+  const FUNCTIONAL_OVERRIDE_KEYS = ['primaryCta', 'secondaryCta', 'sidebarAction'];
+
+  function withRootFunctionalFallback(rawObj, localeOverride) {
+    const mergedEntry = { ...rawObj, ...localeOverride };
+    for (const key of FUNCTIONAL_OVERRIDE_KEYS) {
+      const rootValue = rawObj?.[key];
+      const localeValue = localeOverride?.[key];
+      if (rootValue && typeof rootValue === 'object') {
+        mergedEntry[key] = { ...rootValue, ...(localeValue && typeof localeValue === 'object' ? localeValue : {}) };
+      }
+    }
+    if (!Array.isArray(localeOverride?.highlights) && Array.isArray(rawObj?.highlights)) {
+      mergedEntry.highlights = rawObj.highlights;
+    }
+    if (!Array.isArray(localeOverride?.customOtherLinks) && Array.isArray(rawObj?.customOtherLinks)) {
+      mergedEntry.customOtherLinks = rawObj.customOtherLinks;
+    }
+    return mergedEntry;
+  }
+
   function pickLocaleOverride(rawObj) {
     if (!rawObj || typeof rawObj !== 'object') return null;
     const activeLocale = uiStore.locale === 'en' ? 'en' : 'id';
     if (rawObj.locales && typeof rawObj.locales === 'object' && rawObj.locales[activeLocale]) {
-      return rawObj.locales[activeLocale];
+      return withRootFunctionalFallback(rawObj, rawObj.locales[activeLocale]);
     }
     return activeLocale === 'id' ? rawObj : null;
+  }
+
+  function resolveOverrideCta(localeCta, baseCta) {
+    if (!localeCta || typeof localeCta !== 'object') return null;
+    if (localeCta.enabled === false) return null;
+    const label = typeof localeCta.label === 'string' ? localeCta.label.trim() : '';
+    const href = sanitizePortalUrl(localeCta.href, '');
+    if (!label || !href) {
+      return Object.keys(localeCta).length ? null : baseCta ? { ...baseCta } : null;
+    }
+    return { ...(baseCta || {}), label, href };
   }
 
   const navLinks = computed(() => {
@@ -142,7 +173,7 @@ export function usePortalContent() {
       visionText: nonEmptyString(ov.visionText, defaultProfile.visionText),
       missions: missions.length ? missions : defaultProfile.missions,
       structureImageUrl: sanitizePortalUrl(
-        ov.structureImageUrl || rawOv.structureImageUrl,
+        rawOv.structureImageUrl || ov.structureImageUrl,
         defaultProfile.structureImageUrl
       )
     };
@@ -229,29 +260,25 @@ export function usePortalContent() {
     }
 
     if (ov.primaryCta && typeof ov.primaryCta === 'object') {
-      const href = sanitizePortalUrl(ov.primaryCta.href, basePage.primaryCta?.href || '');
-      const label = nonEmptyString(ov.primaryCta.label, basePage.primaryCta?.label || '');
-      if (label && href) {
-        merged.primaryCta = { ...(basePage.primaryCta || {}), label, href };
-      }
+      merged.primaryCta = resolveOverrideCta(ov.primaryCta, basePage.primaryCta);
     }
 
     if (ov.secondaryCta && typeof ov.secondaryCta === 'object') {
-      const href = sanitizePortalUrl(ov.secondaryCta.href, basePage.secondaryCta?.href || '');
-      const label = nonEmptyString(ov.secondaryCta.label, basePage.secondaryCta?.label || '');
-      if (label && href) {
-        merged.secondaryCta = { ...(basePage.secondaryCta || {}), label, href };
-      }
+      merged.secondaryCta = resolveOverrideCta(ov.secondaryCta, basePage.secondaryCta);
     }
 
     if (ov.sidebarAction && typeof ov.sidebarAction === 'object' && basePage.sidebarAction) {
-      merged.sidebarAction = {
-        ...basePage.sidebarAction,
-        title: nonEmptyString(ov.sidebarAction.title, basePage.sidebarAction.title),
-        buttonLabel: nonEmptyString(ov.sidebarAction.buttonLabel, basePage.sidebarAction.buttonLabel),
-        badge: nonEmptyString(ov.sidebarAction.badge, basePage.sidebarAction.badge),
-        href: sanitizePortalUrl(ov.sidebarAction.href, '')
-      };
+      const sidebarHref = sanitizePortalUrl(ov.sidebarAction.href, '');
+      merged.sidebarAction =
+        ov.sidebarAction.enabled === false || !sidebarHref
+          ? null
+          : {
+              ...basePage.sidebarAction,
+              title: nonEmptyString(ov.sidebarAction.title, basePage.sidebarAction.title),
+              buttonLabel: nonEmptyString(ov.sidebarAction.buttonLabel, basePage.sidebarAction.buttonLabel),
+              badge: nonEmptyString(ov.sidebarAction.badge, basePage.sidebarAction.badge),
+              href: sidebarHref
+            };
     }
 
     if (Array.isArray(ov.highlights) && ov.highlights.length > 0) {

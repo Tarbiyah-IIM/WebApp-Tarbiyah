@@ -28,6 +28,9 @@ const settings = computed(() => landingStore.data?.settings || {});
 
 function syncOnlineStatus() {
   isOffline.value = typeof navigator !== 'undefined' ? !navigator.onLine : false;
+  if (!isOffline.value && landingStore.error) {
+    landingStore.fetchLanding(true).catch(() => {});
+  }
 }
 
 function loadPortalSync() {
@@ -36,13 +39,17 @@ function loadPortalSync() {
   }
 }
 
+let stopLandingSync = () => {};
+
 onMounted(() => {
   loadPortalSync();
+  stopLandingSync = landingStore.listenForLandingUpdates();
   window.addEventListener('online', syncOnlineStatus);
   window.addEventListener('offline', syncOnlineStatus);
 });
 
 onUnmounted(() => {
+  stopLandingSync();
   window.removeEventListener('online', syncOnlineStatus);
   window.removeEventListener('offline', syncOnlineStatus);
 });

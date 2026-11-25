@@ -110,13 +110,13 @@ function loadDraft() {
       badge: saved.badge ?? basePage.badge ?? '',
       summary: saved.summary || defaultSummary,
       defaultFlatSummary: basePage.summaryBlocks?.length ? defaultSummary : '',
-      hasPrimaryCta: Boolean(basePage.primaryCta || saved.primaryCta),
+      hasPrimaryCta: saved.primaryCta?.enabled === false ? false : Boolean(basePage.primaryCta || saved.primaryCta),
       primaryCtaLabel: saved.primaryCta?.label ?? basePage.primaryCta?.label ?? '',
       primaryCtaHref: saved.primaryCta?.href ?? basePage.primaryCta?.href ?? '',
-      hasSecondaryCta: Boolean(basePage.secondaryCta || saved.secondaryCta),
+      hasSecondaryCta: saved.secondaryCta?.enabled === false ? false : Boolean(basePage.secondaryCta || saved.secondaryCta),
       secondaryCtaLabel: saved.secondaryCta?.label ?? basePage.secondaryCta?.label ?? '',
       secondaryCtaHref: saved.secondaryCta?.href ?? basePage.secondaryCta?.href ?? '',
-      hasSidebarAction: Boolean(basePage.sidebarAction),
+      hasSidebarAction: saved.sidebarAction?.enabled === false ? false : Boolean(basePage.sidebarAction),
       sidebarTitle: saved.sidebarAction?.title ?? basePage.sidebarAction?.title ?? '',
       sidebarButtonLabel: saved.sidebarAction?.buttonLabel ?? basePage.sidebarAction?.buttonLabel ?? '',
       sidebarBadge: saved.sidebarAction?.badge ?? basePage.sidebarAction?.badge ?? '',
@@ -261,20 +261,20 @@ function saveCurrent() {
         })),
       steps: textToLines(draft.value.stepsText)
     };
-    if (draft.value.hasPrimaryCta) {
-      localized.primaryCta = { label: draft.value.primaryCtaLabel.trim(), href: draft.value.primaryCtaHref.trim() };
-    }
-    if (draft.value.hasSecondaryCta) {
-      localized.secondaryCta = { label: draft.value.secondaryCtaLabel.trim(), href: draft.value.secondaryCtaHref.trim() };
-    }
-    if (draft.value.hasSidebarAction) {
-      localized.sidebarAction = {
-        title: draft.value.sidebarTitle.trim(),
-        buttonLabel: draft.value.sidebarButtonLabel.trim(),
-        badge: draft.value.sidebarBadge.trim(),
-        href: draft.value.sidebarHref.trim()
-      };
-    }
+    localized.primaryCta = draft.value.hasPrimaryCta
+      ? { label: draft.value.primaryCtaLabel.trim(), href: draft.value.primaryCtaHref.trim() }
+      : { enabled: false };
+    localized.secondaryCta = draft.value.hasSecondaryCta
+      ? { label: draft.value.secondaryCtaLabel.trim(), href: draft.value.secondaryCtaHref.trim() }
+      : { enabled: false };
+    localized.sidebarAction = draft.value.hasSidebarAction
+      ? {
+          title: draft.value.sidebarTitle.trim(),
+          buttonLabel: draft.value.sidebarButtonLabel.trim(),
+          badge: draft.value.sidebarBadge.trim(),
+          href: draft.value.sidebarHref.trim()
+        }
+      : { enabled: false };
     const existingCustomLinks =
       activeLocale === 'en' ? existing.locales?.en?.customOtherLinks : existing.customOtherLinks;
     if (Array.isArray(existingCustomLinks)) {
@@ -288,10 +288,12 @@ function saveCurrent() {
   const rawProfile = safeParseCmsJson(props.settings?.cms_profile, {});
   const localizedProfile = {
     visionText: draft.value.visionText.trim(),
-    missions: textToLines(draft.value.missionsText),
+    missions: textToLines(draft.value.missionsText)
+  };
+  const profilePayload = {
+    ...buildSavedEntry(rawProfile, activeLocale, localizedProfile),
     structureImageUrl: draft.value.structureImageUrl.trim()
   };
-  const profilePayload = buildSavedEntry(rawProfile, activeLocale, localizedProfile);
   if (emitWithSizeCheck('cms_profile', profilePayload, t('adminDashboard.cmsPanel.portalPages.savedToast'))) {
     pendingStructureUploads.delete(localizedProfile.structureImageUrl);
     cleanupPendingStructureUploads('');
@@ -492,6 +494,21 @@ function resetCurrentDefault() {
             <textarea id="info-summary" v-model="draft.summary" rows="3" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
           </div>
 
+          <div class="sm:col-span-2 flex flex-wrap items-center gap-4 rounded-xl border border-surface-border bg-surface-page px-3 py-2.5">
+            <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-600">
+              <input v-model="draft.hasPrimaryCta" type="checkbox" class="h-4 w-4 rounded border-surface-border" />
+              <span>{{ t('adminDashboard.cmsPanel.portalPages.fields.primaryCtaLabel') }}</span>
+            </label>
+            <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-600">
+              <input v-model="draft.hasSecondaryCta" type="checkbox" class="h-4 w-4 rounded border-surface-border" />
+              <span>{{ t('adminDashboard.cmsPanel.portalPages.fields.secondaryCtaLabel') }}</span>
+            </label>
+            <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-600">
+              <input v-model="draft.hasSidebarAction" type="checkbox" class="h-4 w-4 rounded border-surface-border" />
+              <span>{{ t('adminDashboard.cmsPanel.portalPages.fields.sidebarTitle') }}</span>
+            </label>
+          </div>
+
           <template v-if="draft.hasPrimaryCta">
             <div>
               <label for="info-cta1-label" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.primaryCtaLabel') }}</label>
@@ -554,18 +571,21 @@ function resetCurrentDefault() {
             <input
               v-model="item.title"
               type="text"
+              :aria-label="t('adminDashboard.cmsPanel.portalPages.fields.itemTitle')"
               :placeholder="t('adminDashboard.cmsPanel.portalPages.fields.itemTitle')"
               class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-3"
             />
             <input
               v-model="item.desc"
               type="text"
+              :aria-label="t('adminDashboard.cmsPanel.portalPages.fields.itemDesc')"
               :placeholder="t('adminDashboard.cmsPanel.portalPages.fields.itemDesc')"
               class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-3"
             />
             <input
               v-model="item.href"
               type="text"
+              :aria-label="t('adminDashboard.cmsPanel.portalPages.fields.itemHref')"
               :placeholder="t('adminDashboard.cmsPanel.portalPages.fields.itemHref')"
               class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-3"
             />
@@ -608,7 +628,7 @@ function resetCurrentDefault() {
             <label for="prof-structure" class="block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.structureImageUrl') }}</label>
             <div class="flex gap-2">
               <input id="prof-structure" v-model="draft.structureImageUrl" type="text" placeholder="/api/v1/media/... atau https://..." class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
-              <input ref="fileInputRef" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="handleStructureUpload" />
+              <input ref="fileInputRef" type="file" tabindex="-1" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="handleStructureUpload" />
               <button
                 type="button"
                 :disabled="uploading || syncing"
