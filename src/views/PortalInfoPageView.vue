@@ -53,7 +53,7 @@ const relatedPages = computed(() =>
     .filter(([key]) => key !== props.pageKey && infoPages.value[key])
     .map(([key, to]) => ({
       to,
-      label: infoPages.value[key].title
+      label: mergeInfoPage(key, infoPages.value[key])?.title || infoPages.value[key].title
     }))
 );
 </script>

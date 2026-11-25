@@ -62,7 +62,7 @@ function confirmDelete() {
           :placeholder="t('adminDashboard.cmsPanel.statLabelPlaceholder')"
           class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
         />
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
           <input
             v-model="form.valueNum"
             type="text"
@@ -74,6 +74,14 @@ function confirmDelete() {
             v-model="form.suffix"
             type="text"
             :placeholder="t('adminDashboard.cmsPanel.statSuffixPlaceholder')"
+            class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm"
+          />
+          <input
+            v-model.number="form.sortOrder"
+            type="number"
+            min="0"
+            :aria-label="t('adminDashboard.cmsPanel.sortOrderLabel')"
+            :placeholder="t('adminDashboard.cmsPanel.sortOrderPlaceholder')"
             class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm"
           />
         </div>

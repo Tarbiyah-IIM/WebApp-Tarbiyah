@@ -1,5 +1,5 @@
 <script setup>
-import { CheckCircle2 } from 'lucide-vue-next';
+import { Award, BookOpen, CheckCircle2, GraduationCap, ShieldCheck, Sparkles, Users } from 'lucide-vue-next';
 import howTarbiyahImage from '../assets/how-tarbiyah.png';
 import { useI18n } from '../composables/useI18n.js';
 
@@ -8,6 +8,20 @@ defineProps({
 });
 
 const { t, tr } = useI18n();
+
+const ICON_MAP = {
+  check: CheckCircle2,
+  award: Award,
+  book: BookOpen,
+  graduation: GraduationCap,
+  sparkles: Sparkles,
+  shield: ShieldCheck,
+  users: Users
+};
+
+function resolveFeatureIcon(iconKey) {
+  return ICON_MAP[String(iconKey || '').trim().toLowerCase()] || CheckCircle2;
+}
 </script>
 
 <template>
@@ -39,7 +53,7 @@ const { t, tr } = useI18n();
             :key="item.id"
             class="flex items-start gap-3.5 rounded-2xl border border-surface-border bg-surface-page p-4"
           >
-            <CheckCircle2 class="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+            <component :is="resolveFeatureIcon(item.icon)" class="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
             <div>
               <h3 class="text-base font-bold text-brand-900">{{ tr(item.title) }}</h3>
               <p class="mt-1 text-sm text-slate-600">{{ tr(item.description) }}</p>

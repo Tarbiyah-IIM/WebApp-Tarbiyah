@@ -61,6 +61,29 @@ function confirmDelete() {
           :placeholder="t('adminDashboard.cmsPanel.featureDescPlaceholder')"
           class="w-full rounded-xl border border-surface-border p-3.5 text-sm leading-relaxed"
         />
+        <div class="grid grid-cols-2 gap-3">
+          <select
+            v-model="form.icon"
+            :aria-label="t('adminDashboard.cmsPanel.featureIconLabel')"
+            class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm"
+          >
+            <option value="check">Check</option>
+            <option value="award">Award</option>
+            <option value="book">Book</option>
+            <option value="graduation">Graduation</option>
+            <option value="sparkles">Sparkles</option>
+            <option value="shield">Shield</option>
+            <option value="users">Users</option>
+          </select>
+          <input
+            v-model.number="form.sortOrder"
+            type="number"
+            min="0"
+            :aria-label="t('adminDashboard.cmsPanel.sortOrderLabel')"
+            :placeholder="t('adminDashboard.cmsPanel.sortOrderPlaceholder')"
+            class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm"
+          />
+        </div>
         <div class="flex flex-wrap gap-2">
           <button
             type="submit"

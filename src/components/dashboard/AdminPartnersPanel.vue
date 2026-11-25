@@ -15,21 +15,32 @@ const form = ref(emptyForm());
 const pendingDelete = ref(null);
 
 function emptyForm() {
-  return { id: null, name: '', url: '', sortOrder: 0 };
+  return { id: null, name: '', logoUrl: '', url: '', sortOrder: 0 };
 }
 
 function submit() {
-  emit('save', { ...form.value, url: form.value.url?.trim() || null }, () => {
-    form.value = emptyForm();
-  });
+  emit(
+    'save',
+    {
+      ...form.value,
+      name: form.value.name.trim(),
+      logoUrl: form.value.logoUrl?.trim() || null,
+      url: form.value.url?.trim() || null,
+      sortOrder: Math.max(0, Number(form.value.sortOrder) || 0)
+    },
+    () => {
+      form.value = emptyForm();
+    }
+  );
 }
 
 function startEdit(item) {
   form.value = {
     id: item.id,
     name: item.name,
+    logoUrl: item.logo_url || '',
     url: item.url || '',
-    sortOrder: item.sort_order || 0
+    sortOrder: item.sort_order ?? 0
   };
 }
 
@@ -59,6 +70,22 @@ function confirmDelete() {
           :placeholder="t('adminDashboard.cmsPanel.partnerUrlPlaceholder')"
           class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
         />
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <input
+            v-model="form.logoUrl"
+            type="text"
+            :placeholder="t('adminDashboard.cmsPanel.partnerLogoPlaceholder')"
+            class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm sm:col-span-2"
+          />
+          <input
+            v-model.number="form.sortOrder"
+            type="number"
+            min="0"
+            :aria-label="t('adminDashboard.cmsPanel.sortOrderLabel')"
+            :placeholder="t('adminDashboard.cmsPanel.sortOrderPlaceholder')"
+            class="min-h-[42px] rounded-xl border border-surface-border px-3.5 text-sm"
+          />
+        </div>
         <div class="flex flex-wrap gap-2">
           <button
             type="submit"

@@ -60,6 +60,14 @@ function confirmDelete() {
           :placeholder="t('adminDashboard.cmsPanel.faqAnswerPlaceholder')"
           class="w-full rounded-xl border border-surface-border p-3.5 text-sm leading-relaxed"
         />
+        <input
+          v-model.number="form.sortOrder"
+          type="number"
+          min="0"
+          :aria-label="t('adminDashboard.cmsPanel.sortOrderLabel')"
+          :placeholder="t('adminDashboard.cmsPanel.sortOrderPlaceholder')"
+          class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
+        />
         <div class="flex flex-wrap gap-2">
           <button
             type="submit"

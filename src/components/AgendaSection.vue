@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { Calendar, ChevronRight, Clock } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.jpg';
 import NewsDetailModal from './NewsDetailModal.vue';
@@ -11,6 +12,8 @@ const props = defineProps({
 });
 
 const { t, tr } = useI18n();
+const route = useRoute();
+const router = useRouter();
 
 const PAGE_SIZE = 3;
 const currentPage = ref(1);
@@ -23,6 +26,22 @@ watch(totalPages, (nextTotal) => {
     currentPage.value = nextTotal;
   }
 });
+
+watch(
+  () => [route.query.agendaId, props.agendas],
+  ([rawId, list]) => {
+    const targetId = Number(rawId);
+    if (!Number.isInteger(targetId) || targetId <= 0 || !Array.isArray(list) || !list.length) return;
+    const index = list.findIndex((item) => item.id === targetId);
+    if (index === -1) return;
+    currentPage.value = Math.floor(index / PAGE_SIZE) + 1;
+    selectedAgenda.value = list[index];
+    const nextQuery = { ...route.query };
+    delete nextQuery.agendaId;
+    router.replace({ path: route.path, query: nextQuery, hash: route.hash });
+  },
+  { immediate: true }
+);
 
 const paginatedAgendas = computed(() => {
   const start = (currentPage.value - 1) * PAGE_SIZE;
@@ -113,6 +132,7 @@ const paginatedAgendas = computed(() => {
           :current-page="currentPage"
           :total-pages="totalPages"
           :aria-label="t('agenda.navAria')"
+          :prev-label="t('news.prevLabel')"
           :next-label="t('news.nextLabel')"
           @update:page="currentPage = $event"
         />

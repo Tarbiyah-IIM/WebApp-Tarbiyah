@@ -103,7 +103,7 @@ function clearExistingPhotos() {
 }
 
 function handleSubmit() {
-  if (!props.item) return;
+  if (!props.item || isBusy.value) return;
   emit('submit', {
     mode: 'update',
     rowIndex: props.item.rowIndex,

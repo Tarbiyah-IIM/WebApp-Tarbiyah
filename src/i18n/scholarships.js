@@ -20,7 +20,7 @@ export const scholarshipsId = {
       ],
       level: 'Sarjana',
       source: 'Beasiswa Internal',
-      destinationLines: ['Fakultas Dakwah & Komunikasi', 'Prodi Ekonomi Syariah'],
+      destinationLines: ['Fakultas Tarbiyah', 'Prodi PAI, PGMI, dan PIAUD'],
       target: 'Mahasiswa Baru'
     },
     {
@@ -44,7 +44,7 @@ export const scholarshipsId = {
       source: 'Beasiswa Internal',
       destinationBullets: [
         'Semua Program Studi S1 (Nasional/Provinsi)',
-        'Fakultas Dakwah & Komunikasi, Prodi Ekonomi Syariah (Kab/Kota)'
+        'Fakultas Tarbiyah: Prodi PAI, PGMI, dan PIAUD (Kab/Kota)'
       ],
       target: 'Nasional/Provinsi (Kuota 5)'
     },
@@ -65,7 +65,7 @@ export const scholarshipsId = {
       footnote: 'dengan menunjukkan bukti Surat Keterangan',
       level: 'Sarjana',
       source: 'Beasiswa Internal',
-      destinationLines: ['Fakultas Dakwah & Komunikasi,', 'Prodi Ekonomi Syariah'],
+      destinationLines: ['Fakultas Tarbiyah', 'Prodi PAI, PGMI, dan PIAUD'],
       target: 'Mahasiswa Baru'
     },
     {
@@ -98,7 +98,7 @@ export const scholarshipsId = {
       ],
       level: 'Sarjana',
       source: 'Beasiswa Internal',
-      destinationLines: ['Fakultas Dakwah & Komunikasi'],
+      destinationLines: ['Fakultas Tarbiyah', 'Prodi PAI, PGMI, dan PIAUD'],
       target: 'Mahasiswa Baru (Kuota 10)'
     },
     {
@@ -140,7 +140,7 @@ export const scholarshipsEn = {
       ],
       level: 'Undergraduate (S1)',
       source: 'Internal Scholarship',
-      destinationLines: ['Faculty of Da’wah & Communication', 'Islamic Economics Study Program'],
+      destinationLines: ['Faculty of Tarbiyah', 'PAI, PGMI, and PIAUD Study Programs'],
       target: 'New Students'
     },
     {
@@ -164,7 +164,7 @@ export const scholarshipsEn = {
       source: 'Internal Scholarship',
       destinationBullets: [
         'All S1 Study Programs (National/Provincial)',
-        'Faculty of Da’wah & Communication, Islamic Economics (Regency/City)'
+        'Faculty of Tarbiyah: PAI, PGMI, and PIAUD (Regency/City)'
       ],
       target: 'National/Provincial (Quota 5)'
     },
@@ -185,7 +185,7 @@ export const scholarshipsEn = {
       footnote: 'by submitting an official Certificate of Memorization',
       level: 'Undergraduate (S1)',
       source: 'Internal Scholarship',
-      destinationLines: ['Faculty of Da’wah & Communication,', 'Islamic Economics Study Program'],
+      destinationLines: ['Faculty of Tarbiyah', 'PAI, PGMI, and PIAUD Study Programs'],
       target: 'New Students'
     },
     {
@@ -218,7 +218,7 @@ export const scholarshipsEn = {
       ],
       level: 'Undergraduate (S1)',
       source: 'Internal Scholarship',
-      destinationLines: ['Faculty of Da’wah & Communication'],
+      destinationLines: ['Faculty of Tarbiyah', 'PAI, PGMI, and PIAUD Study Programs'],
       target: 'New Students (Quota 10)'
     },
     {

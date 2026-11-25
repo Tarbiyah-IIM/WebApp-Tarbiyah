@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Clock,
+  Edit3,
   FileText,
   Image as ImageIcon,
   MapPin,
@@ -25,7 +26,7 @@ const props = defineProps({
   refreshing: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['refresh', 'open-zoom']);
+const emit = defineEmits(['refresh', 'open-zoom', 'edit']);
 const { t } = useI18n();
 
 const STEP_SIZE = 5;
@@ -410,6 +411,16 @@ function getCertificateDocs(item) {
             <Award class="h-3.5 w-3.5" aria-hidden="true" />
             <span>{{ t('guestLecture.docs.certificateEmpty') }}</span>
           </span>
+
+          <button
+            v-if="String(item.status || '').trim().toLowerCase() === 'in revision'"
+            type="button"
+            class="ml-auto inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-rose-600 px-3.5 text-xs font-bold text-white transition hover:bg-rose-700"
+            @click="emit('edit', item)"
+          >
+            <Edit3 class="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{{ t('guestLecture.editRevisionBtn') }}</span>
+          </button>
         </div>
       </article>
     </div>

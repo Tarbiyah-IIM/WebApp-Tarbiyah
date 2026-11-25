@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { X } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -13,10 +13,68 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+const panelRef = ref(null);
+let lastFocusedElement = null;
+
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])'
+].join(', ');
+
+function getFocusableElements() {
+  if (!panelRef.value) return [];
+  return Array.from(panelRef.value.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+    (el) => el.offsetParent !== null || el === document.activeElement
+  );
+}
+
+watch(
+  () => props.open,
+  async (isOpen) => {
+    if (typeof document === 'undefined') return;
+    if (isOpen) {
+      lastFocusedElement = document.activeElement;
+      await nextTick();
+      const focusables = getFocusableElements();
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      } else {
+        panelRef.value?.focus();
+      }
+    } else if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+      lastFocusedElement.focus();
+      lastFocusedElement = null;
+    }
+  }
+);
 
 function handleKey(e) {
-  if (e.key === 'Escape' && props.open) {
+  if (!props.open) return;
+  if (e.key === 'Escape') {
     emit('close');
+    return;
+  }
+  if (e.key === 'Tab') {
+    const focusables = getFocusableElements();
+    if (!focusables.length) {
+      e.preventDefault();
+      return;
+    }
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first || !panelRef.value?.contains(document.activeElement)) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (document.activeElement === last || !panelRef.value?.contains(document.activeElement)) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 }
 
@@ -34,19 +92,25 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKey));
       :aria-label="title"
       @click.self="$emit('close')"
     >
-      <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-float">
+      <div
+        ref="panelRef"
+        tabindex="-1"
+        class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-float focus:outline-none"
+      >
         <div
           v-if="headerVariant === 'macos'"
           class="flex items-center justify-between gap-3 border-b border-surface-border pb-3 mb-5"
         >
-          <div class="flex shrink-0 items-center gap-2">
+          <div class="flex shrink-0 items-center gap-1">
             <button
               type="button"
-              class="group inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#FF5F57] ring-1 ring-black/10 transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+              class="group -m-1.5 inline-flex min-h-[28px] min-w-[28px] items-center justify-center rounded-full p-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label="Close modal"
               @click="$emit('close')"
             >
-              <X class="h-2.5 w-2.5 text-[#4D0000] opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100" />
+              <span class="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#FF5F57] ring-1 ring-black/10 transition group-hover:brightness-95">
+                <X class="h-2.5 w-2.5 text-[#4D0000] opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100" />
+              </span>
             </button>
             <span
               class="inline-block h-3.5 w-3.5 rounded-full bg-[#FEBC2E] ring-1 ring-black/10"

@@ -73,58 +73,72 @@ const navGroups = computed(() => [
   }
 ]);
 
+async function runSafeAction(action) {
+  try {
+    return await action();
+  } catch {
+    return undefined;
+  }
+}
+
 async function handleSaveSettings(patch, customMessage) {
-  await portal.saveSettingsPatch(patch, customMessage || t('adminDashboard.cmsPanel.toasts.settingsSaved'));
+  await runSafeAction(() =>
+    portal.saveSettingsPatch(patch, customMessage || t('adminDashboard.cmsPanel.toasts.settingsSaved'))
+  );
 }
 
 async function handleSaveNews(payload, onDone) {
-  await portal.saveNews(payload, t('adminDashboard.cmsPanel.toasts.newsSaved'));
-  if (onDone) onDone();
+  const res = await runSafeAction(() => portal.saveNews(payload, t('adminDashboard.cmsPanel.toasts.newsSaved')));
+  if (res !== undefined && onDone) onDone();
 }
 
 async function handleSaveAgenda(payload, onDone) {
-  await portal.saveAgenda(payload, t('adminDashboard.cmsPanel.toasts.agendaSaved'));
-  if (onDone) onDone();
+  const res = await runSafeAction(() => portal.saveAgenda(payload, t('adminDashboard.cmsPanel.toasts.agendaSaved')));
+  if (res !== undefined && onDone) onDone();
 }
 
 async function handleAddCategory(name, onDone) {
-  const created = await portal.addCategory(name, t('adminDashboard.cmsPanel.toasts.categorySaved'));
-  if (onDone) onDone(created);
+  const created = await runSafeAction(() => portal.addCategory(name, t('adminDashboard.cmsPanel.toasts.categorySaved')));
+  if (created && onDone) onDone(created);
 }
 
 async function handleSaveFaq(payload, onDone) {
-  await portal.saveFaq(payload, t('adminDashboard.cmsPanel.toasts.faqSaved'));
-  if (onDone) onDone();
+  const res = await runSafeAction(() => portal.saveFaq(payload, t('adminDashboard.cmsPanel.toasts.faqSaved')));
+  if (res !== undefined && onDone) onDone();
 }
 
 async function handleSaveStat(payload, onDone) {
-  await portal.saveStat(payload, t('adminDashboard.cmsPanel.toasts.statSaved'));
-  if (onDone) onDone();
+  const res = await runSafeAction(() => portal.saveStat(payload, t('adminDashboard.cmsPanel.toasts.statSaved')));
+  if (res !== undefined && onDone) onDone();
 }
 
 async function handleSavePartner(payload, onDone) {
-  await portal.savePartner(payload, t('adminDashboard.cmsPanel.toasts.partnerSaved'));
-  if (onDone) onDone();
+  const res = await runSafeAction(() => portal.savePartner(payload, t('adminDashboard.cmsPanel.toasts.partnerSaved')));
+  if (res !== undefined && onDone) onDone();
 }
 
 async function handleSaveFeature(payload, onDone) {
-  await portal.saveFeature(payload, t('adminDashboard.cmsPanel.toasts.featureSaved'));
-  if (onDone) onDone();
+  const res = await runSafeAction(() => portal.saveFeature(payload, t('adminDashboard.cmsPanel.toasts.featureSaved')));
+  if (res !== undefined && onDone) onDone();
 }
 
 async function handleUpdateUserRole(user, role) {
-  await portal.updateUser(
-    user.id,
-    { role, isActive: Boolean(user.is_active) },
-    user.name + t('adminDashboard.toasts.roleUpdatedSuffix') + role + '.'
+  await runSafeAction(() =>
+    portal.updateUser(
+      user.id,
+      { role, isActive: Boolean(user.is_active) },
+      user.name + t('adminDashboard.toasts.roleUpdatedSuffix') + role + '.'
+    )
   );
 }
 
 async function handleToggleUserActive(user) {
-  await portal.updateUser(
-    user.id,
-    { role: user.role, isActive: !user.is_active },
-    t('adminDashboard.toasts.userStatusUpdated')
+  await runSafeAction(() =>
+    portal.updateUser(
+      user.id,
+      { role: user.role, isActive: !user.is_active },
+      t('adminDashboard.toasts.userStatusUpdated')
+    )
   );
 }
 
@@ -175,9 +189,9 @@ onMounted(() => {
         :syncing="portal.syncing.value"
         :upload-handler="portal.uploadImage"
         @save-news="handleSaveNews"
-        @delete-news="portal.removeNews($event, t('adminDashboard.cmsPanel.toasts.newsDeleted'))"
+        @delete-news="runSafeAction(() => portal.removeNews($event, t('adminDashboard.cmsPanel.toasts.newsDeleted')))"
         @add-category="handleAddCategory"
-        @delete-category="portal.removeCategory($event, t('adminDashboard.cmsPanel.toasts.categoryDeleted'))"
+        @delete-category="runSafeAction(() => portal.removeCategory($event, t('adminDashboard.cmsPanel.toasts.categoryDeleted')))"
       />
 
       <AdminAgendaPanel
@@ -186,7 +200,7 @@ onMounted(() => {
         :syncing="portal.syncing.value"
         :upload-handler="portal.uploadImage"
         @save-agenda="handleSaveAgenda"
-        @delete-agenda="portal.removeAgenda($event, t('adminDashboard.cmsPanel.toasts.agendaDeleted'))"
+        @delete-agenda="runSafeAction(() => portal.removeAgenda($event, t('adminDashboard.cmsPanel.toasts.agendaDeleted')))"
       />
 
       <AdminFaqPanel
@@ -194,7 +208,7 @@ onMounted(() => {
         :faqs="portal.faqs.value"
         :syncing="portal.syncing.value"
         @save="handleSaveFaq"
-        @delete="portal.removeFaq($event, t('adminDashboard.cmsPanel.toasts.faqDeleted'))"
+        @delete="runSafeAction(() => portal.removeFaq($event, t('adminDashboard.cmsPanel.toasts.faqDeleted')))"
       />
 
       <AdminStatsPanel
@@ -202,7 +216,7 @@ onMounted(() => {
         :stats="portal.stats.value"
         :syncing="portal.syncing.value"
         @save="handleSaveStat"
-        @delete="portal.removeStat($event, t('adminDashboard.cmsPanel.toasts.statDeleted'))"
+        @delete="runSafeAction(() => portal.removeStat($event, t('adminDashboard.cmsPanel.toasts.statDeleted')))"
       />
 
       <AdminPartnersPanel
@@ -210,7 +224,7 @@ onMounted(() => {
         :partners="portal.partners.value"
         :syncing="portal.syncing.value"
         @save="handleSavePartner"
-        @delete="portal.removePartner($event, t('adminDashboard.cmsPanel.toasts.partnerDeleted'))"
+        @delete="runSafeAction(() => portal.removePartner($event, t('adminDashboard.cmsPanel.toasts.partnerDeleted')))"
       />
 
       <AdminFeaturesPanel
@@ -218,7 +232,7 @@ onMounted(() => {
         :features="portal.features.value"
         :syncing="portal.syncing.value"
         @save="handleSaveFeature"
-        @delete="portal.removeFeature($event, t('adminDashboard.cmsPanel.toasts.featureDeleted'))"
+        @delete="runSafeAction(() => portal.removeFeature($event, t('adminDashboard.cmsPanel.toasts.featureDeleted')))"
       />
 
       <AdminPortalMenuPanel

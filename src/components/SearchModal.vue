@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { Search, ArrowRight, CalendarDays, Newspaper, HelpCircle } from 'lucide-vue-next';
+import { Search, ArrowRight, CalendarDays, Compass, Newspaper, HelpCircle } from 'lucide-vue-next';
 import ModalDialog from './ModalDialog.vue';
 import { useLandingStore } from '../stores/landing.store.js';
 import { useI18n } from '../composables/useI18n.js';
@@ -24,7 +24,7 @@ watch(
   async (isOpen) => {
     if (!isOpen) return;
     if (!landingStore.loaded) {
-      landingStore.fetchLanding();
+      landingStore.fetchLanding().catch(() => {});
     }
     await nextTick();
     inputRef.value?.focus();
@@ -32,6 +32,63 @@ watch(
 );
 
 const normalizedQuery = computed(() => query.value.trim().toLowerCase());
+
+const portalSearchIndex = computed(() => {
+  const prodiPrograms = t('portalPages.programs') || {};
+  const infoPages = t('portalPages.infoPages') || {};
+  const prodiItems = [
+    { slug: 'pai', to: '/program-studi/pai' },
+    { slug: 'pgmi', to: '/program-studi/pgmi' },
+    { slug: 'piaud', to: '/program-studi/piaud' }
+  ].map(({ slug, to }) => {
+    const p = prodiPrograms[slug] || {};
+    return {
+      key: `prodi-${slug}`,
+      title: p.title || slug.toUpperCase(),
+      subtitle: p.badge || t('nav.programs'),
+      keywords: `${p.title || ''} ${p.overview || ''} ${slug}`,
+      to
+    };
+  });
+
+  const infoRoutes = [
+    { key: 'administrasi-persuratan', to: '/akademik/administrasi-persuratan' },
+    { key: 'ujian-komprehensif', to: '/akademik/ujian-komprehensif' },
+    { key: 'ppl', to: '/publikasi/ppl' },
+    { key: 'pkn', to: '/publikasi/pkn' },
+    { key: 'jurnal', to: '/publikasi/jurnal' }
+  ].map(({ key, to }) => {
+    const p = infoPages[key] || {};
+    return {
+      key: `page-${key}`,
+      title: p.title || key,
+      subtitle: p.badge || '',
+      keywords: `${p.title || ''} ${p.badge || ''} ${p.summary || ''} ${key}`,
+      to
+    };
+  });
+
+  return [
+    ...prodiItems,
+    ...infoRoutes,
+    {
+      key: 'page-kuliah-tamu',
+      title: t('guestLecture.title'),
+      subtitle: t('guestLecture.heroHeading'),
+      keywords: `${t('guestLecture.title')} ${t('guestLecture.heroHeading')} ${t('guestLecture.heroSubtitle')}`,
+      to: '/kuliah-tamu'
+    }
+  ];
+});
+
+const pageMatches = computed(() => {
+  if (!normalizedQuery.value) return [];
+  return portalSearchIndex.value
+    .filter((entry) =>
+      `${entry.title} ${entry.subtitle} ${entry.keywords}`.toLowerCase().includes(normalizedQuery.value)
+    )
+    .slice(0, 4);
+});
 
 const newsMatches = computed(() => {
   const list = landingStore.data?.testimonials || [];
@@ -58,7 +115,11 @@ const faqMatches = computed(() => {
 });
 
 const hasAnySectionMatch = computed(
-  () => newsMatches.value.length > 0 || agendaMatches.value.length > 0 || faqMatches.value.length > 0
+  () =>
+    pageMatches.value.length > 0 ||
+    newsMatches.value.length > 0 ||
+    agendaMatches.value.length > 0 ||
+    faqMatches.value.length > 0
 );
 
 function closeAndNavigate(target) {
@@ -67,13 +128,25 @@ function closeAndNavigate(target) {
   router.push(target);
 }
 
+function openNewsResult(item) {
+  closeAndNavigate({ path: '/', query: { newsId: String(item.id) }, hash: '#testimonials' });
+}
+
+function openAgendaResult(item) {
+  closeAndNavigate({ path: '/', query: { agendaId: String(item.id) }, hash: '#agendas' });
+}
+
 function handleFormSubmit() {
+  if (pageMatches.value.length > 0) {
+    closeAndNavigate(pageMatches.value[0].to);
+    return;
+  }
   if (newsMatches.value.length > 0) {
-    closeAndNavigate('/#testimonials');
+    openNewsResult(newsMatches.value[0]);
     return;
   }
   if (agendaMatches.value.length > 0) {
-    closeAndNavigate('/#agendas');
+    openAgendaResult(agendaMatches.value[0]);
     return;
   }
   if (faqMatches.value.length > 0) {
@@ -109,6 +182,28 @@ function handleFormSubmit() {
       </form>
 
       <div v-if="normalizedQuery" class="max-h-[55vh] space-y-5 overflow-y-auto pr-1">
+        <div v-if="pageMatches.length > 0" class="space-y-2">
+          <p class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+            <Compass class="h-3.5 w-3.5 text-brand-600" />
+            <span>{{ t('search.pagesSection') }}</span>
+          </p>
+          <div class="space-y-1.5">
+            <button
+              v-for="item in pageMatches"
+              :key="item.key"
+              type="button"
+              class="flex w-full items-start justify-between gap-3 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50"
+              @click="closeAndNavigate(item.to)"
+            >
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-brand-900">{{ item.title }}</p>
+                <p v-if="item.subtitle" class="mt-0.5 line-clamp-1 text-[11px] text-slate-500">{{ item.subtitle }}</p>
+              </div>
+              <ArrowRight class="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
+            </button>
+          </div>
+        </div>
+
         <div v-if="newsMatches.length > 0" class="space-y-2">
           <p class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
             <Newspaper class="h-3.5 w-3.5 text-brand-600" />
@@ -120,7 +215,7 @@ function handleFormSubmit() {
               :key="item.id"
               type="button"
               class="flex w-full items-start justify-between gap-3 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50"
-              @click="closeAndNavigate('/#testimonials')"
+              @click="openNewsResult(item)"
             >
               <div class="min-w-0">
                 <p class="text-xs font-bold text-brand-900">{{ tr(item.name) }}</p>
@@ -142,7 +237,7 @@ function handleFormSubmit() {
               :key="item.id"
               type="button"
               class="flex w-full items-start justify-between gap-3 rounded-xl border border-surface-border bg-surface-page px-3.5 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50"
-              @click="closeAndNavigate('/#agendas')"
+              @click="openAgendaResult(item)"
             >
               <div class="min-w-0">
                 <p class="text-xs font-bold text-brand-900">{{ tr(item.title) }}</p>

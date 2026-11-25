@@ -1,4 +1,4 @@
-import { pool } from '../config/db.js';
+import { pool, withTransaction } from '../config/db.js';
 
 const VALID_SLIDESHOW_POSITIONS = new Set(['top', 'middle', 'bottom', 'none']);
 
@@ -619,20 +619,27 @@ export async function listPartnersAdmin() {
   return rows;
 }
 
-export async function createPartner({ name, logoUrl, url, sortOrder }) {
+export async function createPartner({ name, logoUrl = null, url = null, sortOrder = 0 }) {
   const [result] = await pool.execute(
     'INSERT INTO partners (name, logo_url, url, sort_order) VALUES (?, ?, ?, ?)',
-    [name, logoUrl, url, sortOrder]
+    [name, logoUrl || null, url || null, Number(sortOrder) || 0]
   );
   const [rows] = await pool.execute('SELECT * FROM partners WHERE id = ?', [result.insertId]);
   return rows[0];
 }
 
-export async function updatePartner(id, { name, logoUrl, url, sortOrder }) {
-  await pool.execute(
-    'UPDATE partners SET name = ?, logo_url = ?, url = ?, sort_order = ? WHERE id = ?',
-    [name, logoUrl, url, sortOrder, id]
-  );
+export async function updatePartner(id, { name, logoUrl, url = null, sortOrder = 0 }) {
+  if (logoUrl === undefined) {
+    await pool.execute(
+      'UPDATE partners SET name = ?, url = ?, sort_order = ? WHERE id = ?',
+      [name, url || null, Number(sortOrder) || 0, id]
+    );
+  } else {
+    await pool.execute(
+      'UPDATE partners SET name = ?, logo_url = ?, url = ?, sort_order = ? WHERE id = ?',
+      [name, logoUrl || null, url || null, Number(sortOrder) || 0, id]
+    );
+  }
   const [rows] = await pool.execute('SELECT * FROM partners WHERE id = ?', [id]);
   return rows[0] || null;
 }
@@ -653,11 +660,13 @@ export async function getSettingsMap() {
 
 export async function upsertSettings(settingsObj) {
   const entries = Object.entries(settingsObj);
-  for (const [key, val] of entries) {
-    await pool.execute(
-      'INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)',
-      [key, String(val)]
-    );
-  }
+  await withTransaction(async (conn) => {
+    for (const [key, val] of entries) {
+      await conn.execute(
+        'INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)',
+        [key, String(val)]
+      );
+    }
+  });
   return getSettingsMap();
 }

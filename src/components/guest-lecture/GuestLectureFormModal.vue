@@ -18,6 +18,7 @@ const MAX_PHOTOS = 3;
 const fileInputRef = ref(null);
 const processingPhotos = ref(false);
 const photoError = ref('');
+const formError = ref('');
 const photos = ref([]);
 const nativeDate = ref('');
 
@@ -49,6 +50,7 @@ watch(
     nativeDate.value = '';
     photos.value = [];
     photoError.value = '';
+    formError.value = '';
   }
 );
 
@@ -87,6 +89,21 @@ function removePhoto(idx) {
 }
 
 function handleSubmit() {
+  if (isBusy.value) return;
+  formError.value = '';
+  const hasCore = Boolean(
+    form.prodi ||
+      form.dosenPengampu.trim() ||
+      form.dosenTamu.trim() ||
+      form.mataKuliah.trim() ||
+      form.tema.trim() ||
+      form.tanggal.trim() ||
+      form.jam.trim()
+  );
+  if (!hasCore) {
+    formError.value = 'Isi minimal satu informasi agenda kuliah tamu sebelum mengirim.';
+    return;
+  }
   emit('submit', {
     mode: 'new',
     rowIndex: null,
@@ -119,6 +136,14 @@ function handleSubmit() {
       <p class="text-xs leading-relaxed text-slate-600">
         {{ t('guestLecture.modalNewSubtitle') }}
       </p>
+
+      <div
+        v-if="formError"
+        role="alert"
+        class="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-semibold text-rose-700"
+      >
+        {{ formError }}
+      </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>

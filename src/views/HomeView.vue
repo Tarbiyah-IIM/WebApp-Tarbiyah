@@ -17,12 +17,12 @@ import FooterSection from '../components/FooterSection.vue';
 const landingStore = useLandingStore();
 const { loading, error, isOffline, run } = useAsyncState();
 
-async function loadLanding() {
-  await run(() => landingStore.fetchLanding(true));
+async function loadLanding(force = false) {
+  await run(() => landingStore.fetchLanding(force));
 }
 
 onMounted(() => {
-  loadLanding();
+  loadLanding(false);
 });
 </script>
 
@@ -33,7 +33,7 @@ onMounted(() => {
       :loading="loading"
       :error="error"
       :offline="isOffline"
-      @retry="loadLanding"
+      @retry="loadLanding(true)"
     />
 
     <template v-else-if="landingStore.data">

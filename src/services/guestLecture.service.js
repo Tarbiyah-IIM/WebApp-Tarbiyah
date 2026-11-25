@@ -120,6 +120,13 @@ export async function prepareGuestLecturePhoto(file) {
   if (!ALLOWED_PHOTO_MIMES.has(mimeType)) {
     throw new Error('Hanya gambar JPG, PNG, WebP, atau GIF yang didukung.');
   }
+  const effectiveSize = optimized.size || file.size || 0;
+  if (mimeType === 'image/gif' && effectiveSize > 1500 * 1024) {
+    throw new Error('Ukuran file GIF maksimal 1,5 MB. Silakan gunakan JPG, PNG, atau WebP.');
+  }
+  if (effectiveSize > 1600 * 1024) {
+    throw new Error('Ukuran gambar melebihi batas maksimal 1,6 MB setelah optimasi.');
+  }
   const dataUrl = await readFileAsDataUrl(optimized);
   const commaIndex = dataUrl.indexOf(',');
   const base64 = commaIndex >= 0 ? dataUrl.slice(commaIndex + 1) : '';

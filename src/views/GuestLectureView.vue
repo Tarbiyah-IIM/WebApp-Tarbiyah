@@ -300,6 +300,7 @@ onUnmounted(() => {
           :refreshing="refreshing"
           @refresh="loadData(true)"
           @open-zoom="zoomModalItem = $event"
+          @edit="selectedIncomplete = $event"
         />
       </template>
     </div>

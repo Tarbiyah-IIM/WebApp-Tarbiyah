@@ -83,6 +83,7 @@ export default {
     heading: 'Featured Study Programs',
     subtitle:
       'For complete admissions details on each Study Program, click “Admissions Info” below:',
+    detailBtn: 'Program Details',
     pmbBtn: 'Admissions Info',
     cards: [
       {
@@ -236,6 +237,7 @@ export default {
     savingBtn: 'Saving...',
     saveCompleteBtn: 'Save Details (Set Process)',
     saveNewBtn: 'Save Schedule',
+    editRevisionBtn: 'Edit Revision',
     zoomModalTitle: 'Copy Meeting Invitation',
     zoomCopyBtn: 'Copy Meeting Invitation',
     zoomCopiedBtn: 'Copied',
@@ -247,6 +249,7 @@ export default {
     heading: 'Faculty News',
     empty: 'No faculty news has been published yet.',
     navAria: 'News Pagination',
+    prevLabel: 'Prev',
     nextLabel: 'Next',
     readMore: 'Read More',
     galleryHeading: 'Event Documentation',
@@ -276,7 +279,8 @@ export default {
     journalLinks: {
       pai: "PAI (Al'ulum Jurnal Pendidikan Islam)",
       pgmi: 'PGMI (Journal of Research and Innovation in Madrasah Ibtidaiyah Education)',
-      piaud: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)"
+      piaud: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)",
+      mambaul: "Institute (Mamba'ul 'Ulum)"
     },
     campusMapTitle: 'Campus Location',
     mapIframeTitle: 'Map of Faculty of Tarbiyah IIM Surakarta Campus',
@@ -308,11 +312,11 @@ export default {
     backToLogin: 'Back to Login'
   },
   cookie: {
-    ariaLabel: 'Cookie Consent',
-    prefix: 'We use essential cookies for secure admin authentication and display preferences. Read our',
+    ariaLabel: 'Cookie & Storage Notice',
+    prefix: 'We use essential session cookies for administrator login and browser storage for theme and language preferences. Read our',
     policyLink: 'Privacy Policy',
-    essentialBtn: 'Essential Only',
-    acceptBtn: 'Accept All'
+    essentialBtn: 'Essential Session',
+    acceptBtn: 'Save Preferences'
   },
   legal: {
     privacyTitle: 'Privacy Policy',
@@ -332,14 +336,15 @@ export default {
   search: {
     openLabel: 'Open global search',
     modalTitle: 'Quick Search — Tarbiyah',
-    placeholder: 'Search faculty news, agenda, or FAQ...',
+    placeholder: 'Search programs, services, faculty news, agenda, or FAQ...',
     inputLabel: 'Search keyword',
     clearBtn: 'Clear',
+    pagesSection: 'Study Programs & Academic Services',
     newsSection: 'Faculty News',
     agendaSection: 'Faculty Agenda',
     faqSection: 'Frequently Asked Questions',
-    emptyTitle: 'No matching results found on the home page.',
-    emptyHint: 'Try another keyword matching news titles, agenda, or FAQs.'
+    emptyTitle: 'No matching results found on the portal.',
+    emptyHint: 'Try another keyword matching programs, services, news titles, agenda, or FAQs.'
   },
   feedback: {
     noDataTitle: 'No data found',
@@ -438,10 +443,14 @@ export default {
       statLabelPlaceholder: 'Label',
       statValuePlaceholder: 'Value (e.g. 100 or 2.298)',
       statSuffixPlaceholder: 'Suffix (+ / %)',
+      sortOrderLabel: 'Sort Order',
+      sortOrderPlaceholder: 'Order (e.g. 1)',
+      featureIconLabel: 'Feature Icon',
       saveBtn: 'Save',
       partnersHeading: 'Our Services & Partners',
       partnerNamePlaceholder: 'Service / Partner Name',
       partnerUrlPlaceholder: 'https://...',
+      partnerLogoPlaceholder: 'Optional Logo URL (/api/v1/media/... or https://...)',
       newsHeading: 'Faculty News',
       categoryHeading: 'News Categories',
       categoryPlaceholder: 'Category name, e.g. Academic',
@@ -580,6 +589,7 @@ export default {
           itemTitle: 'Item Title',
           itemDesc: 'Short Description',
           itemHref: 'Link / Download URL (optional)',
+          itemIcon: 'Item Link Icon',
           stepsLines: 'Service Steps (1 line = 1 step)',
           visionText: 'Faculty Vision',
           missionsLines: 'Faculty Mission (1 line = 1 point)',

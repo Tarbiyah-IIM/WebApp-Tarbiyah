@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { ImagePlus, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { safeParseCmsJson } from '../../composables/usePortalContent.js';
 import { useI18n } from '../../composables/useI18n.js';
+import { useUiStore } from '../../stores/ui.store.js';
 
 const props = defineProps({
   settings: { type: Object, required: true },
@@ -12,6 +13,7 @@ const props = defineProps({
 
 const emit = defineEmits(['save-settings']);
 const { t } = useI18n();
+const ui = useUiStore();
 
 const selectedKey = ref('program:pai');
 const uploading = ref(false);
@@ -51,17 +53,27 @@ function textToLines(value) {
     .filter(Boolean);
 }
 
+function pickLocaleEntry(rawEntry) {
+  if (!rawEntry || typeof rawEntry !== 'object') return {};
+  const activeLocale = ui.locale === 'en' ? 'en' : 'id';
+  if (rawEntry.locales && typeof rawEntry.locales === 'object' && rawEntry.locales[activeLocale]) {
+    return rawEntry.locales[activeLocale];
+  }
+  return activeLocale === 'id' ? rawEntry : {};
+}
+
 function loadDraft() {
   if (mode.value === 'program') {
     const slug = targetId.value;
     const baseCard = (t('courses.cards') || []).find((c) => c.id === slug) || {};
     const baseDetail = (t('portalPages.programs') || {})[slug] || {};
-    const saved = safeParseCmsJson(props.settings?.cms_programs, {})[slug] || {};
+    const rawSaved = safeParseCmsJson(props.settings?.cms_programs, {})[slug] || {};
+    const saved = pickLocaleEntry(rawSaved);
     draft.value = {
       title: saved.title ?? baseCard.title ?? '',
       badge: saved.badge ?? baseCard.badge ?? '',
       description: saved.description ?? baseCard.description ?? '',
-      pmbUrl: saved.pmbUrl ?? baseCard.pmbUrl ?? '',
+      pmbUrl: saved.pmbUrl ?? rawSaved.pmbUrl ?? baseCard.pmbUrl ?? '',
       degree: saved.degree ?? baseDetail.degree ?? '',
       studyMode: saved.studyMode ?? baseDetail.studyMode ?? '',
       overview: saved.overview ?? baseDetail.overview ?? '',
@@ -74,7 +86,8 @@ function loadDraft() {
   if (mode.value === 'page') {
     const pageKey = targetId.value;
     const basePage = (t('portalPages.infoPages') || {})[pageKey] || {};
-    const saved = safeParseCmsJson(props.settings?.cms_info_pages, {})[pageKey] || {};
+    const rawSaved = safeParseCmsJson(props.settings?.cms_info_pages, {})[pageKey] || {};
+    const saved = pickLocaleEntry(rawSaved);
     const defaultSummary =
       basePage.summary ||
       (Array.isArray(basePage.summaryBlocks)
@@ -82,11 +95,17 @@ function loadDraft() {
             .map((b) => (b.segments ? b.segments.map((s) => s.label || s.text).join('') : b.text))
             .join('\n\n')
         : '');
-    const sourceHighlights = Array.isArray(saved.highlights) && saved.highlights.length ? saved.highlights : basePage.highlights || [];
+    const sourceHighlights =
+      Array.isArray(saved.highlights) && saved.highlights.length
+        ? saved.highlights
+        : Array.isArray(rawSaved.highlights) && rawSaved.highlights.length && ui.locale === 'id'
+          ? rawSaved.highlights
+          : basePage.highlights || [];
     draft.value = {
       title: saved.title ?? basePage.title ?? '',
       badge: saved.badge ?? basePage.badge ?? '',
-      summary: saved.summary ?? defaultSummary,
+      summary: saved.summary || defaultSummary,
+      defaultFlatSummary: basePage.summaryBlocks?.length ? defaultSummary : '',
       hasPrimaryCta: Boolean(basePage.primaryCta || saved.primaryCta),
       primaryCtaLabel: saved.primaryCta?.label ?? basePage.primaryCta?.label ?? '',
       primaryCtaHref: saved.primaryCta?.href ?? basePage.primaryCta?.href ?? '',
@@ -109,18 +128,24 @@ function loadDraft() {
     return;
   }
 
-  const savedProfile = safeParseCmsJson(props.settings?.cms_profile, {});
+  const rawProfile = safeParseCmsJson(props.settings?.cms_profile, {});
+  const savedProfile = pickLocaleEntry(rawProfile);
   draft.value = {
     visionText: savedProfile.visionText ?? t('hero.visionText'),
     missionsText: linesToText(savedProfile.missions ?? t('hero.missions')),
-    structureImageUrl: savedProfile.structureImageUrl ?? ''
+    structureImageUrl: savedProfile.structureImageUrl ?? rawProfile.structureImageUrl ?? ''
   };
 }
 
-watch([selectedKey, () => props.settings], loadDraft, { immediate: true, deep: true });
+watch([selectedKey, () => props.settings, () => ui.locale], loadDraft, { immediate: true, deep: true });
 
 function addHighlightItem() {
-  draft.value.highlights.push({ title: '', desc: '', href: '', icon: '' });
+  draft.value.highlights.push({
+    title: '',
+    desc: '',
+    href: '',
+    icon: targetId.value === 'jurnal' ? 'external' : ''
+  });
 }
 
 function removeHighlightItem(index) {
@@ -141,9 +166,12 @@ async function handleStructureUpload(event) {
 }
 
 function saveCurrent() {
+  const activeLocale = ui.locale === 'en' ? 'en' : 'id';
+
   if (mode.value === 'program') {
     const all = { ...safeParseCmsJson(props.settings?.cms_programs, {}) };
-    all[targetId.value] = {
+    const existing = all[targetId.value] || {};
+    const localized = {
       title: draft.value.title.trim(),
       badge: draft.value.badge.trim(),
       description: draft.value.description.trim(),
@@ -154,16 +182,26 @@ function saveCurrent() {
       highlights: textToLines(draft.value.highlightsText),
       careers: textToLines(draft.value.careersText)
     };
+    const nextLocales = { ...(existing.locales || {}), [activeLocale]: localized };
+    all[targetId.value] =
+      activeLocale === 'id'
+        ? { ...existing, ...localized, locales: nextLocales }
+        : { ...existing, pmbUrl: localized.pmbUrl || existing.pmbUrl, locales: nextLocales };
     emit('save-settings', { cms_programs: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.savedToast'));
     return;
   }
 
   if (mode.value === 'page') {
     const all = { ...safeParseCmsJson(props.settings?.cms_info_pages, {}) };
-    const entry = {
+    const existing = all[targetId.value] || {};
+    const summaryValue =
+      draft.value.defaultFlatSummary && draft.value.summary.trim() === draft.value.defaultFlatSummary.trim()
+        ? ''
+        : draft.value.summary.trim();
+    const localized = {
       title: draft.value.title.trim(),
       badge: draft.value.badge.trim(),
-      summary: draft.value.summary.trim(),
+      summary: summaryValue,
       highlights: draft.value.highlights
         .filter((h) => h.title.trim())
         .map((h) => ({
@@ -175,43 +213,71 @@ function saveCurrent() {
       steps: textToLines(draft.value.stepsText)
     };
     if (draft.value.hasPrimaryCta) {
-      entry.primaryCta = { label: draft.value.primaryCtaLabel.trim(), href: draft.value.primaryCtaHref.trim() };
+      localized.primaryCta = { label: draft.value.primaryCtaLabel.trim(), href: draft.value.primaryCtaHref.trim() };
     }
     if (draft.value.hasSecondaryCta) {
-      entry.secondaryCta = { label: draft.value.secondaryCtaLabel.trim(), href: draft.value.secondaryCtaHref.trim() };
+      localized.secondaryCta = { label: draft.value.secondaryCtaLabel.trim(), href: draft.value.secondaryCtaHref.trim() };
     }
     if (draft.value.hasSidebarAction) {
-      entry.sidebarAction = {
+      localized.sidebarAction = {
         title: draft.value.sidebarTitle.trim(),
         buttonLabel: draft.value.sidebarButtonLabel.trim(),
         badge: draft.value.sidebarBadge.trim(),
         href: draft.value.sidebarHref.trim()
       };
     }
-    all[targetId.value] = entry;
+    if (Array.isArray(existing.customOtherLinks)) {
+      localized.customOtherLinks = existing.customOtherLinks;
+    }
+    const nextLocales = { ...(existing.locales || {}), [activeLocale]: localized };
+    all[targetId.value] =
+      activeLocale === 'id' ? { ...existing, ...localized, locales: nextLocales } : { ...existing, locales: nextLocales };
     emit('save-settings', { cms_info_pages: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.savedToast'));
     return;
   }
 
-  const profilePayload = {
+  const rawProfile = safeParseCmsJson(props.settings?.cms_profile, {});
+  const localizedProfile = {
     visionText: draft.value.visionText.trim(),
     missions: textToLines(draft.value.missionsText),
     structureImageUrl: draft.value.structureImageUrl.trim()
   };
+  const nextLocales = { ...(rawProfile.locales || {}), [activeLocale]: localizedProfile };
+  const profilePayload =
+    activeLocale === 'id'
+      ? { ...rawProfile, ...localizedProfile, locales: nextLocales }
+      : { ...rawProfile, structureImageUrl: localizedProfile.structureImageUrl, locales: nextLocales };
   emit('save-settings', { cms_profile: JSON.stringify(profilePayload) }, t('adminDashboard.cmsPanel.portalPages.savedToast'));
 }
 
 function resetCurrentDefault() {
+  const activeLocale = ui.locale === 'en' ? 'en' : 'id';
   if (mode.value === 'program') {
     const all = { ...safeParseCmsJson(props.settings?.cms_programs, {}) };
-    delete all[targetId.value];
+    if (activeLocale === 'en' && all[targetId.value]?.locales?.en) {
+      delete all[targetId.value].locales.en;
+    } else {
+      delete all[targetId.value];
+    }
     emit('save-settings', { cms_programs: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
     return;
   }
   if (mode.value === 'page') {
     const all = { ...safeParseCmsJson(props.settings?.cms_info_pages, {}) };
-    delete all[targetId.value];
+    if (activeLocale === 'en' && all[targetId.value]?.locales?.en) {
+      delete all[targetId.value].locales.en;
+    } else {
+      delete all[targetId.value];
+    }
     emit('save-settings', { cms_info_pages: JSON.stringify(all) }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
+    return;
+  }
+  if (activeLocale === 'en') {
+    const rawProfile = { ...safeParseCmsJson(props.settings?.cms_profile, {}) };
+    if (rawProfile.locales?.en) {
+      delete rawProfile.locales.en;
+    }
+    emit('save-settings', { cms_profile: JSON.stringify(rawProfile) }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
     return;
   }
   emit('save-settings', { cms_profile: '{}' }, t('adminDashboard.cmsPanel.portalPages.resetToast'));
@@ -274,7 +340,12 @@ function resetCurrentDefault() {
       @submit.prevent="saveCurrent"
     >
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-4">
-        <h3 class="text-base font-extrabold text-brand-900">{{ draft.title || t('hero.modalTitle') }}</h3>
+        <div class="flex items-center gap-2">
+          <h3 class="text-base font-extrabold text-brand-900">{{ draft.title || t('hero.modalTitle') }}</h3>
+          <span class="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-bold uppercase text-brand-700">
+            {{ ui.locale.toUpperCase() }}
+          </span>
+        </div>
         <div class="flex flex-wrap gap-2">
           <button
             type="button"
@@ -414,13 +485,13 @@ function resetCurrentDefault() {
               v-model="item.title"
               type="text"
               :placeholder="t('adminDashboard.cmsPanel.portalPages.fields.itemTitle')"
-              class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-4"
+              class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-3"
             />
             <input
               v-model="item.desc"
               type="text"
               :placeholder="t('adminDashboard.cmsPanel.portalPages.fields.itemDesc')"
-              class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-4"
+              class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-3"
             />
             <input
               v-model="item.href"
@@ -428,6 +499,14 @@ function resetCurrentDefault() {
               :placeholder="t('adminDashboard.cmsPanel.portalPages.fields.itemHref')"
               class="min-h-[38px] rounded-lg border border-surface-border px-3 text-xs sm:col-span-3"
             />
+            <select
+              v-model="item.icon"
+              :aria-label="t('adminDashboard.cmsPanel.portalPages.fields.itemIcon')"
+              class="min-h-[38px] rounded-lg border border-surface-border px-2.5 text-xs sm:col-span-2"
+            >
+              <option value="">Download</option>
+              <option value="external">External Link</option>
+            </select>
             <button
               type="button"
               :aria-label="t('adminDashboard.cmsPanel.delBtn')"
@@ -458,7 +537,7 @@ function resetCurrentDefault() {
           <div class="space-y-2">
             <label for="prof-structure" class="block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.structureImageUrl') }}</label>
             <div class="flex gap-2">
-              <input id="prof-structure" v-model="draft.structureImageUrl" type="text" placeholder="/uploads/... atau https://..." class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
+              <input id="prof-structure" v-model="draft.structureImageUrl" type="text" placeholder="/api/v1/media/... atau https://..." class="min-h-[40px] flex-1 rounded-xl border border-surface-border px-3 text-sm" />
               <input ref="fileInputRef" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="handleStructureUpload" />
               <button
                 type="button"

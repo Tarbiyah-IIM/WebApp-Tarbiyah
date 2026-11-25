@@ -1,8 +1,9 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import { Clock, ExternalLink } from 'lucide-vue-next';
 import ModalDialog from './ModalDialog.vue';
 import { useI18n } from '../composables/useI18n.js';
+import { usePortalContent } from '../composables/usePortalContent.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -11,16 +12,42 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 const { t } = useI18n();
+const { contacts } = usePortalContent();
 const iframeLoading = ref(true);
+const iframeTimedOut = ref(false);
+let loadingTimer = null;
+
+function clearTimer() {
+  if (loadingTimer) {
+    clearTimeout(loadingTimer);
+    loadingTimer = null;
+  }
+}
+
+function handleIframeLoad() {
+  clearTimer();
+  iframeLoading.value = false;
+  iframeTimedOut.value = false;
+}
 
 watch(
   () => [props.open, props.item?.modalUrl],
   ([isOpen, url]) => {
+    clearTimer();
     if (isOpen && url) {
       iframeLoading.value = true;
+      iframeTimedOut.value = false;
+      loadingTimer = setTimeout(() => {
+        if (iframeLoading.value) {
+          iframeLoading.value = false;
+          iframeTimedOut.value = true;
+        }
+      }, 9000);
     }
   }
 );
+
+onBeforeUnmount(clearTimer);
 </script>
 
 <template>
@@ -46,13 +73,31 @@ watch(
         >
           {{ t('portalPages.common.loadingPreview') }}
         </div>
+        <div
+          v-else-if="iframeTimedOut"
+          class="flex h-[58vh] min-h-[320px] flex-col items-center justify-center gap-3 px-6 text-center"
+        >
+          <p class="max-w-md text-xs font-semibold leading-relaxed text-slate-600">
+            {{ t('portalPages.common.embedNotice') }}
+          </p>
+          <a
+            :href="item.externalUrl || item.modalUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold text-white hover:bg-brand-700 transition"
+          >
+            <span>{{ t('portalPages.common.openInNewTabBtn') }}</span>
+            <ExternalLink class="h-3.5 w-3.5" />
+          </a>
+        </div>
         <iframe
+          v-show="!iframeTimedOut"
           :src="item.modalUrl"
           :title="item.label"
           class="w-full border-0 bg-white"
           :class="iframeLoading ? 'h-0 opacity-0' : 'h-[58vh] min-h-[320px] opacity-100'"
           loading="lazy"
-          @load="iframeLoading = false"
+          @load="handleIframeLoad"
         />
       </div>
     </div>
@@ -71,7 +116,7 @@ watch(
       </div>
       <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
         <a
-          href="https://wa.link/qrwv15"
+          :href="contacts.waAdminUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex min-h-[42px] items-center gap-2 rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700 transition"

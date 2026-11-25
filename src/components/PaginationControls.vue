@@ -1,11 +1,12 @@
 <script setup>
 import { computed } from 'vue';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
 const props = defineProps({
   currentPage: { type: Number, required: true },
   totalPages: { type: Number, required: true },
   ariaLabel: { type: String, default: 'Navigasi Halaman' },
+  prevLabel: { type: String, default: 'Prev' },
   nextLabel: { type: String, default: 'Next' }
 });
 
@@ -43,6 +44,16 @@ function goToPage(page) {
     :aria-label="ariaLabel"
     class="mt-6 flex flex-wrap items-center justify-center gap-2"
   >
+    <button
+      type="button"
+      :disabled="currentPage <= 1"
+      class="inline-flex min-h-[40px] items-center gap-1 rounded-xl border border-surface-border bg-white px-3.5 text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-45"
+      @click="goToPage(currentPage - 1)"
+    >
+      <ChevronLeft class="h-4 w-4" aria-hidden="true" />
+      <span>{{ prevLabel }}</span>
+    </button>
+
     <template v-if="showLeadingOne">
       <button
         type="button"

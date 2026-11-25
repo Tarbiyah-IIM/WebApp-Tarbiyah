@@ -23,6 +23,10 @@ const journalLinks = computed(() => [
   {
     label: t('footer.journalLinks.piaud'),
     href: 'https://jurnal.iimsurakarta.ac.id/index.php/emerald'
+  },
+  {
+    label: t('footer.journalLinks.mambaul'),
+    href: 'https://jurnal.iimsurakarta.ac.id/index.php/mu'
   }
 ]);
 

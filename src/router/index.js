@@ -81,7 +81,19 @@ const router = createRouter({
   routes,
   scrollBehavior(to) {
     if (to.hash) {
-      return { el: to.hash, behavior: 'smooth' };
+      return new Promise((resolve) => {
+        let attempts = 0;
+        const tryFind = () => {
+          const el = document.querySelector(to.hash);
+          if (el || attempts >= 24) {
+            resolve(el ? { el: to.hash, behavior: 'smooth' } : { top: 0 });
+            return;
+          }
+          attempts += 1;
+          setTimeout(tryFind, 50);
+        };
+        tryFind();
+      });
     }
     return { top: 0 };
   }

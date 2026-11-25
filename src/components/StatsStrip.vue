@@ -14,9 +14,35 @@ let observer = null;
 let hasAnimated = false;
 
 function parseNumericPart(str) {
-  const match = String(str || '').match(/^(\d+(?:\.\d+)?)(.*)$/);
+  const raw = String(str || '').trim();
+  const groupedMatch = raw.match(/^(\d{1,3}(?:\.\d{3})+)(.*)$/);
+  if (groupedMatch) {
+    return {
+      num: Number(groupedMatch[1].replace(/\./g, '')),
+      tail: groupedMatch[2] || '',
+      useIndonesianThousands: true,
+      decimals: 0
+    };
+  }
+  const match = raw.match(/^(\d+(?:\.\d+)?)(.*)$/);
   if (!match) return null;
-  return { num: Number(match[1]), tail: match[2] || '' };
+  const decimalPart = match[1].includes('.') ? match[1].split('.')[1].length : 0;
+  return {
+    num: Number(match[1]),
+    tail: match[2] || '',
+    useIndonesianThousands: false,
+    decimals: decimalPart
+  };
+}
+
+function formatAnimatedNumber(value, parsed) {
+  if (parsed.useIndonesianThousands) {
+    return Math.round(value).toLocaleString('id-ID');
+  }
+  if (parsed.decimals > 0) {
+    return value.toFixed(parsed.decimals);
+  }
+  return String(Math.round(value));
 }
 
 function startCountUp() {
@@ -36,12 +62,14 @@ function startCountUp() {
 
     const tick = (now) => {
       const elapsed = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - elapsed, 3);
-      const current = target % 1 === 0 ? Math.round(target * eased) : (target * eased).toFixed(1);
-      animatedValues.value[stat.id] = `${current}${parsed.tail}${stat.suffix || ''}`;
-      if (elapsed < 1) {
-        requestAnimationFrame(tick);
+      if (elapsed >= 1) {
+        animatedValues.value[stat.id] = `${stat.value_num}${stat.suffix || ''}`;
+        return;
       }
+      const eased = 1 - Math.pow(1 - elapsed, 3);
+      const current = formatAnimatedNumber(target * eased, parsed);
+      animatedValues.value[stat.id] = `${current}${parsed.tail}${stat.suffix || ''}`;
+      requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   }
@@ -50,13 +78,13 @@ function startCountUp() {
 watch(
   () => props.stats,
   (list) => {
+    const nextMap = {};
     for (const s of list) {
-      if (!animatedValues.value[s.id]) {
-        animatedValues.value[s.id] = `${s.value_num}${s.suffix || ''}`;
-      }
+      nextMap[s.id] = `${s.value_num}${s.suffix || ''}`;
     }
+    animatedValues.value = nextMap;
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
 onMounted(() => {

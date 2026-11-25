@@ -12,6 +12,28 @@ function resolvePath(source, path) {
   }, source);
 }
 
+const ID_MONTHS_TO_EN = {
+  januari: 'January',
+  februari: 'February',
+  maret: 'March',
+  april: 'April',
+  mei: 'May',
+  juni: 'June',
+  juli: 'July',
+  agustus: 'August',
+  september: 'September',
+  oktober: 'October',
+  november: 'November',
+  desember: 'December'
+};
+
+function translateIndonesianDateText(text) {
+  return text.replace(
+    /\b(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\b/gi,
+    (match) => ID_MONTHS_TO_EN[match.toLowerCase()] || match
+  );
+}
+
 export function useI18n() {
   const ui = useUiStore();
   const locale = computed(() => ui.locale);
@@ -29,7 +51,8 @@ export function useI18n() {
     const text = String(rawText);
     if (ui.locale !== 'en') return text;
     const trimmed = text.trim();
-    return dynamicEn[trimmed] || text;
+    if (dynamicEn[trimmed]) return dynamicEn[trimmed];
+    return translateIndonesianDateText(text);
   }
 
   function setLocale(nextLocale) {

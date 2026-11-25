@@ -1,5 +1,6 @@
 import { computed } from 'vue';
 import { useLandingStore } from '../stores/landing.store.js';
+import { useUiStore } from '../stores/ui.store.js';
 
 export const DEFAULT_NAV_LINKS = {
   activeLetter: 'https://baau.iim.ac.id/index.php/layanan/surat-aktif-kuliah/',
@@ -71,7 +72,17 @@ function nonEmptyArray(value, fallback) {
 
 export function usePortalContent() {
   const landingStore = useLandingStore();
+  const uiStore = useUiStore();
   const settings = computed(() => landingStore.data?.settings || {});
+
+  function pickLocaleOverride(rawObj) {
+    if (!rawObj || typeof rawObj !== 'object') return null;
+    const activeLocale = uiStore.locale === 'en' ? 'en' : 'id';
+    if (rawObj.locales && typeof rawObj.locales === 'object' && rawObj.locales[activeLocale]) {
+      return rawObj.locales[activeLocale];
+    }
+    return activeLocale === 'id' ? rawObj : null;
+  }
 
   const navLinks = computed(() => {
     const override = safeParseCmsJson(settings.value.cms_nav_links, {});
@@ -109,32 +120,42 @@ export function usePortalContent() {
   const infoPagesOverride = computed(() => safeParseCmsJson(settings.value.cms_info_pages, {}));
 
   function mergeProfile(defaultProfile) {
-    const ov = profileOverride.value;
+    const rawOv = profileOverride.value || {};
+    const ov = pickLocaleOverride(rawOv) || {};
     const missions = Array.isArray(ov.missions)
       ? ov.missions.map((item) => String(item || '').trim()).filter(Boolean)
       : [];
     return {
       visionText: nonEmptyString(ov.visionText, defaultProfile.visionText),
       missions: missions.length ? missions : defaultProfile.missions,
-      structureImageUrl: sanitizePortalUrl(ov.structureImageUrl, defaultProfile.structureImageUrl)
+      structureImageUrl: sanitizePortalUrl(
+        ov.structureImageUrl || rawOv.structureImageUrl,
+        defaultProfile.structureImageUrl
+      )
     };
   }
 
   function mergeProgramCard(card) {
-    const ov = programsOverride.value[card.id];
-    if (!ov || typeof ov !== 'object') return card;
+    const rawOv = programsOverride.value[card.id];
+    const ov = pickLocaleOverride(rawOv);
+    if (!ov || typeof ov !== 'object') {
+      if (rawOv?.pmbUrl) {
+        return { ...card, pmbUrl: sanitizePortalUrl(rawOv.pmbUrl, card.pmbUrl) };
+      }
+      return card;
+    }
     return {
       ...card,
       badge: nonEmptyString(ov.badge, card.badge),
       title: nonEmptyString(ov.title, card.title),
       description: nonEmptyString(ov.description, card.description),
-      pmbUrl: sanitizePortalUrl(ov.pmbUrl, card.pmbUrl)
+      pmbUrl: sanitizePortalUrl(ov.pmbUrl || rawOv?.pmbUrl, card.pmbUrl)
     };
   }
 
   function mergeProgramDetail(slug, detail) {
     if (!detail) return null;
-    const ov = programsOverride.value[slug];
+    const ov = pickLocaleOverride(programsOverride.value[slug]);
     if (!ov || typeof ov !== 'object') return detail;
     const highlights = Array.isArray(ov.highlights)
       ? ov.highlights.map((item) => String(item || '').trim()).filter(Boolean)
@@ -152,10 +173,32 @@ export function usePortalContent() {
     };
   }
 
+  function hydrateSummaryBlocks(blocks) {
+    if (!Array.isArray(blocks)) return blocks;
+    const activeWaAdminUrl = contacts.value.waAdminUrl;
+    return blocks.map((block) => {
+      if (!Array.isArray(block?.segments)) return block;
+      return {
+        ...block,
+        segments: block.segments.map((seg) => {
+          if (seg?.href && seg.href.includes('wa.link/')) {
+            return { ...seg, href: activeWaAdminUrl };
+          }
+          return seg;
+        })
+      };
+    });
+  }
+
   function mergeInfoPage(pageKey, basePage) {
     if (!basePage) return null;
-    const ov = infoPagesOverride.value[pageKey];
-    if (!ov || typeof ov !== 'object') return basePage;
+    const rawOv = infoPagesOverride.value[pageKey];
+    const ov = pickLocaleOverride(rawOv);
+    if (!ov || typeof ov !== 'object') {
+      return basePage.summaryBlocks
+        ? { ...basePage, summaryBlocks: hydrateSummaryBlocks(basePage.summaryBlocks) }
+        : basePage;
+    }
 
     const merged = {
       ...basePage,
@@ -168,6 +211,8 @@ export function usePortalContent() {
       if (merged.summaryBlocks) {
         merged.summaryBlocks = null;
       }
+    } else if (merged.summaryBlocks) {
+      merged.summaryBlocks = hydrateSummaryBlocks(merged.summaryBlocks);
     }
 
     if (ov.primaryCta && typeof ov.primaryCta === 'object') {
@@ -212,9 +257,15 @@ export function usePortalContent() {
       merged.steps = nonEmptyArray(cleanSteps, basePage.steps);
     }
 
-    if (Array.isArray(ov.customOtherLinks) && ov.customOtherLinks.length > 0 && basePage.customOtherLinks) {
+    const activeCustomOtherLinks = Array.isArray(ov.customOtherLinks)
+      ? ov.customOtherLinks
+      : Array.isArray(rawOv?.customOtherLinks)
+        ? rawOv.customOtherLinks
+        : null;
+
+    if (activeCustomOtherLinks && activeCustomOtherLinks.length > 0 && basePage.customOtherLinks) {
       merged.customOtherLinks = basePage.customOtherLinks.map((baseItem, idx) => {
-        const nextItem = ov.customOtherLinks[idx];
+        const nextItem = activeCustomOtherLinks[idx];
         if (!nextItem || typeof nextItem !== 'object') return baseItem;
         return {
           ...baseItem,

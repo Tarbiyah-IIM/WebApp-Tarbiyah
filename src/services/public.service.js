@@ -10,7 +10,7 @@ export const publicService = {
     return data;
   },
   async submitWorkPermit(payload) {
-    const { data } = await api.post('/permits/work-permit', payload);
+    const { data } = await api.post('/permits/work-permit', payload, { timeout: 35000 });
     return data;
   }
 };

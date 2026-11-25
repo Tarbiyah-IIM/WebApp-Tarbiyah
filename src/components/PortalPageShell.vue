@@ -69,7 +69,7 @@ onUnmounted(() => {
       >
         <div class="flex items-center gap-2">
           <WifiOff class="h-4 w-4 shrink-0" />
-          <span>{{ t('portalPages.common.offlineNotice') }}</span>
+          <span>{{ isOffline ? t('portalPages.common.offlineNotice') : landingStore.error }}</span>
         </div>
         <button
           type="button"

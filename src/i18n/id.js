@@ -83,6 +83,7 @@ export default {
     heading: 'Program Studi Unggulan',
     subtitle:
       'Untuk informasi lengkap tentang penerimaan mahasiswa baru Program Studi, klik “Info PMB” di bawah ini:',
+    detailBtn: 'Detail Prodi',
     pmbBtn: 'Info PMB',
     cards: [
       {
@@ -236,6 +237,7 @@ export default {
     savingBtn: 'Menyimpan...',
     saveCompleteBtn: 'Simpan Isian (Set Process)',
     saveNewBtn: 'Simpan Agenda',
+    editRevisionBtn: 'Perbaiki Data',
     zoomModalTitle: 'Salin Undangan Rapat',
     zoomCopyBtn: 'Salin Undangan Rapat',
     zoomCopiedBtn: 'Tersalin',
@@ -247,7 +249,8 @@ export default {
     heading: 'Berita Fakultas',
     empty: 'Belum ada berita fakultas yang dipublikasikan.',
     navAria: 'Navigasi Halaman Berita',
-    nextLabel: 'Next',
+    prevLabel: 'Sebelumnya',
+    nextLabel: 'Berikutnya',
     readMore: 'Baca Selengkapnya',
     galleryHeading: 'Dokumentasi Kegiatan',
     photosCountBadge: 'Foto'
@@ -276,43 +279,44 @@ export default {
     journalLinks: {
       pai: "PAI (Al'ulum Jurnal Pendidikan Islam)",
       pgmi: 'PGMI (Journal of Research and Innovation in Madrasah Ibtidaiyah Education)',
-      piaud: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)"
+      piaud: "PIAUD (Education Journal of Mamba'ul 'Ulum for Early Childhood Development)",
+      mambaul: "Institut (Mamba'ul 'Ulum)"
     },
     campusMapTitle: 'Lokasi Kampus',
     mapIframeTitle: 'Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta',
-    rightsText: 'Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. All rights reserved.'
+    rightsText: 'Fakultas Tarbiyah, Institut Islam Mambaul Ulum Surakarta. Hak cipta dilindungi.'
   },
   auth: {
     welcomePrefix: 'Selamat datang, ',
-    loginHeading: 'Tarbiyah Login',
-    loginSubtitle: 'Selamat datang ke Tarbiyah Login',
+    loginHeading: 'Masuk Portal Tarbiyah',
+    loginSubtitle: 'Masuk ke panel manajemen Fakultas Tarbiyah',
     emailLabel: 'Email / ID',
-    emailPlaceholder: 'Masukan Email atau ID anda',
-    passcodeLabel: 'Passcode',
-    passcodePlaceholder: 'Masukkan Passcode anda',
-    forgotLink: 'Forgot password?',
-    submitLogin: 'Login',
-    signingIn: 'Signing in...',
+    emailPlaceholder: 'Masukkan Email atau ID Anda',
+    passcodeLabel: 'Kata Sandi',
+    passcodePlaceholder: 'Masukkan Kata Sandi Anda',
+    forgotLink: 'Lupa kata sandi?',
+    submitLogin: 'Masuk',
+    signingIn: 'Sedang masuk...',
     recoveryBadge: 'Pemulihan Akun Admin',
-    forgotHeading: 'Forgot Password Admin',
-    setNewHeading: 'Set New Password',
+    forgotHeading: 'Pemulihan Kata Sandi Admin',
+    setNewHeading: 'Atur Kata Sandi Baru',
     recoveryEmailLabel: 'Email Pemulihan Admin',
     recoveryEmailPlaceholder: 'Masukkan email pemulihan admin',
-    sendTokenBtn: 'Request Reset Token',
-    sendingToken: 'Sending...',
-    sandboxNote: 'Sandbox reset token generated and pre-filled below.',
-    resetTokenLabel: 'Reset Token',
-    newPasswordLabel: 'New Password',
-    resetPasswordBtn: 'Reset Password',
-    updatingPasscode: 'Updating...',
-    backToLogin: 'Back to Login'
+    sendTokenBtn: 'Kirim Token Pemulihan',
+    sendingToken: 'Mengirim...',
+    sandboxNote: 'Token pemulihan sandbox dibuat dan otomatis terisi di bawah ini.',
+    resetTokenLabel: 'Token Pemulihan',
+    newPasswordLabel: 'Kata Sandi Baru',
+    resetPasswordBtn: 'Simpan Kata Sandi Baru',
+    updatingPasscode: 'Memperbarui...',
+    backToLogin: 'Kembali ke Halaman Masuk'
   },
   cookie: {
-    ariaLabel: 'Cookie Consent',
-    prefix: 'Website Fakultas Tarbiyah menggunakan cookie esensial untuk keamanan sesi dan penyimpanan preferensi tampilan Anda. Baca',
+    ariaLabel: 'Persetujuan Cookie & Penyimpanan',
+    prefix: 'Portal Fakultas Tarbiyah menggunakan cookie sesi admin yang bersifat esensial serta penyimpanan lokal peramban untuk preferensi tema dan bahasa. Baca',
     policyLink: 'Kebijakan Privasi',
-    essentialBtn: 'Esensial Saja',
-    acceptBtn: 'Terima Semua'
+    essentialBtn: 'Sesi Esensial',
+    acceptBtn: 'Simpan Preferensi'
   },
   legal: {
     privacyTitle: 'Kebijakan Privasi',
@@ -332,14 +336,15 @@ export default {
   search: {
     openLabel: 'Buka pencarian global',
     modalTitle: 'Pencarian Cepat Tarbiyah',
-    placeholder: 'Cari berita, agenda fakultas, atau FAQ...',
+    placeholder: 'Cari prodi, layanan, berita, agenda, atau FAQ...',
     inputLabel: 'Kata kunci pencarian',
     clearBtn: 'Bersihkan',
+    pagesSection: 'Program Studi & Layanan Akademik',
     newsSection: 'Berita Fakultas',
     agendaSection: 'Agenda Fakultas',
     faqSection: 'Pertanyaan Umum (FAQ)',
-    emptyTitle: 'Tidak ada hasil yang cocok pada halaman beranda.',
-    emptyHint: 'Coba kata kunci lain sesuai judul berita, agenda, atau FAQ.'
+    emptyTitle: 'Tidak ada hasil yang cocok di portal.',
+    emptyHint: 'Coba kata kunci lain sesuai program studi, layanan, judul berita, agenda, atau FAQ.'
   },
   feedback: {
     noDataTitle: 'Data tidak ditemukan',
@@ -438,10 +443,14 @@ export default {
       statLabelPlaceholder: 'Label',
       statValuePlaceholder: 'Nilai (mis. 100 atau 2.298)',
       statSuffixPlaceholder: 'Akhiran (+ / %)',
+      sortOrderLabel: 'Urutan Tampil',
+      sortOrderPlaceholder: 'Urutan (mis. 1)',
+      featureIconLabel: 'Ikon Keunggulan',
       saveBtn: 'Simpan',
       partnersHeading: 'Layanan Kami & Mitra',
       partnerNamePlaceholder: 'Nama Layanan / Mitra',
       partnerUrlPlaceholder: 'https://...',
+      partnerLogoPlaceholder: 'URL Logo Opsional (/api/v1/media/... atau https://...)',
       newsHeading: 'Berita Fakultas',
       categoryHeading: 'Kategori Berita',
       categoryPlaceholder: 'Nama kategori, mis. Akademik',
@@ -580,6 +589,7 @@ export default {
           itemTitle: 'Judul Item',
           itemDesc: 'Deskripsi Singkat',
           itemHref: 'URL Tautan / Unduhan (opsional)',
+          itemIcon: 'Ikon Tautan Item',
           stepsLines: 'Alur & Tahapan Layanan (1 baris = 1 langkah)',
           visionText: 'Visi Fakultas',
           missionsLines: 'Misi Fakultas (1 baris = 1 poin)',
