@@ -259,8 +259,14 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.goto('/program-studi/piaud');
     await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Islam Anak Usia Dini' })).toBeVisible();
     await expect(page.getByText('Terakreditasi LAMDIK')).toBeVisible();
-    await expect(page.locator('main aside').getByText('Terakreditasi BAIK SEKALI')).toBeVisible();
+    await expect(page.locator('main aside').getByText('Terakreditasi BAIK', { exact: true })).toBeVisible();
     await expect(page.locator('main aside').getByRole('button', { name: /Sertifikat Akreditasi/ })).toBeVisible();
+    await page.getByTestId('prodi-vision-mission-btn').click();
+    const piaudVisionModal = page.getByRole('dialog', { name: /Visi, Misi & Tujuan Prodi/ });
+    await expect(piaudVisionModal).toBeVisible();
+    await expect(piaudVisionModal.getByText(/holistik integratif dan berorientasi global.*2035/)).toBeVisible();
+    await expect(piaudVisionModal.getByText(/Menghasilkan edupreneur dan pengembang bahan ajar/)).toBeVisible();
+    await piaudVisionModal.getByRole('button', { name: 'Close modal' }).click();
     await page.goto('/program-studi/unknown-slug');
     await expect(page.getByRole('heading', { name: 'Halaman tidak ditemukan' })).toBeVisible();
 

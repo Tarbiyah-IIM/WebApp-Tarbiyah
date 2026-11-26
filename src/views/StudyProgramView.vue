@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Award, Briefcase, CheckCircle2, ChevronRight, ExternalLink, GraduationCap } from 'lucide-vue-next';
+import ModalDialog from '../components/ModalDialog.vue';
 import PortalEmbedModal from '../components/PortalEmbedModal.vue';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import { useI18n } from '../composables/useI18n.js';
@@ -13,14 +14,27 @@ const { mergeProgramCard, mergeProgramDetail } = usePortalContent();
 
 const slug = computed(() => String(route.params.slug || '').toLowerCase());
 const comingSoonModalItem = ref(null);
+const visionModalOpen = ref(false);
 const allCards = computed(() => (t('courses.cards') || []).map(mergeProgramCard));
 const prodiCard = computed(() => allCards.value.find((card) => card.id === slug.value) || null);
 const prodiDetail = computed(() => mergeProgramDetail(slug.value, (t('portalPages.programs') || {})[slug.value] || null));
 const isMissing = computed(() => !prodiCard.value || !prodiDetail.value);
+const hasVisionMissionObjectives = computed(() =>
+  Boolean(prodiDetail.value?.vision || prodiDetail.value?.missions?.length || prodiDetail.value?.objectives?.length)
+);
 
 watch(slug, () => {
   comingSoonModalItem.value = null;
+  visionModalOpen.value = false;
 });
+
+function handleVisionMissionClick() {
+  if (hasVisionMissionObjectives.value) {
+    visionModalOpen.value = true;
+    return;
+  }
+  openComingSoon('programVisionMissionBtn');
+}
 
 function openComingSoon(labelKey) {
   comingSoonModalItem.value = {
@@ -157,11 +171,13 @@ const otherPrograms = computed(() =>
 
         <button
           type="button"
+          data-testid="prodi-vision-mission-btn"
           class="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border border-surface-border bg-surface-page px-4 text-left text-sm font-semibold text-slate-700 hover:bg-brand-50 transition"
-          @click="openComingSoon('programVisionMissionBtn')"
+          @click="handleVisionMissionClick"
         >
           <span>{{ t('portalPages.common.programVisionMissionBtn') }}</span>
-          <span class="shrink-0 rounded-full bg-surface-muted px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
+          <ChevronRight v-if="hasVisionMissionObjectives" class="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+          <span v-else class="shrink-0 rounded-full bg-surface-muted px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
             {{ t('portalPages.common.comingSoonShortBadge') }}
           </span>
         </button>
@@ -193,6 +209,46 @@ const otherPrograms = computed(() =>
       </section>
     </template>
   </PortalPageShell>
+
+  <ModalDialog
+    :open="visionModalOpen"
+    :title="`${t('portalPages.common.programVisionMissionBtn')} · ${prodiCard?.title || ''}`"
+    header-variant="macos"
+    @close="visionModalOpen = false"
+  >
+    <div v-if="prodiDetail" class="space-y-5">
+      <div v-if="prodiDetail.vision" class="rounded-2xl border border-brand-100 bg-brand-50/70 p-5">
+        <span class="inline-block rounded-full bg-brand-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+          {{ t('portalPages.common.visionBadge') }}
+        </span>
+        <p class="mt-3 text-sm leading-relaxed font-medium text-brand-900 sm:text-base">
+          {{ prodiDetail.vision }}
+        </p>
+      </div>
+
+      <div v-if="prodiDetail.missions?.length" class="rounded-2xl border border-surface-border bg-surface-page p-5">
+        <span class="inline-block rounded-full bg-amber-400 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+          {{ t('portalPages.common.missionBadge') }}
+        </span>
+        <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-700 sm:text-base">
+          <li v-for="item in prodiDetail.missions" :key="item">
+            {{ item }}
+          </li>
+        </ol>
+      </div>
+
+      <div v-if="prodiDetail.objectives?.length" class="rounded-2xl border border-surface-border bg-surface-page p-5">
+        <span class="inline-block rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+          {{ t('portalPages.common.objectivesBadge') }}
+        </span>
+        <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-700 sm:text-base">
+          <li v-for="item in prodiDetail.objectives" :key="item">
+            {{ item }}
+          </li>
+        </ol>
+      </div>
+    </div>
+  </ModalDialog>
 
   <PortalEmbedModal :open="Boolean(comingSoonModalItem)" :item="comingSoonModalItem" @close="comingSoonModalItem = null" />
 </template>

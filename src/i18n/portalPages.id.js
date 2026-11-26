@@ -19,6 +19,9 @@ export const portalPagesId = {
     backHomeBtn: 'Kembali ke Beranda',
     accreditationCertBtn: 'Sertifikat Akreditasi',
     programVisionMissionBtn: 'Visi, Misi & Tujuan Prodi',
+    visionBadge: 'Visi Program Studi',
+    missionBadge: 'Misi Program Studi',
+    objectivesBadge: 'Tujuan Program Studi',
     teachingStaffHeading: 'Staf Pengajar',
     programLeadershipBtn: 'Pimpinan Prodi',
     programLecturersBtn: 'Dosen Prodi',
@@ -128,8 +131,22 @@ export const portalPagesId = {
     piaud: {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
-      accreditationStatus: 'Terakreditasi BAIK SEKALI',
+      accreditationStatus: 'Terakreditasi BAIK',
       accreditationUrl: '',
+      vision:
+        'Mengembangkan ilmu pendidikan anak usia dini yang holistik integratif dan berorientasi global untuk menghasilkan pendidik dan tenaga kependidikan yang unggul dan berkarakter rahmatan lil alamin di tahun 2035.',
+      missions: [
+        'Menyelenggarakan pendidikan Islam anak usia dini yang holistik integratif.',
+        'Menyelenggarakan pendidikan Islam anak usia dini yang berwawasan global.',
+        'Menyelenggarakan pendidikan Islam anak usia dini yang berorientasi pada mutu.',
+        'Melaksanakan pembelajaran yang mengintegrasikan hasil penelitian dan/atau hasil pengabdian kepada masyarakat.'
+      ],
+      objectives: [
+        'Menghasilkan pendidik anak usia dini yang holistik integratif.',
+        'Menghasilkan pendidik dan tenaga kependidikan yang berwawasan global.',
+        'Menghasilkan pendidik dan tenaga kependidikan yang berorientasi pada mutu.',
+        'Menghasilkan edupreneur dan pengembang bahan ajar yang mengintegrasikan hasil penelitian dan/atau hasil pengabdian kepada masyarakat.'
+      ],
       overview:
         'Program Studi Pendidikan Islam Anak Usia Dini (PIAUD) berfokus pada pendidikan anak usia emas (0–6 tahun) melalui pendekatan bermain bermakna, stimulasi tumbuh kembang holistik, seni Islami, dan kemitraan orang tua.',
       highlights: [

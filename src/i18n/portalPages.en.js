@@ -19,6 +19,9 @@ export const portalPagesEn = {
     backHomeBtn: 'Back to Home',
     accreditationCertBtn: 'Accreditation Certificate',
     programVisionMissionBtn: 'Program Vision, Mission & Objectives',
+    visionBadge: 'Program Vision',
+    missionBadge: 'Program Mission',
+    objectivesBadge: 'Program Objectives',
     teachingStaffHeading: 'Teaching Staff',
     programLeadershipBtn: 'Program Leadership',
     programLecturersBtn: 'Program Lecturers',
@@ -128,8 +131,22 @@ export const portalPagesEn = {
     piaud: {
       degree: 'Bachelor of Education (S.Pd.)',
       studyMode: 'Regular & RPL · Integrated',
-      accreditationStatus: 'Baik Sekali Accredited',
+      accreditationStatus: 'Good Accredited',
       accreditationUrl: '',
+      vision:
+        'To advance holistic-integrative and globally oriented early childhood Islamic education knowledge to produce outstanding educators and educational personnel with rahmatan lil alamin character by 2035.',
+      missions: [
+        'Deliver holistic-integrative early childhood Islamic education.',
+        'Deliver globally oriented early childhood Islamic education.',
+        'Deliver quality-oriented early childhood Islamic education.',
+        'Implement instruction that integrates research findings and/or community service outcomes.'
+      ],
+      objectives: [
+        'Produce holistic-integrative early childhood educators.',
+        'Produce globally minded educators and educational personnel.',
+        'Produce quality-driven educators and educational personnel.',
+        'Produce edupreneurs and instructional material developers who integrate research findings and/or community service outcomes.'
+      ],
       overview:
         'The Early Childhood Islamic Education (PIAUD) Study Program specializes in golden-age education (0–6 years) through meaningful play, holistic growth stimulation, Islamic storytelling, and family partnerships.',
       highlights: [

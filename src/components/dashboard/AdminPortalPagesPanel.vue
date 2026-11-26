@@ -84,7 +84,10 @@ function loadDraft() {
       accreditationStatus: saved.accreditationStatus ?? baseDetail.accreditationStatus ?? '',
       overview: saved.overview ?? baseDetail.overview ?? '',
       highlightsText: linesToText(saved.highlights ?? baseDetail.highlights),
-      careersText: linesToText(saved.careers ?? baseDetail.careers)
+      careersText: linesToText(saved.careers ?? baseDetail.careers),
+      vision: saved.vision ?? baseDetail.vision ?? '',
+      missionsText: linesToText(saved.missions ?? baseDetail.missions),
+      objectivesText: linesToText(saved.objectives ?? baseDetail.objectives)
     };
     return;
   }
@@ -238,7 +241,10 @@ function saveCurrent() {
       accreditationStatus: draft.value.accreditationStatus.trim(),
       overview: draft.value.overview.trim(),
       highlights: textToLines(draft.value.highlightsText),
-      careers: textToLines(draft.value.careersText)
+      careers: textToLines(draft.value.careersText),
+      vision: draft.value.vision.trim(),
+      missions: textToLines(draft.value.missionsText),
+      objectives: textToLines(draft.value.objectivesText)
     };
     all[targetId.value] = buildSavedEntry(existing, activeLocale, localized);
     emitWithSizeCheck('cms_programs', all, t('adminDashboard.cmsPanel.portalPages.savedToast'));
@@ -488,6 +494,18 @@ function resetCurrentDefault() {
           <div class="sm:col-span-2">
             <label for="pg-careers" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.careersLines') }}</label>
             <textarea id="pg-careers" v-model="draft.careersText" rows="4" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="pg-vision" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.programVision') }}</label>
+            <textarea id="pg-vision" v-model="draft.vision" rows="3" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="pg-missions" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.programMissionsLines') }}</label>
+            <textarea id="pg-missions" v-model="draft.missionsText" rows="4" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="pg-objectives" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.programObjectivesLines') }}</label>
+            <textarea id="pg-objectives" v-model="draft.objectivesText" rows="4" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
           </div>
         </div>
       </template>

@@ -216,6 +216,12 @@ export function usePortalContent() {
     const careers = Array.isArray(ov.careers)
       ? ov.careers.map((item) => String(item || '').trim()).filter(Boolean)
       : [];
+    const missions = Array.isArray(ov.missions)
+      ? ov.missions.map((item) => String(item || '').trim()).filter(Boolean)
+      : [];
+    const objectives = Array.isArray(ov.objectives)
+      ? ov.objectives.map((item) => String(item || '').trim()).filter(Boolean)
+      : [];
     const accreditationUrl =
       ov.accreditationUrl !== undefined
         ? sanitizePortalUrl(ov.accreditationUrl, '')
@@ -229,6 +235,9 @@ export function usePortalContent() {
       accreditationStatus: nonEmptyString(ov.accreditationStatus, detail.accreditationStatus || ''),
       overview: nonEmptyString(ov.overview, detail.overview),
       accreditationUrl,
+      vision: nonEmptyString(ov.vision, detail.vision || ''),
+      missions: missions.length ? missions : detail.missions || [],
+      objectives: objectives.length ? objectives : detail.objectives || [],
       highlights: highlights.length ? highlights : detail.highlights,
       careers: careers.length ? careers : detail.careers
     };
