@@ -170,14 +170,17 @@ const otherPrograms = computed(() =>
       <section v-if="!isMissing" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
         <h2 class="text-base font-extrabold text-brand-900">{{ t('portalPages.common.teachingStaffHeading') }}</h2>
         <div class="space-y-2.5">
-          <router-link
-            :to="{ path: `/program-studi/${slug}/dosen`, query: { filter: 'pimpinan' } }"
-            data-testid="prodi-leadership-link"
+          <button
+            type="button"
+            data-testid="prodi-leadership-btn"
             class="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 transition"
+            @click="openComingSoon('programLeadershipBtn')"
           >
             <span>{{ t('portalPages.common.programLeadershipBtn') }}</span>
-            <ChevronRight class="h-4 w-4 shrink-0" aria-hidden="true" />
-          </router-link>
+            <span class="shrink-0 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white">
+              {{ t('portalPages.common.comingSoonShortBadge') }}
+            </span>
+          </button>
           <router-link
             :to="`/program-studi/${slug}/dosen`"
             data-testid="prodi-lecturers-link"

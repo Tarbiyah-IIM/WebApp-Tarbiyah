@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { ArrowLeft, Award, ChevronRight, ExternalLink, GraduationCap, Search, Users } from 'lucide-vue-next';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import LecturerProfileDetail from '../components/LecturerProfileDetail.vue';
@@ -17,7 +17,6 @@ import {
 } from '../utils/lecturers.js';
 
 const route = useRoute();
-const router = useRouter();
 const landingStore = useLandingStore();
 const { t } = useI18n();
 const { mergeProgramCard } = usePortalContent();
@@ -52,32 +51,21 @@ const isMissing = computed(() => {
   return false;
 });
 
-const activeFilter = computed(() => (route.query.filter === 'pimpinan' ? 'pimpinan' : 'all'));
-
 watch(slug, () => {
   searchQuery.value = '';
 });
 
-const leadershipLecturers = computed(() =>
-  programLecturers.value.filter((item) => Boolean(item.leadership_role && item.leadership_role.trim()))
-);
-
 const filteredLecturers = computed(() => {
-  const base = activeFilter.value === 'pimpinan' ? leadershipLecturers.value : programLecturers.value;
   const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return base;
-  return base.filter((item) =>
+  if (!q) return programLecturers.value;
+  return programLecturers.value.filter((item) =>
     [item.name, item.nidn, item.academic_rank, item.rank_grade, item.leadership_role, item.education]
       .filter(Boolean)
       .some((field) => String(field).toLowerCase().includes(q))
   );
 });
 
-const directoryBackRoute = computed(() =>
-  activeFilter.value === 'pimpinan'
-    ? { path: `/program-studi/${slug.value}/dosen`, query: { filter: 'pimpinan' } }
-    : `/program-studi/${slug.value}/dosen`
-);
+const directoryBackRoute = computed(() => `/program-studi/${slug.value}/dosen`);
 
 const pageTitle = computed(() => {
   if (!prodiCard.value) return t('portalPages.common.lecturers.notFoundTitle');
@@ -108,25 +96,12 @@ const otherProgramDirectories = computed(() =>
     }))
 );
 
-function setFilter(nextFilter) {
-  router.replace({
-    path: `/program-studi/${slug.value}/dosen`,
-    query: nextFilter === 'pimpinan' ? { filter: 'pimpinan' } : {}
-  });
-}
-
 function resetFilters() {
   searchQuery.value = '';
-  if (activeFilter.value !== 'all') {
-    setFilter('all');
-  }
 }
 
 function lecturerDetailRoute(id) {
-  return {
-    path: `/program-studi/${slug.value}/dosen/${id}`,
-    query: activeFilter.value === 'pimpinan' ? { filter: 'pimpinan' } : {}
-  };
+  return `/program-studi/${slug.value}/dosen/${id}`;
 }
 </script>
 
@@ -170,29 +145,8 @@ function lecturerDetailRoute(id) {
           </p>
         </div>
 
-        <div class="flex flex-col gap-3 border-t border-surface-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <div class="inline-flex rounded-xl border border-surface-border bg-surface-page p-1" role="group">
-            <button
-              type="button"
-              data-testid="lecturers-filter-all"
-              class="min-h-[38px] rounded-lg px-3.5 text-xs font-bold transition"
-              :class="activeFilter === 'all' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
-              @click="setFilter('all')"
-            >
-              {{ t('portalPages.common.lecturers.allTab') }} ({{ programLecturers.length }})
-            </button>
-            <button
-              type="button"
-              data-testid="lecturers-filter-leadership"
-              class="min-h-[38px] rounded-lg px-3.5 text-xs font-bold transition"
-              :class="activeFilter === 'pimpinan' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
-              @click="setFilter('pimpinan')"
-            >
-              {{ t('portalPages.common.lecturers.leadershipTab') }} ({{ leadershipLecturers.length }})
-            </button>
-          </div>
-
-          <div class="relative flex-1 sm:max-w-xs">
+        <div class="border-t border-surface-border pt-4">
+          <div class="relative max-w-md">
             <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
             <input
               v-model="searchQuery"
@@ -217,7 +171,7 @@ function lecturerDetailRoute(id) {
         :empty-title="t('portalPages.common.lecturers.emptyDirectoryTitle')"
         :empty-description="t('portalPages.common.lecturers.emptyDirectoryDesc')"
       >
-        <template v-if="searchQuery || activeFilter !== 'all'" #empty-action>
+        <template v-if="searchQuery" #empty-action>
           <button
             type="button"
             class="inline-flex min-h-[40px] items-center rounded-xl border border-surface-border bg-white px-4 text-xs font-bold text-brand-700 hover:bg-brand-50"
@@ -325,10 +279,6 @@ function lecturerDetailRoute(id) {
           <div class="flex items-center justify-between gap-2 border-b border-surface-border pb-2">
             <span class="text-slate-500">{{ t('portalPages.common.lecturers.totalLecturersLabel') }}</span>
             <span class="font-bold text-brand-900">{{ programLecturers.length }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-2 border-b border-surface-border pb-2">
-            <span class="text-slate-500">{{ t('portalPages.common.lecturers.totalLeadershipLabel') }}</span>
-            <span class="font-bold text-brand-900">{{ leadershipLecturers.length }}</span>
           </div>
           <div class="flex items-center justify-between gap-2">
             <span class="text-slate-500">{{ t('portalPages.common.lecturers.activeCountLabel') }}</span>

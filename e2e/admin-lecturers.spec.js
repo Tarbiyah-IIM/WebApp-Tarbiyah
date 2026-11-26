@@ -76,8 +76,14 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     createdLecturerId = found.id;
 
     await page.goto('/program-studi/pai');
-    await page.getByTestId('prodi-leadership-link').click();
-    await expect(page).toHaveURL(/\/program-studi\/pai\/dosen\?filter=pimpinan/);
+    await page.getByTestId('prodi-leadership-btn').click();
+    const pimpinanSoonModal = page.getByRole('dialog', { name: 'Pimpinan Prodi' });
+    await expect(pimpinanSoonModal).toBeVisible();
+    await expect(pimpinanSoonModal.getByText('Segera hadir', { exact: true })).toBeVisible();
+    await pimpinanSoonModal.getByRole('button', { name: 'Close modal' }).click();
+
+    await page.getByTestId('prodi-lecturers-link').click();
+    await expect(page).toHaveURL(/\/program-studi\/pai\/dosen$/);
     const card = page.getByTestId('lecturer-card').filter({ hasText: lecturerName });
     await expect(card).toBeVisible();
     await expect(card).toContainText('Ketua Program Studi');
