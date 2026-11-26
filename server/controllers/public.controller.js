@@ -1,6 +1,7 @@
 import { getCache, getLandingCacheGeneration, setCache } from '../config/cache.js';
 import { AppError } from '../middlewares/error.middleware.js';
 import { createSubscriber, getLandingData, getPublishedNewsById } from '../models/landing.model.js';
+import { listVisibleLecturers } from '../models/lecturer.model.js';
 import { findMediaFileById } from '../models/media.model.js';
 
 let landingInFlight = null;
@@ -48,6 +49,24 @@ export async function getPublicNewsDetail(req, res, next) {
     }
     await setCache(cacheKey, news, 30000);
     return res.json({ news });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getPublicLecturers(req, res, next) {
+  try {
+    const rawProgram = typeof req.query?.program === 'string' ? req.query.program.trim().toLowerCase() : '';
+    const programSlug = rawProgram === 'pai' || rawProgram === 'pgmi' || rawProgram === 'piaud' ? rawProgram : null;
+    const cached = await getCache('landing_bundle');
+    if (cached && Array.isArray(cached.lecturers)) {
+      const items = programSlug
+        ? cached.lecturers.filter((item) => item.program_slug === programSlug)
+        : cached.lecturers;
+      return res.json({ items });
+    }
+    const items = await listVisibleLecturers(programSlug);
+    return res.json({ items });
   } catch (err) {
     return next(err);
   }

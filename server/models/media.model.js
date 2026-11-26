@@ -78,6 +78,12 @@ export async function findPartnerLogoUrl(partnerId) {
   return logoUrl ? [logoUrl] : [];
 }
 
+export async function findLecturerPhotoUrl(lecturerId) {
+  const [rows] = await pool.execute('SELECT photo_url FROM lecturers WHERE id = ? LIMIT 1', [lecturerId]);
+  const photoUrl = rows[0]?.photo_url;
+  return photoUrl ? [photoUrl] : [];
+}
+
 export async function deleteMediaFileIfUnreferenced(mediaId) {
   if (!isValidMediaId(mediaId)) return false;
   const pattern = `%/api/v1/media/${mediaId}%`;
@@ -86,9 +92,10 @@ export async function deleteMediaFileIfUnreferenced(mediaId) {
       (SELECT COUNT(*) FROM testimonials WHERE avatar_url LIKE ? OR gallery_urls LIKE ? OR full_content LIKE ? OR quote LIKE ?) +
       (SELECT COUNT(*) FROM agendas WHERE cover_url LIKE ? OR description LIKE ? OR excerpt LIKE ?) +
       (SELECT COUNT(*) FROM partners WHERE logo_url LIKE ?) +
+      (SELECT COUNT(*) FROM lecturers WHERE photo_url LIKE ?) +
       (SELECT COUNT(*) FROM users WHERE avatar_url LIKE ?) +
       (SELECT COUNT(*) FROM site_settings WHERE setting_value LIKE ?) AS refCount`,
-    [pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern]
+    [pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern]
   );
   if (Number(usage?.refCount || 0) > 0) {
     return false;

@@ -1,4 +1,5 @@
 import { pool, withTransaction } from '../config/db.js';
+import { listVisibleLecturers } from './lecturer.model.js';
 
 const VALID_SLIDESHOW_POSITIONS = new Set(['top', 'middle', 'bottom', 'none']);
 
@@ -203,7 +204,8 @@ export async function getLandingData() {
     [testimonialsRows],
     [agendasRows],
     [faqsRows],
-    [settingsRows]
+    [settingsRows],
+    lecturersRows
   ] = await Promise.all([
     pool.execute('SELECT id, stat_group, label, value_num, suffix, sort_order FROM stats ORDER BY sort_order ASC, id ASC'),
     pool.execute('SELECT id, title, description, icon, sort_order FROM features ORDER BY sort_order ASC, id ASC'),
@@ -225,7 +227,8 @@ export async function getLandingData() {
       ORDER BY sort_order ASC, id ASC
     `),
     pool.execute('SELECT id, question, answer, sort_order FROM faqs ORDER BY sort_order ASC, id ASC'),
-    pool.execute('SELECT setting_key, setting_value FROM site_settings')
+    pool.execute('SELECT setting_key, setting_value FROM site_settings'),
+    listVisibleLecturers()
   ]);
 
   const settings = {};
@@ -243,7 +246,8 @@ export async function getLandingData() {
     partners: partnersRows,
     testimonials: sortNewsByNewestDate(await hydrateNewsRows(testimonialsRows)),
     agendas: sortItemsByNewestDate(hydrateAgendaRows(agendasRows), 'event_date'),
-    faqs: faqsRows
+    faqs: faqsRows,
+    lecturers: lecturersRows
   };
 }
 
@@ -271,7 +275,8 @@ export async function getPortalOverviewStats() {
       (SELECT COUNT(*) FROM agendas) AS totalAgendas,
       (SELECT COUNT(*) FROM faqs) AS totalFaqs,
       (SELECT COUNT(*) FROM partners) AS totalServices,
-      (SELECT COUNT(*) FROM features) AS totalFeatures`
+      (SELECT COUNT(*) FROM features) AS totalFeatures,
+      (SELECT COUNT(*) FROM lecturers) AS totalLecturers`
   );
   return counts;
 }

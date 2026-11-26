@@ -179,6 +179,38 @@ INSERT INTO `features` (`id`, `title`, `description`, `icon`, `sort_order`, `cre
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `lecturers`
+--
+
+CREATE TABLE `lecturers` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `program_slug` enum('pai','pgmi','piaud') NOT NULL,
+  `name` varchar(160) NOT NULL,
+  `photo_url` varchar(500) DEFAULT NULL,
+  `nidn` varchar(40) DEFAULT NULL,
+  `employment_type` varchar(80) NOT NULL DEFAULT 'Dosen Tetap',
+  `teaching_status` enum('active','study_leave','inactive') NOT NULL DEFAULT 'active',
+  `academic_rank` varchar(80) DEFAULT NULL,
+  `rank_grade` varchar(40) DEFAULT NULL,
+  `leadership_role` varchar(100) DEFAULT NULL,
+  `email` varchar(191) DEFAULT NULL,
+  `education` varchar(200) DEFAULT NULL,
+  `expertise` varchar(255) DEFAULT NULL,
+  `biography` longtext DEFAULT NULL,
+  `scholar_url` varchar(500) DEFAULT NULL,
+  `orcid_url` varchar(500) DEFAULT NULL,
+  `scopus_url` varchar(500) DEFAULT NULL,
+  `sinta_url` varchar(500) DEFAULT NULL,
+  `wos_url` varchar(500) DEFAULT NULL,
+  `is_visible` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `media_files`
 --
 
@@ -865,6 +897,13 @@ ALTER TABLE `media_files`
   ADD KEY `idx_media_files_uploaded_by` (`uploaded_by`);
 
 --
+-- Indeks untuk tabel `lecturers`
+--
+ALTER TABLE `lecturers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_lecturers_program_visible_sort` (`program_slug`,`is_visible`,`sort_order`,`id`);
+
+--
 -- Indeks untuk tabel `news_categories`
 --
 ALTER TABLE `news_categories`
@@ -961,6 +1000,12 @@ ALTER TABLE `faqs`
 --
 ALTER TABLE `features`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT untuk tabel `lecturers`
+--
+ALTER TABLE `lecturers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT untuk tabel `news_categories`

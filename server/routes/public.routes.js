@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { deleteMe, getMe, updateMe } from '../controllers/auth.controller.js';
 import { getGuestLectureData, submitGuestLecture } from '../controllers/guestLecture.controller.js';
 import { getWorkPermitMeta, submitWorkPermit } from '../controllers/permit.controller.js';
-import { getLanding, getPublicMedia, getPublicNewsDetail, subscribeNewsletter } from '../controllers/public.controller.js';
+import { getLanding, getPublicLecturers, getPublicMedia, getPublicNewsDetail, subscribeNewsletter } from '../controllers/public.controller.js';
 import { env } from '../config/env.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { AppError } from '../middlewares/error.middleware.js';
@@ -90,6 +90,7 @@ function ensureSubscribersEnabled(_req, _res, next) {
 }
 
 router.get('/landing', publicReadLimiter, getLanding);
+router.get('/lecturers', publicReadLimiter, getPublicLecturers);
 router.get('/news/:id', publicReadLimiter, getPublicNewsDetail);
 router.get('/media/:id', mediaReadLimiter, getPublicMedia);
 router.post('/subscribers', ensureSubscribersEnabled, relayWriteLimiter, validateBody(subscribeSchema), subscribeNewsletter);

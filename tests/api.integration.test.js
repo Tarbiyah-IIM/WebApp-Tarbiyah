@@ -902,4 +902,125 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       }
     }
   });
+
+  it('syncs lecturers CRUD, RBAC, XSS URL rejection, and media cleanup across admin and public APIs', async () => {
+    const deniedListRes = await request(app)
+      .get('/api/v1/admin/lecturers')
+      .set('Authorization', `Bearer ${userToken}`);
+    expect(deniedListRes.status).toBe(403);
+
+    const deniedCreateRes = await request(app)
+      .post('/api/v1/admin/lecturers')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ programSlug: 'pai', name: 'Dosen Tanpa Akses' });
+    expect(deniedCreateRes.status).toBe(403);
+
+    const badUrlRes = await request(app)
+      .post('/api/v1/admin/lecturers')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        programSlug: 'pai',
+        name: 'Dosen XSS URL Test',
+        scholarUrl: 'javascript:alert(1)'
+      });
+    expect(badUrlRes.status).toBe(400);
+
+    const tinyPng = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+      'base64'
+    );
+    const photoUploadRes = await request(app)
+      .post('/api/v1/admin/uploads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .attach('file', tinyPng, { filename: 'lecturer-test.png', contentType: 'image/png' });
+    expect(photoUploadRes.status).toBe(201);
+    expect(photoUploadRes.body.id).toBeTruthy();
+
+    let createdLecturerId = null;
+
+    try {
+      const createRes = await request(app)
+        .post('/api/v1/admin/lecturers')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          programSlug: 'pai',
+          name: 'Dr. Uji Sinkronisasi Dosen, M.Pd.I',
+          photoUrl: photoUploadRes.body.url,
+          nidn: '0615048801',
+          employmentType: 'Dosen Tetap Yayasan',
+          teachingStatus: 'active',
+          academicRank: 'Lektor Kepala',
+          rankGrade: 'IV/A',
+          leadershipRole: 'Ketua Program Studi PAI',
+          email: 'uji.dosen@iimsurakarta.ac.id',
+          education: 'S3 Pendidikan Agama Islam',
+          expertise: 'Filsafat Pendidikan Islam',
+          biography: 'Biografi uji dosen prodi terhubung antar endpoint.',
+          scholarUrl: 'https://scholar.google.com/citations?user=ujitest',
+          sintaUrl: 'https://sinta.kemdikbud.go.id/authors/profile/12345',
+          isVisible: true,
+          sortOrder: 1
+        });
+      expect(createRes.status).toBe(201);
+      expect(createRes.body.lecturer.id).toBeTruthy();
+      createdLecturerId = createRes.body.lecturer.id;
+
+      const blockedPhotoCleanupRes = await request(app)
+        .delete(`/api/v1/admin/uploads/${photoUploadRes.body.id}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(blockedPhotoCleanupRes.status).toBe(200);
+      expect(blockedPhotoCleanupRes.body.deleted).toBe(false);
+
+      const publicListRes = await request(app).get('/api/v1/lecturers?program=pai');
+      expect(publicListRes.status).toBe(200);
+      const foundPublic = publicListRes.body.items.find((item) => item.id === createdLecturerId);
+      expect(foundPublic?.name).toBe('Dr. Uji Sinkronisasi Dosen, M.Pd.I');
+      expect(foundPublic?.leadership_role).toBe('Ketua Program Studi PAI');
+
+      const landingSyncRes = await request(app).get('/api/v1/landing');
+      expect(landingSyncRes.status).toBe(200);
+      expect(
+        landingSyncRes.body.lecturers.some((item) => item.id === createdLecturerId)
+      ).toBe(true);
+
+      const updateRes = await request(app)
+        .patch(`/api/v1/admin/lecturers/${createdLecturerId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          programSlug: 'pai',
+          name: 'Dr. Uji Sinkronisasi Dosen, M.Pd.I (Updated)',
+          photoUrl: photoUploadRes.body.url,
+          teachingStatus: 'study_leave',
+          isVisible: true,
+          sortOrder: 2
+        });
+      expect(updateRes.status).toBe(200);
+      expect(updateRes.body.lecturer.teaching_status).toBe('study_leave');
+
+      const refreshedPublicRes = await request(app).get('/api/v1/lecturers?program=pai');
+      expect(refreshedPublicRes.status).toBe(200);
+      const updatedItem = refreshedPublicRes.body.items.find((item) => item.id === createdLecturerId);
+      expect(updatedItem?.name).toBe('Dr. Uji Sinkronisasi Dosen, M.Pd.I (Updated)');
+      expect(updatedItem?.teaching_status).toBe('study_leave');
+
+      const deleteRes = await request(app)
+        .delete(`/api/v1/admin/lecturers/${createdLecturerId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(deleteRes.status).toBe(200);
+      createdLecturerId = null;
+
+      const postDeletePublicRes = await request(app).get('/api/v1/lecturers?program=pai');
+      expect(postDeletePublicRes.status).toBe(200);
+      expect(postDeletePublicRes.body.items.some((item) => item.id === updateRes.body.lecturer.id)).toBe(false);
+
+      const cleanedPhotoRes = await request(app).get(photoUploadRes.body.url);
+      expect(cleanedPhotoRes.status).toBe(404);
+    } finally {
+      if (createdLecturerId) {
+        await request(app)
+          .delete(`/api/v1/admin/lecturers/${createdLecturerId}`)
+          .set('Authorization', `Bearer ${adminToken}`);
+      }
+    }
+  });
 });

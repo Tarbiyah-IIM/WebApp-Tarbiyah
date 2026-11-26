@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { Award, Briefcase, CheckCircle2, ExternalLink, GraduationCap } from 'lucide-vue-next';
+import { Award, Briefcase, CheckCircle2, ChevronRight, ExternalLink, GraduationCap } from 'lucide-vue-next';
 import PortalEmbedModal from '../components/PortalEmbedModal.vue';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import { useI18n } from '../composables/useI18n.js';
@@ -170,26 +170,22 @@ const otherPrograms = computed(() =>
       <section v-if="!isMissing" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
         <h2 class="text-base font-extrabold text-brand-900">{{ t('portalPages.common.teachingStaffHeading') }}</h2>
         <div class="space-y-2.5">
-          <button
-            type="button"
+          <router-link
+            :to="{ path: `/program-studi/${slug}/dosen`, query: { filter: 'pimpinan' } }"
+            data-testid="prodi-leadership-link"
             class="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 transition"
-            @click="openComingSoon('programLeadershipBtn')"
           >
             <span>{{ t('portalPages.common.programLeadershipBtn') }}</span>
-            <span class="shrink-0 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white">
-              {{ t('portalPages.common.comingSoonShortBadge') }}
-            </span>
-          </button>
-          <button
-            type="button"
+            <ChevronRight class="h-4 w-4 shrink-0" aria-hidden="true" />
+          </router-link>
+          <router-link
+            :to="`/program-studi/${slug}/dosen`"
+            data-testid="prodi-lecturers-link"
             class="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl border border-surface-border bg-surface-page px-4 text-sm font-semibold text-brand-900 hover:bg-brand-50 transition"
-            @click="openComingSoon('programLecturersBtn')"
           >
             <span>{{ t('portalPages.common.programLecturersBtn') }}</span>
-            <span class="shrink-0 rounded-full bg-surface-muted px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
-              {{ t('portalPages.common.comingSoonShortBadge') }}
-            </span>
-          </button>
+            <ChevronRight class="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+          </router-link>
         </div>
       </section>
     </template>

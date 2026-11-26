@@ -96,8 +96,11 @@ app.use('/api/v1/admin', adminRoutes);
 const SITEMAP_PATHS = [
   '/',
   '/program-studi/pai',
+  '/program-studi/pai/dosen',
   '/program-studi/pgmi',
+  '/program-studi/pgmi/dosen',
   '/program-studi/piaud',
+  '/program-studi/piaud/dosen',
   '/akademik/administrasi-persuratan',
   '/akademik/ujian-komprehensif',
   '/publikasi/ppl',

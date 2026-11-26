@@ -1,0 +1,391 @@
+<script setup>
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { ImagePlus, Trash2 } from 'lucide-vue-next';
+import ModalDialog from '../ModalDialog.vue';
+import AdminConfirmModal from './AdminConfirmModal.vue';
+import { useI18n } from '../../composables/useI18n.js';
+import { adminService } from '../../services/admin.service.js';
+import { getNameInitials } from '../../utils/lecturers.js';
+
+const props = defineProps({
+  open: { type: Boolean, default: false },
+  initialItem: { type: Object, default: null },
+  syncing: { type: Boolean, default: false },
+  uploadHandler: { type: Function, required: true }
+});
+
+const emit = defineEmits(['close', 'save', 'dirty-change']);
+const { t } = useI18n();
+
+const uploadingPhoto = ref(false);
+const photoInputRef = ref(null);
+const pendingUploads = new Set();
+const baselineSnapshot = ref('');
+const sessionToken = ref(0);
+const closeConfirmOpen = ref(false);
+
+const form = reactive({
+  id: null,
+  programSlug: 'pai',
+  name: '',
+  photoUrl: '',
+  nidn: '',
+  employmentType: 'Dosen Tetap',
+  teachingStatus: 'active',
+  academicRank: '',
+  rankGrade: '',
+  leadershipRole: '',
+  email: '',
+  education: '',
+  expertise: '',
+  biography: '',
+  scholarUrl: '',
+  orcidUrl: '',
+  scopusUrl: '',
+  sintaUrl: '',
+  wosUrl: '',
+  isVisible: true,
+  sortOrder: 0
+});
+
+const isBusy = computed(() => props.syncing || uploadingPhoto.value);
+
+function formSnapshot() {
+  return JSON.stringify({ ...form });
+}
+
+const isDirty = computed(() => Boolean(props.open) && baselineSnapshot.value !== formSnapshot());
+
+watch(isDirty, (value) => emit('dirty-change', value));
+
+watch(
+  () => form.photoUrl,
+  (nextUrl, prevUrl) => {
+    if (prevUrl && prevUrl !== nextUrl && pendingUploads.delete(prevUrl)) {
+      adminService.cleanupMediaByUrl(prevUrl);
+    }
+  }
+);
+
+function hydrateForm() {
+  const item = props.initialItem;
+  if (item) {
+    form.id = item.id;
+    form.programSlug = item.program_slug || 'pai';
+    form.name = item.name || '';
+    form.photoUrl = item.photo_url || '';
+    form.nidn = item.nidn || '';
+    form.employmentType = item.employment_type || 'Dosen Tetap';
+    form.teachingStatus = item.teaching_status || 'active';
+    form.academicRank = item.academic_rank || '';
+    form.rankGrade = item.rank_grade || '';
+    form.leadershipRole = item.leadership_role || '';
+    form.email = item.email || '';
+    form.education = item.education || '';
+    form.expertise = item.expertise || '';
+    form.biography = item.biography || '';
+    form.scholarUrl = item.scholar_url || '';
+    form.orcidUrl = item.orcid_url || '';
+    form.scopusUrl = item.scopus_url || '';
+    form.sintaUrl = item.sinta_url || '';
+    form.wosUrl = item.wos_url || '';
+    form.isVisible = Boolean(item.is_visible);
+    form.sortOrder = item.sort_order || 0;
+    return;
+  }
+  form.id = null;
+  form.programSlug = 'pai';
+  form.name = '';
+  form.photoUrl = '';
+  form.nidn = '';
+  form.employmentType = 'Dosen Tetap';
+  form.teachingStatus = 'active';
+  form.academicRank = '';
+  form.rankGrade = '';
+  form.leadershipRole = '';
+  form.email = '';
+  form.education = '';
+  form.expertise = '';
+  form.biography = '';
+  form.scholarUrl = '';
+  form.orcidUrl = '';
+  form.scopusUrl = '';
+  form.sintaUrl = '';
+  form.wosUrl = '';
+  form.isVisible = true;
+  form.sortOrder = 0;
+}
+
+watch(
+  [() => props.open, () => props.initialItem],
+  ([isOpen]) => {
+    if (isOpen) {
+      sessionToken.value += 1;
+      uploadingPhoto.value = false;
+      closeConfirmOpen.value = false;
+      hydrateForm();
+      baselineSnapshot.value = formSnapshot();
+      return;
+    }
+    sessionToken.value += 1;
+    uploadingPhoto.value = false;
+    closeConfirmOpen.value = false;
+    pendingUploads.clear();
+  },
+  { immediate: true }
+);
+
+function cleanupAllPendingUploads() {
+  for (const url of Array.from(pendingUploads)) {
+    pendingUploads.delete(url);
+    adminService.cleanupMediaByUrl(url);
+  }
+}
+
+function requestClose() {
+  if (isBusy.value) return;
+  if (isDirty.value) {
+    closeConfirmOpen.value = true;
+    return;
+  }
+  cleanupAllPendingUploads();
+  emit('close');
+}
+
+function confirmDiscard() {
+  closeConfirmOpen.value = false;
+  cleanupAllPendingUploads();
+  emit('close');
+}
+
+onBeforeUnmount(() => {
+  sessionToken.value += 1;
+  cleanupAllPendingUploads();
+});
+
+async function handlePhotoFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const token = sessionToken.value;
+  uploadingPhoto.value = true;
+  try {
+    const uploadedUrl = await props.uploadHandler(file);
+    if (uploadedUrl && token !== sessionToken.value) {
+      adminService.cleanupMediaByUrl(uploadedUrl);
+      return;
+    }
+    if (uploadedUrl) {
+      pendingUploads.add(uploadedUrl);
+      form.photoUrl = uploadedUrl;
+    }
+  } finally {
+    if (token === sessionToken.value) uploadingPhoto.value = false;
+    if (photoInputRef.value) photoInputRef.value.value = '';
+  }
+}
+
+function clearPhoto() {
+  if (form.photoUrl && pendingUploads.delete(form.photoUrl)) {
+    adminService.cleanupMediaByUrl(form.photoUrl);
+  }
+  form.photoUrl = '';
+}
+
+function submit() {
+  emit('save', {
+    id: form.id,
+    programSlug: form.programSlug,
+    name: form.name.trim(),
+    photoUrl: form.photoUrl.trim(),
+    nidn: form.nidn.trim(),
+    employmentType: form.employmentType.trim() || 'Dosen Tetap',
+    teachingStatus: form.teachingStatus,
+    academicRank: form.academicRank.trim(),
+    rankGrade: form.rankGrade.trim(),
+    leadershipRole: form.leadershipRole.trim(),
+    email: form.email.trim(),
+    education: form.education.trim(),
+    expertise: form.expertise.trim(),
+    biography: form.biography.trim(),
+    scholarUrl: form.scholarUrl.trim(),
+    orcidUrl: form.orcidUrl.trim(),
+    scopusUrl: form.scopusUrl.trim(),
+    sintaUrl: form.sintaUrl.trim(),
+    wosUrl: form.wosUrl.trim(),
+    isVisible: Boolean(form.isVisible),
+    sortOrder: Number(form.sortOrder) || 0
+  });
+}
+</script>
+
+<template>
+  <ModalDialog
+    :open="open"
+    :title="form.id ? t('adminDashboard.cmsPanel.lecturersPanel.editTitle') : t('adminDashboard.cmsPanel.lecturersPanel.createTitle')"
+    @close="requestClose"
+  >
+    <form class="space-y-4" @submit.prevent="submit">
+      <div class="rounded-2xl border border-surface-border bg-surface-page p-4 space-y-3">
+        <p class="text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.photoSection') }}</p>
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="h-24 w-20 shrink-0 overflow-hidden rounded-xl border border-surface-border bg-white flex items-center justify-center">
+            <img v-if="form.photoUrl" :src="form.photoUrl" :alt="form.name || 'Preview'" class="h-full w-full object-cover object-top" />
+            <span v-else class="text-sm font-extrabold text-brand-700">{{ getNameInitials(form.name) }}</span>
+          </div>
+          <div class="flex-1 min-w-[200px] space-y-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <input ref="photoInputRef" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="sr-only" @change="handlePhotoFile" />
+              <button
+                type="button"
+                :disabled="isBusy"
+                class="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-brand-600 px-3.5 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-50"
+                @click="photoInputRef?.click()"
+              >
+                <ImagePlus class="h-4 w-4" aria-hidden="true" />
+                <span>{{ uploadingPhoto ? t('adminDashboard.cmsPanel.lecturersPanel.uploadingBtn') : t('adminDashboard.cmsPanel.lecturersPanel.uploadPhotoBtn') }}</span>
+              </button>
+              <button
+                v-if="form.photoUrl"
+                type="button"
+                :disabled="isBusy"
+                class="inline-flex min-h-[38px] items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs font-bold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+                @click="clearPhoto"
+              >
+                <Trash2 class="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{{ t('adminDashboard.cmsPanel.lecturersPanel.removePhotoBtn') }}</span>
+              </button>
+            </div>
+            <input
+              v-model="form.photoUrl"
+              type="text"
+              :placeholder="t('adminDashboard.cmsPanel.lecturersPanel.photoUrlPlaceholder')"
+              class="min-h-[38px] w-full rounded-xl border border-surface-border bg-white px-3 text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label for="lec-prodi" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.programSlug') }}</label>
+          <select id="lec-prodi" v-model="form.programSlug" class="min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3 text-sm">
+            <option value="pai">S1 · PAI</option>
+            <option value="pgmi">S1 · PGMI</option>
+            <option value="piaud">S1 · PIAUD</option>
+          </select>
+        </div>
+        <div>
+          <label for="lec-status" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.teachingStatus') }}</label>
+          <select id="lec-status" v-model="form.teachingStatus" class="min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3 text-sm">
+            <option value="active">{{ t('portalPages.common.lecturers.statusLabels.active') }}</option>
+            <option value="study_leave">{{ t('portalPages.common.lecturers.statusLabels.study_leave') }}</option>
+            <option value="inactive">{{ t('portalPages.common.lecturers.statusLabels.inactive') }}</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label for="lec-name" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.name') }} <span class="text-rose-500">*</span></label>
+          <input id="lec-name" v-model="form.name" type="text" required minlength="2" maxlength="160" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div>
+          <label for="lec-nidn" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.nidn') }}</label>
+          <input id="lec-nidn" v-model="form.nidn" type="text" maxlength="40" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div>
+          <label for="lec-emp" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.employmentType') }}</label>
+          <input id="lec-emp" v-model="form.employmentType" type="text" maxlength="80" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div>
+          <label for="lec-rank" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.academicRank') }}</label>
+          <input id="lec-rank" v-model="form.academicRank" type="text" maxlength="80" placeholder="Lektor Kepala / Lektor" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div>
+          <label for="lec-grade" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.rankGrade') }}</label>
+          <input id="lec-grade" v-model="form.rankGrade" type="text" maxlength="40" placeholder="IV/A / III/C" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div>
+          <label for="lec-leader" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.leadershipRole') }}</label>
+          <input id="lec-leader" v-model="form.leadershipRole" type="text" maxlength="100" placeholder="Ketua Program Studi" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div>
+          <label for="lec-email" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.email') }}</label>
+          <input id="lec-email" v-model="form.email" type="email" maxlength="191" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div class="sm:col-span-2">
+          <label for="lec-edu" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.education') }}</label>
+          <input id="lec-edu" v-model="form.education" type="text" maxlength="200" placeholder="S3 | Pendidikan Agama Islam" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+        <div class="sm:col-span-2">
+          <label for="lec-exp" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.expertise') }}</label>
+          <input id="lec-exp" v-model="form.expertise" type="text" maxlength="255" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label for="lec-scholar" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.scholarUrl') }}</label>
+          <input id="lec-scholar" v-model="form.scholarUrl" type="url" maxlength="500" placeholder="https://scholar.google.com/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
+        </div>
+        <div>
+          <label for="lec-sinta" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.sintaUrl') }}</label>
+          <input id="lec-sinta" v-model="form.sintaUrl" type="url" maxlength="500" placeholder="https://sinta.kemdikbud.go.id/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
+        </div>
+        <div>
+          <label for="lec-orcid" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.orcidUrl') }}</label>
+          <input id="lec-orcid" v-model="form.orcidUrl" type="url" maxlength="500" placeholder="https://orcid.org/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
+        </div>
+        <div>
+          <label for="lec-scopus" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.scopusUrl') }}</label>
+          <input id="lec-scopus" v-model="form.scopusUrl" type="url" maxlength="500" placeholder="https://www.scopus.com/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
+        </div>
+        <div class="sm:col-span-2">
+          <label for="lec-wos" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.wosUrl') }}</label>
+          <input id="lec-wos" v-model="form.wosUrl" type="url" maxlength="500" placeholder="https://www.webofscience.com/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
+        </div>
+      </div>
+
+      <div>
+        <label for="lec-bio" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.biography') }}</label>
+        <textarea id="lec-bio" v-model="form.biography" rows="4" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-page px-4 py-3">
+        <label class="inline-flex items-center gap-2 text-xs font-bold text-brand-900 cursor-pointer">
+          <input v-model="form.isVisible" type="checkbox" class="h-4 w-4 rounded border-surface-border text-brand-600" />
+          <span>{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.isVisible') }}</span>
+        </label>
+        <div class="flex items-center gap-2">
+          <label for="lec-sort" class="text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.sortOrder') }}</label>
+          <input id="lec-sort" v-model.number="form.sortOrder" type="number" min="0" class="w-20 rounded-lg border border-surface-border bg-white px-2 py-1 text-xs" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button
+          type="button"
+          :disabled="isBusy"
+          class="min-h-[42px] rounded-xl border border-surface-border px-4 text-xs font-bold text-slate-600 hover:bg-surface-muted"
+          @click="requestClose"
+        >
+          {{ t('adminDashboard.cmsPanel.lecturersPanel.cancelBtn') }}
+        </button>
+        <button
+          type="submit"
+          :disabled="isBusy"
+          class="min-h-[42px] rounded-xl bg-brand-600 px-5 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-50"
+        >
+          {{ isBusy ? t('adminDashboard.cmsPanel.lecturersPanel.savingBtn') : t('adminDashboard.cmsPanel.lecturersPanel.saveBtn') }}
+        </button>
+      </div>
+    </form>
+
+    <AdminConfirmModal
+      :open="closeConfirmOpen"
+      title="Buang perubahan profil dosen?"
+      description="Perubahan yang belum disimpan akan hilang."
+      confirm-label="Ya, Buang"
+      :cancel-label="t('adminDashboard.cmsPanel.lecturersPanel.cancelBtn')"
+      @confirm="confirmDiscard"
+      @cancel="closeConfirmOpen = false"
+    />
+  </ModalDialog>
+</template>

@@ -8,6 +8,16 @@ const routes = [
     component: () => import('../views/HomeView.vue')
   },
   {
+    path: '/program-studi/:slug/dosen',
+    name: 'study-program-lecturers',
+    component: () => import('../views/ProgramLecturersView.vue')
+  },
+  {
+    path: '/program-studi/:slug/dosen/:lecturerId',
+    name: 'study-program-lecturer-detail',
+    component: () => import('../views/ProgramLecturersView.vue')
+  },
+  {
     path: '/program-studi/:slug',
     name: 'study-program',
     component: () => import('../views/StudyProgramView.vue')

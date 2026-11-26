@@ -8,10 +8,17 @@ import {
   deleteMediaFileIfUnreferenced,
   extractMediaId,
   findAgendaMediaUrls,
+  findLecturerPhotoUrl,
   findPartnerLogoUrl,
   findTestimonialMediaUrls,
   isValidMediaId
 } from '../models/media.model.js';
+import {
+  createLecturer,
+  deleteLecturer,
+  listLecturersAdmin,
+  updateLecturer
+} from '../models/lecturer.model.js';
 import {
   createAgenda,
   createFaq,
@@ -538,6 +545,69 @@ export async function adminListAuditLog(req, res, next) {
   try {
     const items = await listAdminAuditLog({ limit: req.query?.limit });
     return res.json({ items });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminListLecturers(req, res, next) {
+  try {
+    return res.json({ items: await listLecturersAdmin(readPagination(req.query) ?? {}) });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminCreateLecturer(req, res, next) {
+  try {
+    const item = await createLecturer(req.body);
+    await invalidateLandingCache();
+    await recordAdminAction(req, {
+      action: 'create',
+      entity: 'lecturer',
+      entityId: item?.id,
+      detail: { name: req.body.name, programSlug: req.body.programSlug }
+    });
+    return res.status(201).json({ lecturer: item });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminUpdateLecturer(req, res, next) {
+  try {
+    const id = parsePositiveId(req.params.id);
+    const oldUrls = await findLecturerPhotoUrl(id);
+    const item = await updateLecturer(id, req.body);
+    if (!item) return next(new AppError(404, 'NOT_FOUND', 'Data dosen tidak ditemukan'));
+    const nextPhoto = item.photo_url ? [item.photo_url] : [];
+    const removed = oldUrls.filter((url) => !nextPhoto.includes(url));
+    if (removed.length > 0) {
+      await cleanupUnusedMediaList(removed);
+    }
+    await invalidateLandingCache();
+    await recordAdminAction(req, {
+      action: 'update',
+      entity: 'lecturer',
+      entityId: req.params.id,
+      detail: { name: req.body.name, programSlug: req.body.programSlug }
+    });
+    return res.json({ lecturer: item });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function adminDeleteLecturer(req, res, next) {
+  try {
+    const id = parsePositiveId(req.params.id);
+    const oldUrls = await findLecturerPhotoUrl(id);
+    const ok = await deleteLecturer(id);
+    if (!ok) return next(new AppError(404, 'NOT_FOUND', 'Data dosen tidak ditemukan'));
+    await cleanupUnusedMediaList(oldUrls);
+    await invalidateLandingCache();
+    await recordAdminAction(req, { action: 'delete', entity: 'lecturer', entityId: req.params.id, detail: null });
+    return res.json({ message: 'Data dosen dihapus' });
   } catch (err) {
     return next(err);
   }

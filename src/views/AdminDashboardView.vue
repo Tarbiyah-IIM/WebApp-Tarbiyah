@@ -5,6 +5,7 @@ import {
   BarChart3,
   CalendarDays,
   FileText,
+  GraduationCap,
   Handshake,
   HelpCircle,
   LayoutDashboard,
@@ -29,6 +30,7 @@ import AdminPartnersPanel from '../components/dashboard/AdminPartnersPanel.vue';
 import AdminFeaturesPanel from '../components/dashboard/AdminFeaturesPanel.vue';
 import AdminPortalMenuPanel from '../components/dashboard/AdminPortalMenuPanel.vue';
 import AdminPortalPagesPanel from '../components/dashboard/AdminPortalPagesPanel.vue';
+import AdminLecturersPanel from '../components/dashboard/AdminLecturersPanel.vue';
 import AdminUsersPanel from '../components/dashboard/AdminUsersPanel.vue';
 import AdminConfirmModal from '../components/dashboard/AdminConfirmModal.vue';
 
@@ -112,7 +114,8 @@ const navGroups = computed(() => [
     label: t('adminDashboard.groups.portal'),
     items: [
       { id: 'menus', label: t('adminDashboard.nav.menus'), icon: Link2 },
-      { id: 'pages', label: t('adminDashboard.nav.pages'), icon: FileText }
+      { id: 'pages', label: t('adminDashboard.nav.pages'), icon: FileText },
+      { id: 'lecturers', label: t('adminDashboard.nav.lecturers'), icon: GraduationCap, count: portal.badgeCounts.value.lecturers }
     ]
   },
   {
@@ -147,6 +150,16 @@ async function handleSaveNews(payload, onDone) {
 async function handleSaveAgenda(payload, onDone) {
   const res = await runSafeAction(() => portal.saveAgenda(payload, t('adminDashboard.cmsPanel.toasts.agendaSaved')));
   if (res.ok && onDone) onDone();
+}
+
+async function handleSaveLecturer(payload, onDone) {
+  const res = await runSafeAction(() => portal.saveLecturer(payload, t('adminDashboard.cmsPanel.toasts.lecturerSaved')));
+  if (res.ok && onDone) onDone();
+}
+
+async function handleDeleteLecturer(id, onDone) {
+  const res = await runSafeAction(() => portal.removeLecturer(id, t('adminDashboard.cmsPanel.toasts.lecturerDeleted')));
+  if (onDone) onDone(res.ok);
 }
 
 async function handleDeleteNews(id, onDone) {
@@ -330,6 +343,16 @@ onMounted(() => {
         :syncing="portal.syncing.value"
         :upload-handler="portal.uploadImage"
         @save-settings="handleSaveSettings"
+      />
+
+      <AdminLecturersPanel
+        v-else-if="activeTab === 'lecturers'"
+        :lecturers="portal.lecturers.value"
+        :syncing="portal.syncing.value"
+        :upload-handler="portal.uploadImage"
+        @save-lecturer="handleSaveLecturer"
+        @delete-lecturer="handleDeleteLecturer"
+        @dirty-change="setTabDirty('lecturers', $event)"
       />
 
       <AdminUsersPanel

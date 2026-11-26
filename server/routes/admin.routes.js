@@ -3,6 +3,7 @@ import {
   adminCreateAgenda,
   adminCreateFaq,
   adminCreateFeature,
+  adminCreateLecturer,
   adminCreateNewsCategory,
   adminCreatePartner,
   adminCreateStat,
@@ -10,6 +11,7 @@ import {
   adminDeleteAgenda,
   adminDeleteFaq,
   adminDeleteFeature,
+  adminDeleteLecturer,
   adminDeleteNewsCategory,
   adminDeletePartner,
   adminDeleteStat,
@@ -18,6 +20,7 @@ import {
   adminListAgendas,
   adminListFaqs,
   adminListFeatures,
+  adminListLecturers,
   adminListNewsCategories,
   adminListPartners,
   adminListStats,
@@ -27,6 +30,7 @@ import {
   adminUpdateAgenda,
   adminUpdateFaq,
   adminUpdateFeature,
+  adminUpdateLecturer,
   adminUpdatePartner,
   adminUpdateSettings,
   adminUpdateStat,
@@ -46,6 +50,7 @@ import {
   agendaBodySchema,
   faqBodySchema,
   featureBodySchema,
+  lecturerBodySchema,
   newsCategoryBodySchema,
   partnerBodySchema,
   statBodySchema,
@@ -95,6 +100,11 @@ router.get('/partners', adminListPartners);
 router.post('/partners', validateBody(partnerBodySchema), adminCreatePartner);
 router.patch('/partners/:id', validateBody(partnerBodySchema), adminUpdatePartner);
 router.delete('/partners/:id', adminDeletePartner);
+
+router.get('/lecturers', adminListLecturers);
+router.post('/lecturers', validateBody(lecturerBodySchema), adminCreateLecturer);
+router.patch('/lecturers/:id', validateBody(lecturerBodySchema), adminUpdateLecturer);
+router.delete('/lecturers/:id', adminDeleteLecturer);
 
 router.get('/settings', adminGetSettings);
 router.patch('/settings', validateBody(adminSettingsUpdateSchema), adminUpdateSettings);

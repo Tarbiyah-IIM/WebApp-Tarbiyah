@@ -121,6 +121,22 @@ export const adminService = {
     const { data } = await api.delete(`/admin/partners/${id}`);
     return data;
   },
+  async listLecturers() {
+    const { data } = await api.get('/admin/lecturers');
+    return data;
+  },
+  async createLecturer(payload) {
+    const { data } = await api.post('/admin/lecturers', payload);
+    return data;
+  },
+  async updateLecturer(id, payload) {
+    const { data } = await api.patch(`/admin/lecturers/${id}`, payload);
+    return data;
+  },
+  async deleteLecturer(id) {
+    const { data } = await api.delete(`/admin/lecturers/${id}`);
+    return data;
+  },
   async getSettings() {
     const { data } = await api.get('/admin/settings');
     return data;

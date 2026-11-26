@@ -28,6 +28,7 @@ export function useAdminPortal() {
   const news = ref([]);
   const agendas = ref([]);
   const categories = ref([]);
+  const lecturers = ref([]);
   const syncing = ref(false);
   const lastSyncedAt = ref(null);
 
@@ -38,12 +39,13 @@ export function useAdminPortal() {
     faqs: faqs.value.length || overviewStats.value.totalFaqs || 0,
     stats: stats.value.length || 0,
     partners: partners.value.length || overviewStats.value.totalServices || 0,
-    features: features.value.length || overviewStats.value.totalFeatures || 0
+    features: features.value.length || overviewStats.value.totalFeatures || 0,
+    lecturers: lecturers.value.length || overviewStats.value.totalLecturers || 0
   }));
 
   async function loadAll() {
     await run(async () => {
-      const [ovRes, uRes, sRes, fRes, stRes, ftRes, pRes, nRes, aRes, cRes] = await Promise.all([
+      const [ovRes, uRes, sRes, fRes, stRes, ftRes, pRes, nRes, aRes, cRes, lRes] = await Promise.all([
         adminService.getOverview(),
         adminService.listUsers(),
         adminService.getSettings(),
@@ -53,7 +55,8 @@ export function useAdminPortal() {
         adminService.listPartners(),
         adminService.listTestimonials(),
         adminService.listAgendas(),
-        adminService.listNewsCategories()
+        adminService.listNewsCategories(),
+        adminService.listLecturers()
       ]);
       overviewStats.value = ovRes.stats;
       users.value = uRes.items;
@@ -65,6 +68,7 @@ export function useAdminPortal() {
       news.value = nRes.items;
       agendas.value = aRes.items;
       categories.value = cRes.items;
+      lecturers.value = lRes.items;
       lastSyncedAt.value = new Date();
     });
   }
@@ -278,6 +282,33 @@ export function useAdminPortal() {
     }, successMessage);
   }
 
+  async function saveLecturer(payload, successMessage) {
+    return withSync(async () => {
+      if (payload.id) await adminService.updateLecturer(payload.id, payload);
+      else await adminService.createLecturer(payload);
+      try {
+        const lRes = await adminService.listLecturers();
+        lecturers.value = lRes.items;
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
+      await refreshOverviewAndLanding();
+    }, successMessage);
+  }
+
+  async function removeLecturer(id, successMessage) {
+    return withSync(async () => {
+      await adminService.deleteLecturer(id);
+      try {
+        const lRes = await adminService.listLecturers();
+        lecturers.value = lRes.items;
+      } catch (err) {
+        notifyRefreshFailure(err);
+      }
+      await refreshOverviewAndLanding();
+    }, successMessage);
+  }
+
   async function addCategory(name, successMessage) {
     return withSync(async () => {
       const response = await adminService.createNewsCategory({ name });
@@ -329,6 +360,7 @@ export function useAdminPortal() {
     news,
     agendas,
     categories,
+    lecturers,
     loadAll,
     saveSettingsPatch,
     saveFaq,
@@ -343,6 +375,8 @@ export function useAdminPortal() {
     removeNews,
     saveAgenda,
     removeAgenda,
+    saveLecturer,
+    removeLecturer,
     addCategory,
     removeCategory,
     updateUser,

@@ -187,6 +187,56 @@ export const partnerBodySchema = z.object({
   sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
 });
 
+const optionalSafeMediaOrWebUrl = (message) =>
+  z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .refine((v) => !v || isSafeAppUrl(v, { allowEmpty: true }), message)
+    .default('');
+
+const optionalSafeExternalUrl = (message) =>
+  z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .refine((v) => !v || isSafeHttpUrl(v), message)
+    .default('');
+
+export const lecturerBodySchema = z.object({
+  programSlug: z.enum(['pai', 'pgmi', 'piaud']),
+  name: z.string().trim().min(2, 'Nama dosen minimal 2 karakter').max(160),
+  photoUrl: optionalSafeMediaOrWebUrl('URL foto dosen tidak valid'),
+  nidn: z.string().trim().max(40).nullable().optional().default(''),
+  employmentType: z.string().trim().min(1).max(80).default('Dosen Tetap'),
+  teachingStatus: z.enum(['active', 'study_leave', 'inactive']).default('active'),
+  academicRank: z.string().trim().max(80).nullable().optional().default(''),
+  rankGrade: z.string().trim().max(40).nullable().optional().default(''),
+  leadershipRole: z.string().trim().max(100).nullable().optional().default(''),
+  email: z
+    .string()
+    .trim()
+    .max(191)
+    .nullable()
+    .optional()
+    .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Format email dosen tidak valid')
+    .default(''),
+  education: z.string().trim().max(200).nullable().optional().default(''),
+  expertise: z.string().trim().max(255).nullable().optional().default(''),
+  biography: z.string().trim().max(15000).nullable().optional().default(''),
+  scholarUrl: optionalSafeExternalUrl('URL Google Scholar tidak valid'),
+  orcidUrl: optionalSafeExternalUrl('URL ORCID tidak valid'),
+  scopusUrl: optionalSafeExternalUrl('URL Scopus tidak valid'),
+  sintaUrl: optionalSafeExternalUrl('URL SINTA tidak valid'),
+  wosUrl: optionalSafeExternalUrl('URL Web of Science tidak valid'),
+  isVisible: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0).max(2147483647).default(0)
+});
+
 export const adminUserUpdateSchema = z.object({
   role: z.enum(['student', 'mentor', 'admin']),
   isActive: z.boolean()
@@ -196,6 +246,7 @@ const URL_FIELD_KEYS = new Set([
   'href',
   'url',
   'pmbUrl',
+  'accreditationUrl',
   'modalUrl',
   'externalUrl',
   'imageUrl',
