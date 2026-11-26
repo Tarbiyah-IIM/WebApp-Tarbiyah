@@ -656,6 +656,16 @@ export default {
         cancelBtn: 'Batal',
         indexesSectionTitle: 'Link Indeks & Publikasi Akademik (Optional)',
         indexesPreviewLabel: 'Pratinjau Tombol Logo Aktif:',
+        educationHistorySectionTitle: 'Riwayat Pendidikan',
+        addEducationBtn: 'Tambah Riwayat',
+        removeEducationBtn: 'Hapus',
+        educationFields: {
+          degreeLevel: 'Jenjang',
+          institution: 'Perguruan Tinggi',
+          major: 'Jurusan',
+          academicDegree: 'Gelar Akademik',
+          graduationYear: 'Tahun Lulus'
+        },
         fields: {
           programSlug: 'Program Studi',
           name: 'Nama Lengkap & Gelar',

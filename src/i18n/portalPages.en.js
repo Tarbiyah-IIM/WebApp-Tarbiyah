@@ -61,6 +61,15 @@ export const portalPagesEn = {
         education: 'Highest Education',
         biography: 'Biography'
       },
+      educationHistory: {
+        heading: 'Education History',
+        no: 'No',
+        degreeLevel: 'Degree',
+        institution: 'University / Institution',
+        major: 'Major',
+        academicDegree: 'Academic Title',
+        graduationYear: 'Graduation Year'
+      },
       indexes: {
         scholar: 'Google Scholar',
         orcid: 'ORCID',

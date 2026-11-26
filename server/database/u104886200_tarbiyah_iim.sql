@@ -197,6 +197,7 @@ CREATE TABLE `lecturers` (
   `education` varchar(200) DEFAULT NULL,
   `expertise` varchar(255) DEFAULT NULL,
   `biography` longtext DEFAULT NULL,
+  `education_history` longtext DEFAULT NULL,
   `scholar_url` varchar(500) DEFAULT NULL,
   `orcid_url` varchar(500) DEFAULT NULL,
   `scopus_url` varchar(500) DEFAULT NULL,

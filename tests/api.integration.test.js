@@ -954,6 +954,15 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
           email: 'uji.dosen@iimsurakarta.ac.id',
           education: 'S3 Pendidikan Agama Islam',
           biography: 'Biografi uji dosen prodi terhubung antar endpoint.',
+          educationHistory: [
+            {
+              degreeLevel: 'S3',
+              institution: 'Universitas Pendidikan Indonesia',
+              major: 'Ilmu Manajemen',
+              academicDegree: 'Dr.',
+              graduationYear: '2014'
+            }
+          ],
           scholarUrl: 'https://scholar.google.com/citations?user=ujitest',
           sintaUrl: 'https://sinta.kemdikbud.go.id/authors/profile/12345',
           isVisible: true,
@@ -974,12 +983,14 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       const foundPublic = publicListRes.body.items.find((item) => item.id === createdLecturerId);
       expect(foundPublic?.name).toBe('Dr. Uji Sinkronisasi Dosen, M.Pd.I');
       expect(foundPublic?.leadership_role).toBe('Ketua Program Studi PAI');
+      expect(Array.isArray(foundPublic?.education_history)).toBe(true);
+      expect(foundPublic?.education_history?.[0]?.institution).toBe('Universitas Pendidikan Indonesia');
 
       const landingSyncRes = await request(app).get('/api/v1/landing');
       expect(landingSyncRes.status).toBe(200);
-      expect(
-        landingSyncRes.body.lecturers.some((item) => item.id === createdLecturerId)
-      ).toBe(true);
+      const landingLecturer = landingSyncRes.body.lecturers.find((item) => item.id === createdLecturerId);
+      expect(landingLecturer).toBeTruthy();
+      expect(landingLecturer.education_history?.[0]?.graduationYear).toBe('2014');
 
       const updateRes = await request(app)
         .patch(`/api/v1/admin/lecturers/${createdLecturerId}`)

@@ -9,6 +9,41 @@ function toNullable(value) {
   return trimmed ? trimmed : null;
 }
 
+function parseEducationHistory(rawValue) {
+  if (!rawValue) return [];
+  let parsed = rawValue;
+  if (typeof rawValue === 'string') {
+    try {
+      parsed = JSON.parse(rawValue);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .filter((item) => item && typeof item === 'object' && String(item.degreeLevel || '').trim() && String(item.institution || '').trim())
+    .map((item) => ({
+      degreeLevel: String(item.degreeLevel || '').trim(),
+      institution: String(item.institution || '').trim(),
+      major: String(item.major || '').trim(),
+      academicDegree: String(item.academicDegree || '').trim(),
+      graduationYear: String(item.graduationYear || '').trim()
+    }));
+}
+
+function serializeEducationHistory(items) {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  return JSON.stringify(items);
+}
+
+function normalizeLecturerRow(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    education_history: parseEducationHistory(row.education_history)
+  };
+}
+
 function toDbTuple(data) {
   return [
     data.programSlug,
@@ -22,6 +57,7 @@ function toDbTuple(data) {
     toNullable(data.email),
     toNullable(data.education),
     toNullable(data.biography),
+    serializeEducationHistory(data.educationHistory),
     toNullable(data.scholarUrl),
     toNullable(data.orcidUrl),
     toNullable(data.scopusUrl),
@@ -37,25 +73,25 @@ export async function listVisibleLecturers(programSlug = null) {
     const [rows] = await pool.execute(
       `SELECT id, program_slug, name, photo_url, nidn, teaching_status,
               academic_rank, rank_grade, leadership_role, email, education,
-              biography, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
+              biography, education_history, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
               sort_order, created_at, updated_at
        FROM lecturers
        WHERE is_visible = 1 AND program_slug = ?
        ORDER BY ${ORDER_BY_LEADERSHIP_THEN_SORT}`,
       [programSlug]
     );
-    return rows;
+    return rows.map(normalizeLecturerRow);
   }
   const [rows] = await pool.execute(
     `SELECT id, program_slug, name, photo_url, nidn, teaching_status,
             academic_rank, rank_grade, leadership_role, email, education,
-            biography, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
+            biography, education_history, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
             sort_order, created_at, updated_at
      FROM lecturers
      WHERE is_visible = 1
      ORDER BY program_slug ASC, ${ORDER_BY_LEADERSHIP_THEN_SORT}`
   );
-  return rows;
+  return rows.map(normalizeLecturerRow);
 }
 
 export async function listLecturersAdmin({ limit = null, offset = 0 } = {}) {
@@ -63,7 +99,7 @@ export async function listLecturersAdmin({ limit = null, offset = 0 } = {}) {
   const [rows] = await pool.execute(
     `SELECT * FROM lecturers ORDER BY program_slug ASC, ${ORDER_BY_LEADERSHIP_THEN_SORT}${pageClause}`
   );
-  return rows;
+  return rows.map(normalizeLecturerRow);
 }
 
 export async function createLecturer(data) {
@@ -71,13 +107,13 @@ export async function createLecturer(data) {
     `INSERT INTO lecturers
       (program_slug, name, photo_url, nidn, teaching_status,
        academic_rank, rank_grade, leadership_role, email, education,
-       biography, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
+       biography, education_history, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
        is_visible, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     toDbTuple(data)
   );
   const [rows] = await pool.execute('SELECT * FROM lecturers WHERE id = ? LIMIT 1', [result.insertId]);
-  return rows[0] || null;
+  return normalizeLecturerRow(rows[0]);
 }
 
 export async function updateLecturer(id, data) {
@@ -85,7 +121,7 @@ export async function updateLecturer(id, data) {
     `UPDATE lecturers
      SET program_slug = ?, name = ?, photo_url = ?, nidn = ?,
          teaching_status = ?, academic_rank = ?, rank_grade = ?, leadership_role = ?,
-         email = ?, education = ?, biography = ?,
+         email = ?, education = ?, biography = ?, education_history = ?,
          scholar_url = ?, orcid_url = ?, scopus_url = ?, sinta_url = ?, wos_url = ?,
          is_visible = ?, sort_order = ?
      WHERE id = ?`,
@@ -93,7 +129,7 @@ export async function updateLecturer(id, data) {
   );
   if (result.affectedRows === 0) return null;
   const [rows] = await pool.execute('SELECT * FROM lecturers WHERE id = ? LIMIT 1', [id]);
-  return rows[0] || null;
+  return normalizeLecturerRow(rows[0]);
 }
 
 export async function deleteLecturer(id) {

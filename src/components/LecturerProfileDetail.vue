@@ -37,6 +37,11 @@ const statusClass = computed(
 );
 const rankAndGrade = computed(() => formatRankAndGrade(props.lecturer));
 const displayHeadingName = computed(() => stripAcademicTitles(props.lecturer?.name));
+const educationHistoryRows = computed(() => {
+  const list = props.lecturer?.education_history;
+  if (!Array.isArray(list)) return [];
+  return list.filter((row) => row && (row.degreeLevel || row.institution || row.major));
+});
 const biographyParagraphs = computed(() =>
   String(props.lecturer?.biography || '')
     .split(/\r?\n\r?\n|\r?\n/)
@@ -187,6 +192,41 @@ const biographyParagraphs = computed(() =>
       </h2>
       <div class="space-y-3 text-sm leading-relaxed text-slate-700 sm:text-base">
         <p v-for="(para, idx) in biographyParagraphs" :key="idx">{{ para }}</p>
+      </div>
+    </section>
+
+    <section
+      v-if="educationHistoryRows.length"
+      data-testid="lecturer-education-history"
+      class="rounded-2xl border border-surface-border bg-white p-6 sm:p-8 shadow-card space-y-4"
+    >
+      <h2 class="text-lg font-extrabold text-brand-900">
+        {{ t('portalPages.common.lecturers.educationHistory.heading') }}
+      </h2>
+      <div class="overflow-x-auto rounded-xl border border-surface-border">
+        <table class="w-full min-w-[680px] border-collapse text-left text-sm">
+          <caption class="sr-only">{{ t('portalPages.common.lecturers.educationHistory.heading') }}</caption>
+          <thead class="bg-brand-700 text-white">
+            <tr>
+              <th scope="col" class="px-4 py-3 text-xs font-bold whitespace-nowrap">{{ t('portalPages.common.lecturers.educationHistory.no') }}</th>
+              <th scope="col" class="px-4 py-3 text-xs font-bold whitespace-nowrap">{{ t('portalPages.common.lecturers.educationHistory.degreeLevel') }}</th>
+              <th scope="col" class="px-4 py-3 text-xs font-bold">{{ t('portalPages.common.lecturers.educationHistory.institution') }}</th>
+              <th scope="col" class="px-4 py-3 text-xs font-bold">{{ t('portalPages.common.lecturers.educationHistory.major') }}</th>
+              <th scope="col" class="px-4 py-3 text-xs font-bold whitespace-nowrap">{{ t('portalPages.common.lecturers.educationHistory.academicDegree') }}</th>
+              <th scope="col" class="px-4 py-3 text-xs font-bold whitespace-nowrap">{{ t('portalPages.common.lecturers.educationHistory.graduationYear') }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-border bg-white text-slate-700">
+            <tr v-for="(row, idx) in educationHistoryRows" :key="idx" class="transition hover:bg-surface-page/70">
+              <td class="px-4 py-3 font-semibold text-slate-600 whitespace-nowrap">{{ idx + 1 }}</td>
+              <td class="px-4 py-3 font-bold text-brand-900 whitespace-nowrap">{{ row.degreeLevel }}</td>
+              <td class="px-4 py-3">{{ row.institution }}</td>
+              <td class="px-4 py-3">{{ row.major || '-' }}</td>
+              <td class="px-4 py-3 whitespace-nowrap">{{ row.academicDegree || '-' }}</td>
+              <td class="px-4 py-3 font-medium whitespace-nowrap">{{ row.graduationYear || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 

@@ -207,6 +207,14 @@ const optionalSafeExternalUrl = (message) =>
     .refine((v) => !v || isSafeHttpUrl(v), message)
     .default('');
 
+const educationHistoryItemSchema = z.object({
+  degreeLevel: z.string().trim().min(1, 'Jenjang pendidikan wajib diisi').max(20),
+  institution: z.string().trim().min(1, 'Perguruan tinggi wajib diisi').max(160),
+  major: z.string().trim().min(1, 'Jurusan wajib diisi').max(160),
+  academicDegree: z.string().trim().max(40).nullable().optional().default(''),
+  graduationYear: z.string().trim().max(12).nullable().optional().default('')
+});
+
 export const lecturerBodySchema = z.object({
   programSlug: z.enum(['pai', 'pgmi', 'piaud']),
   name: z.string().trim().min(2, 'Nama dosen minimal 2 karakter').max(160),
@@ -226,6 +234,7 @@ export const lecturerBodySchema = z.object({
     .default(''),
   education: z.string().trim().max(200).nullable().optional().default(''),
   biography: z.string().trim().max(15000).nullable().optional().default(''),
+  educationHistory: z.array(educationHistoryItemSchema).max(15, 'Maksimal 15 riwayat pendidikan').default([]),
   scholarUrl: optionalSafeExternalUrl('URL Google Scholar tidak valid'),
   orcidUrl: optionalSafeExternalUrl('URL ORCID tidak valid'),
   scopusUrl: optionalSafeExternalUrl('URL Scopus tidak valid'),

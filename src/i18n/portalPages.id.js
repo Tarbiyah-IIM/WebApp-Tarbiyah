@@ -61,6 +61,15 @@ export const portalPagesId = {
         education: 'Pendidikan Terakhir',
         biography: 'Biografi'
       },
+      educationHistory: {
+        heading: 'Riwayat Pendidikan',
+        no: 'No',
+        degreeLevel: 'Jenjang',
+        institution: 'Perguruan Tinggi',
+        major: 'Jurusan',
+        academicDegree: 'Gelar Akademik',
+        graduationYear: 'Tahun Lulus'
+      },
       indexes: {
         scholar: 'Google Scholar',
         orcid: 'ORCID',

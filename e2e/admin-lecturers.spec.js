@@ -57,6 +57,14 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await expect(indexPreview.locator('img')).toHaveCount(3);
     await dialog.getByLabel('Biografi Singkat').fill('Mengajar sejak 2010 pada bidang manajemen pendidikan Islam.');
 
+    await dialog.getByTestId('add-lecturer-education').click();
+    const eduRows = dialog.getByTestId('lecturer-education-form-row');
+    await eduRows.nth(0).getByLabel(/Jenjang/).fill('S3');
+    await eduRows.nth(0).getByLabel(/Perguruan Tinggi/).fill('Universitas Pendidikan Indonesia');
+    await eduRows.nth(0).getByLabel(/Jurusan/).fill('Manajemen Pendidikan');
+    await eduRows.nth(0).getByLabel(/Gelar Akademik/).fill('Dr.');
+    await eduRows.nth(0).getByLabel(/Tahun Lulus/).fill('2014');
+
     await dialog.getByRole('button', { name: 'Simpan Profil Dosen' }).click();
     await expect(page.getByText('Data dosen disimpan & disinkronkan.')).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -92,6 +100,12 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await expect(page.getByText('Lektor Kepala | IV/A')).toBeVisible();
     await expect(page.getByText('S3 | Pendidikan Agama Islam')).toBeVisible();
     await expect(page.getByText('Mengajar sejak 2010 pada bidang manajemen pendidikan Islam.')).toBeVisible();
+    const eduSection = page.getByTestId('lecturer-education-history');
+    await expect(eduSection).toBeVisible();
+    await expect(eduSection.getByRole('columnheader', { name: 'Perguruan Tinggi' })).toBeVisible();
+    await expect(eduSection).toContainText('Universitas Pendidikan Indonesia');
+    await expect(eduSection).toContainText('Manajemen Pendidikan');
+    await expect(eduSection).toContainText('2014');
 
     await page.getByTestId('search-toggle').click();
     const searchDialog = page.getByRole('dialog', { name: 'Pencarian Cepat Tarbiyah' });

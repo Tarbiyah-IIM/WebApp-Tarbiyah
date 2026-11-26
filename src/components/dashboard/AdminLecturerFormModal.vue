@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import ModalDialog from '../ModalDialog.vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
+import AdminLecturerEducationSection from './AdminLecturerEducationSection.vue';
 import AdminLecturerIndexesSection from './AdminLecturerIndexesSection.vue';
 import AdminLecturerPhotoSection from './AdminLecturerPhotoSection.vue';
 import { useI18n } from '../../composables/useI18n.js';
@@ -36,6 +37,7 @@ const form = reactive({
   email: '',
   education: '',
   biography: '',
+  educationHistory: [],
   scholarUrl: '',
   orcidUrl: '',
   scopusUrl: '',
@@ -64,6 +66,17 @@ watch(
   }
 );
 
+function normalizeEducationRows(rawRows) {
+  if (!Array.isArray(rawRows)) return [];
+  return rawRows.map((row) => ({
+    degreeLevel: String(row?.degreeLevel || '').trim(),
+    institution: String(row?.institution || '').trim(),
+    major: String(row?.major || '').trim(),
+    academicDegree: String(row?.academicDegree || '').trim(),
+    graduationYear: String(row?.graduationYear || '').trim()
+  }));
+}
+
 function hydrateForm() {
   const item = props.initialItem;
   if (item) {
@@ -79,6 +92,7 @@ function hydrateForm() {
     form.email = item.email || '';
     form.education = item.education || '';
     form.biography = item.biography || '';
+    form.educationHistory = normalizeEducationRows(item.education_history);
     form.scholarUrl = item.scholar_url || '';
     form.orcidUrl = item.orcid_url || '';
     form.scopusUrl = item.scopus_url || '';
@@ -100,6 +114,7 @@ function hydrateForm() {
   form.email = '';
   form.education = '';
   form.biography = '';
+  form.educationHistory = [];
   form.scholarUrl = '';
   form.orcidUrl = '';
   form.scopusUrl = '';
@@ -196,6 +211,7 @@ function submit() {
     email: form.email.trim(),
     education: form.education.trim(),
     biography: form.biography.trim(),
+    educationHistory: normalizeEducationRows(form.educationHistory),
     scholarUrl: form.scholarUrl.trim(),
     orcidUrl: form.orcidUrl.trim(),
     scopusUrl: form.scopusUrl.trim(),
@@ -276,6 +292,8 @@ function submit() {
         <label for="lec-bio" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.biography') }}</label>
         <textarea id="lec-bio" v-model="form.biography" rows="4" class="w-full rounded-xl border border-surface-border p-3 text-sm" />
       </div>
+
+      <AdminLecturerEducationSection v-model="form.educationHistory" />
 
       <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-page px-4 py-3">
         <label class="inline-flex items-center gap-2 text-xs font-bold text-brand-900 cursor-pointer">

@@ -656,6 +656,16 @@ export default {
         cancelBtn: 'Cancel',
         indexesSectionTitle: 'Academic Index & Publication Links (Optional)',
         indexesPreviewLabel: 'Active Logo Badges Preview:',
+        educationHistorySectionTitle: 'Education History',
+        addEducationBtn: 'Add Education',
+        removeEducationBtn: 'Remove',
+        educationFields: {
+          degreeLevel: 'Degree',
+          institution: 'University / Institution',
+          major: 'Major',
+          academicDegree: 'Academic Title',
+          graduationYear: 'Graduation Year'
+        },
         fields: {
           programSlug: 'Study Program',
           name: 'Full Name & Titles',
