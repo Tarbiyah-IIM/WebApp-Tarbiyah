@@ -33,7 +33,7 @@ const filteredLecturers = computed(() => {
     if (programFilter.value !== 'all' && item.program_slug !== programFilter.value) return false;
     if (leadershipOnly.value && !(item.leadership_role && item.leadership_role.trim())) return false;
     if (!q) return true;
-    return [item.name, item.nidn, item.academic_rank, item.rank_grade, item.leadership_role, item.education, item.expertise]
+    return [item.name, item.nidn, item.academic_rank, item.rank_grade, item.leadership_role, item.education]
       .filter(Boolean)
       .some((val) => String(val).toLowerCase().includes(q));
   });

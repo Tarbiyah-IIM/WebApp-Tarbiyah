@@ -133,10 +133,8 @@ const biographyParagraphs = computed(() =>
           </div>
 
           <div class="grid grid-cols-1 gap-1 px-4 py-3 sm:grid-cols-12 sm:gap-4 sm:items-center">
-            <dt class="text-xs font-bold text-slate-500 sm:col-span-5 sm:text-sm">{{ t('portalPages.common.lecturers.fields.employmentAndStatus') }}</dt>
+            <dt class="text-xs font-bold text-slate-500 sm:col-span-5 sm:text-sm">{{ t('portalPages.common.lecturers.fields.status') }}</dt>
             <dd class="flex flex-wrap items-center gap-2 text-sm text-slate-700 sm:col-span-7">
-              <span class="font-semibold">{{ lecturer.employment_type || '-' }}</span>
-              <span class="text-slate-300" aria-hidden="true">|</span>
               <span class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold" :class="statusClass">
                 {{ statusLabel }}
               </span>
@@ -174,11 +172,6 @@ const biographyParagraphs = computed(() =>
               <GraduationCap class="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
               <span>{{ lecturer.education || '-' }}</span>
             </dd>
-          </div>
-
-          <div v-if="lecturer.expertise" class="grid grid-cols-1 gap-1 px-4 py-3 sm:grid-cols-12 sm:gap-4">
-            <dt class="text-xs font-bold text-slate-500 sm:col-span-5 sm:text-sm">{{ t('portalPages.common.lecturers.fields.expertise') }}</dt>
-            <dd class="text-sm text-slate-700 sm:col-span-7">{{ lecturer.expertise }}</dd>
           </div>
         </dl>
       </div>

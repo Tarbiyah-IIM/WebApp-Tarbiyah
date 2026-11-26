@@ -213,8 +213,7 @@ const lecturerMatches = computed(() => {
         l.leadership_role,
         l.academic_rank,
         l.rank_grade,
-        l.education,
-        l.expertise
+        l.education
       ]).includes(normalizedQuery.value)
     )
     .slice(0, 4);

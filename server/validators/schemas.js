@@ -212,7 +212,6 @@ export const lecturerBodySchema = z.object({
   name: z.string().trim().min(2, 'Nama dosen minimal 2 karakter').max(160),
   photoUrl: optionalSafeMediaOrWebUrl('URL foto dosen tidak valid'),
   nidn: z.string().trim().max(40).nullable().optional().default(''),
-  employmentType: z.string().trim().min(1).max(80).default('Dosen Tetap'),
   teachingStatus: z.enum(['active', 'study_leave', 'inactive']).default('active'),
   academicRank: z.string().trim().max(80).nullable().optional().default(''),
   rankGrade: z.string().trim().max(40).nullable().optional().default(''),
@@ -226,7 +225,6 @@ export const lecturerBodySchema = z.object({
     .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Format email dosen tidak valid')
     .default(''),
   education: z.string().trim().max(200).nullable().optional().default(''),
-  expertise: z.string().trim().max(255).nullable().optional().default(''),
   biography: z.string().trim().max(15000).nullable().optional().default(''),
   scholarUrl: optionalSafeExternalUrl('URL Google Scholar tidak valid'),
   orcidUrl: optionalSafeExternalUrl('URL ORCID tidak valid'),

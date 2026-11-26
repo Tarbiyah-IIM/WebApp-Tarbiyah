@@ -32,7 +32,7 @@ export const portalPagesId = {
       leadershipBadge: 'Pimpinan Prodi',
       allTab: 'Semua Dosen',
       leadershipTab: 'Pimpinan Prodi',
-      searchPlaceholder: 'Cari nama, jabatan akademik, pendidikan, atau keahlian...',
+      searchPlaceholder: 'Cari nama, jabatan akademik, atau pendidikan...',
       resetFilterBtn: 'Reset Filter',
       viewProfileBtn: 'Lihat Profil',
       backToListBtn: 'Kembali ke Daftar Dosen',
@@ -54,12 +54,11 @@ export const portalPagesId = {
         nidn: 'NIDN / NUPTK',
         program: 'Program Studi',
         faculty: 'Fakultas',
-        employmentAndStatus: 'Jenis Pegawai | Status',
+        status: 'Status',
         academicRankAndGrade: 'Jabatan Akademik | Golongan',
         leadershipRole: 'Jabatan Struktural',
         email: 'Email',
         education: 'Pendidikan Terakhir',
-        expertise: 'Bidang Keahlian',
         biography: 'Biografi'
       },
       indexes: {

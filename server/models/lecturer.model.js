@@ -15,14 +15,12 @@ function toDbTuple(data) {
     data.name.trim(),
     toNullable(data.photoUrl),
     toNullable(data.nidn),
-    toNullable(data.employmentType) || 'Dosen Tetap',
     data.teachingStatus || 'active',
     toNullable(data.academicRank),
     toNullable(data.rankGrade),
     toNullable(data.leadershipRole),
     toNullable(data.email),
     toNullable(data.education),
-    toNullable(data.expertise),
     toNullable(data.biography),
     toNullable(data.scholarUrl),
     toNullable(data.orcidUrl),
@@ -37,8 +35,8 @@ function toDbTuple(data) {
 export async function listVisibleLecturers(programSlug = null) {
   if (programSlug) {
     const [rows] = await pool.execute(
-      `SELECT id, program_slug, name, photo_url, nidn, employment_type, teaching_status,
-              academic_rank, rank_grade, leadership_role, email, education, expertise,
+      `SELECT id, program_slug, name, photo_url, nidn, teaching_status,
+              academic_rank, rank_grade, leadership_role, email, education,
               biography, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
               sort_order, created_at, updated_at
        FROM lecturers
@@ -49,8 +47,8 @@ export async function listVisibleLecturers(programSlug = null) {
     return rows;
   }
   const [rows] = await pool.execute(
-    `SELECT id, program_slug, name, photo_url, nidn, employment_type, teaching_status,
-            academic_rank, rank_grade, leadership_role, email, education, expertise,
+    `SELECT id, program_slug, name, photo_url, nidn, teaching_status,
+            academic_rank, rank_grade, leadership_role, email, education,
             biography, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
             sort_order, created_at, updated_at
      FROM lecturers
@@ -71,11 +69,11 @@ export async function listLecturersAdmin({ limit = null, offset = 0 } = {}) {
 export async function createLecturer(data) {
   const [result] = await pool.execute(
     `INSERT INTO lecturers
-      (program_slug, name, photo_url, nidn, employment_type, teaching_status,
-       academic_rank, rank_grade, leadership_role, email, education, expertise,
+      (program_slug, name, photo_url, nidn, teaching_status,
+       academic_rank, rank_grade, leadership_role, email, education,
        biography, scholar_url, orcid_url, scopus_url, sinta_url, wos_url,
        is_visible, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     toDbTuple(data)
   );
   const [rows] = await pool.execute('SELECT * FROM lecturers WHERE id = ? LIMIT 1', [result.insertId]);
@@ -85,9 +83,9 @@ export async function createLecturer(data) {
 export async function updateLecturer(id, data) {
   const [result] = await pool.execute(
     `UPDATE lecturers
-     SET program_slug = ?, name = ?, photo_url = ?, nidn = ?, employment_type = ?,
+     SET program_slug = ?, name = ?, photo_url = ?, nidn = ?,
          teaching_status = ?, academic_rank = ?, rank_grade = ?, leadership_role = ?,
-         email = ?, education = ?, expertise = ?, biography = ?,
+         email = ?, education = ?, biography = ?,
          scholar_url = ?, orcid_url = ?, scopus_url = ?, sinta_url = ?, wos_url = ?,
          is_visible = ?, sort_order = ?
      WHERE id = ?`,

@@ -66,7 +66,7 @@ const filteredLecturers = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q) return base;
   return base.filter((item) =>
-    [item.name, item.nidn, item.academic_rank, item.rank_grade, item.leadership_role, item.education, item.expertise]
+    [item.name, item.nidn, item.academic_rank, item.rank_grade, item.leadership_role, item.education]
       .filter(Boolean)
       .some((field) => String(field).toLowerCase().includes(q))
   );

@@ -29,14 +29,12 @@ const form = reactive({
   name: '',
   photoUrl: '',
   nidn: '',
-  employmentType: 'Dosen Tetap',
   teachingStatus: 'active',
   academicRank: '',
   rankGrade: '',
   leadershipRole: '',
   email: '',
   education: '',
-  expertise: '',
   biography: '',
   scholarUrl: '',
   orcidUrl: '',
@@ -74,14 +72,12 @@ function hydrateForm() {
     form.name = item.name || '';
     form.photoUrl = item.photo_url || '';
     form.nidn = item.nidn || '';
-    form.employmentType = item.employment_type || 'Dosen Tetap';
     form.teachingStatus = item.teaching_status || 'active';
     form.academicRank = item.academic_rank || '';
     form.rankGrade = item.rank_grade || '';
     form.leadershipRole = item.leadership_role || '';
     form.email = item.email || '';
     form.education = item.education || '';
-    form.expertise = item.expertise || '';
     form.biography = item.biography || '';
     form.scholarUrl = item.scholar_url || '';
     form.orcidUrl = item.orcid_url || '';
@@ -97,14 +93,12 @@ function hydrateForm() {
   form.name = '';
   form.photoUrl = '';
   form.nidn = '';
-  form.employmentType = 'Dosen Tetap';
   form.teachingStatus = 'active';
   form.academicRank = '';
   form.rankGrade = '';
   form.leadershipRole = '';
   form.email = '';
   form.education = '';
-  form.expertise = '';
   form.biography = '';
   form.scholarUrl = '';
   form.orcidUrl = '';
@@ -195,14 +189,12 @@ function submit() {
     name: form.name.trim(),
     photoUrl: form.photoUrl.trim(),
     nidn: form.nidn.trim(),
-    employmentType: form.employmentType.trim() || 'Dosen Tetap',
     teachingStatus: form.teachingStatus,
     academicRank: form.academicRank.trim(),
     rankGrade: form.rankGrade.trim(),
     leadershipRole: form.leadershipRole.trim(),
     email: form.email.trim(),
     education: form.education.trim(),
-    expertise: form.expertise.trim(),
     biography: form.biography.trim(),
     scholarUrl: form.scholarUrl.trim(),
     orcidUrl: form.orcidUrl.trim(),
@@ -235,9 +227,9 @@ function submit() {
         <div>
           <label for="lec-prodi" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.programSlug') }}</label>
           <select id="lec-prodi" v-model="form.programSlug" class="min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3 text-sm">
-            <option value="pai">S1 · PAI</option>
-            <option value="pgmi">S1 · PGMI</option>
-            <option value="piaud">S1 · PIAUD</option>
+            <option value="pai">Pendidikan Agama Islam</option>
+            <option value="pgmi">Pendidikan Guru Madrasah Ibtidaiyah</option>
+            <option value="piaud">Pendidikan Islam Anak Usia Dini</option>
           </select>
         </div>
         <div>
@@ -252,13 +244,9 @@ function submit() {
           <label for="lec-name" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.name') }} <span class="text-rose-500">*</span></label>
           <input id="lec-name" v-model="form.name" type="text" required minlength="2" maxlength="160" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
-        <div>
+        <div class="sm:col-span-2">
           <label for="lec-nidn" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.nidn') }}</label>
           <input id="lec-nidn" v-model="form.nidn" type="text" maxlength="40" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
-        </div>
-        <div>
-          <label for="lec-emp" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.employmentType') }}</label>
-          <input id="lec-emp" v-model="form.employmentType" type="text" maxlength="80" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
         <div>
           <label for="lec-rank" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.academicRank') }}</label>
@@ -279,10 +267,6 @@ function submit() {
         <div class="sm:col-span-2">
           <label for="lec-edu" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.education') }}</label>
           <input id="lec-edu" v-model="form.education" type="text" maxlength="200" placeholder="S3 | Pendidikan Agama Islam" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
-        </div>
-        <div class="sm:col-span-2">
-          <label for="lec-exp" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.expertise') }}</label>
-          <input id="lec-exp" v-model="form.expertise" type="text" maxlength="255" class="min-h-[42px] w-full rounded-xl border border-surface-border px-3 text-sm" />
         </div>
       </div>
 

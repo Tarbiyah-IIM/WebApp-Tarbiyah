@@ -32,7 +32,7 @@ export const portalPagesEn = {
       leadershipBadge: 'Program Leadership',
       allTab: 'All Lecturers',
       leadershipTab: 'Program Leadership',
-      searchPlaceholder: 'Search name, academic rank, degree, or expertise...',
+      searchPlaceholder: 'Search name, academic rank, or degree...',
       resetFilterBtn: 'Reset Filter',
       viewProfileBtn: 'View Profile',
       backToListBtn: 'Back to Lecturers List',
@@ -54,12 +54,11 @@ export const portalPagesEn = {
         nidn: 'NIDN / NUPTK',
         program: 'Study Program',
         faculty: 'Faculty',
-        employmentAndStatus: 'Employment | Status',
+        status: 'Status',
         academicRankAndGrade: 'Academic Rank | Grade',
         leadershipRole: 'Leadership Role',
         email: 'Email',
         education: 'Highest Education',
-        expertise: 'Area of Expertise',
         biography: 'Biography'
       },
       indexes: {

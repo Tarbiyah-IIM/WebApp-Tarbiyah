@@ -34,17 +34,20 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await expect(photoUrlInput).toHaveValue(/^\/api\/v1\/media\/[0-9a-f-]{36}$/i);
     const uploadedPhotoUrl = await photoUrlInput.inputValue();
 
+    await expect(dialog.getByLabel('Program Studi').locator('option')).toHaveText([
+      'Pendidikan Agama Islam',
+      'Pendidikan Guru Madrasah Ibtidaiyah',
+      'Pendidikan Islam Anak Usia Dini'
+    ]);
     await dialog.getByLabel('Program Studi').selectOption('pai');
     await dialog.getByLabel('Status Mengajar').selectOption('active');
     await dialog.getByLabel(/Nama Lengkap & Gelar/).fill(lecturerName);
     await dialog.getByLabel(/NIDN/).fill('2101018501');
-    await dialog.getByLabel('Jenis Pegawai').fill('Dosen Tetap Yayasan');
     await dialog.getByLabel('Jabatan Akademik').fill('Lektor Kepala');
     await dialog.getByLabel('Golongan').fill('IV/A');
-    await dialog.getByLabel(/Jabatan Pimpinan Prodi/).fill('Ketua Program Studi');
+    await dialog.getByLabel('Jabatan Pimpinan Prodi', { exact: true }).fill('Ketua Program Studi');
     await dialog.getByLabel('Email Institusi').fill('darmawan.e2e@iim.ac.id');
     await dialog.getByLabel('Pendidikan Terakhir').fill('S3 | Pendidikan Agama Islam');
-    await dialog.getByLabel(/Bidang Keahlian/).fill('Manajemen Pendidikan Islam');
     await dialog.getByLabel('Link Google Scholar').fill('https://scholar.google.com/citations?user=e2etest');
     await dialog.getByLabel('Link SINTA').fill('https://sinta.kemdikbud.go.id/authors/profile/e2etest');
     await dialog.getByLabel('Link ORCID').fill('https://orcid.org/0000-0000-0000-0001');
