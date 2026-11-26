@@ -8,7 +8,7 @@ export default {
   nav: {
     mainAria: 'Main Navigation',
     logoAlt: 'Logo Fakultas Tarbiyah',
-    about: 'Tentang Kami',
+    about: 'Beranda',
     programs: 'Program Studi',
     academic: 'Akademik',
     publications: 'Publikasi',

@@ -90,6 +90,12 @@ function resetLogoClickTracker() {
   }
 }
 
+function scrollToHomeTopIfAlreadyHome() {
+  if (route.path === '/' && !route.hash && typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
 function handleLogoClick(event) {
   closeAllMenus();
   logoClickCount.value += 1;
@@ -102,9 +108,17 @@ function handleLogoClick(event) {
     router.push('/login');
     return;
   }
+  scrollToHomeTopIfAlreadyHome();
   logoClickTimer = setTimeout(() => {
     resetLogoClickTracker();
   }, 1000);
+}
+
+function handleNavLinkClick(menu) {
+  closeDesktopDropdown();
+  if (menu?.to === '/') {
+    scrollToHomeTopIfAlreadyHome();
+  }
 }
 
 function openSearchModal() {
@@ -131,7 +145,7 @@ async function handleLogout() {
       <router-link
         to="/"
         data-testid="navbar-logo"
-        class="flex min-w-0 shrink-0 select-none items-center gap-2.5 min-h-[44px]"
+        class="flex min-w-0 shrink-0 cursor-pointer select-none items-center gap-2.5 min-h-[44px]"
         @click="handleLogoClick"
       >
         <img
@@ -155,7 +169,7 @@ async function handleLogout() {
             v-if="!menu.children"
             :to="menu.to"
             class="inline-flex min-h-[44px] items-center whitespace-nowrap text-sm font-semibold text-slate-700 transition hover:text-brand-600"
-            @click="closeDesktopDropdown"
+            @click="handleNavLinkClick(menu)"
           >
             {{ menu.label }}
           </router-link>

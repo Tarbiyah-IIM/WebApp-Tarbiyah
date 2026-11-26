@@ -8,7 +8,7 @@ export default {
   nav: {
     mainAria: 'Main Navigation',
     logoAlt: 'Faculty of Tarbiyah Logo',
-    about: 'About Us',
+    about: 'Home',
     programs: 'Study Programs',
     academic: 'Academic',
     publications: 'Publications',

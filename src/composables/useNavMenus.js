@@ -19,9 +19,9 @@ export function useNavMenus(t) {
     const links = navLinks.value;
     return [
       {
-        id: 'tentang-kami',
+        id: 'beranda',
         label: t('nav.about'),
-        to: '/#features'
+        to: '/'
       },
       {
         id: 'program-studi',

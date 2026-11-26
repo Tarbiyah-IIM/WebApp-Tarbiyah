@@ -79,7 +79,7 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to) {
+  scrollBehavior(to, from) {
     if (to.hash) {
       return new Promise((resolve) => {
         let attempts = 0;
@@ -100,6 +100,9 @@ const router = createRouter({
         };
         tryFind();
       });
+    }
+    if (from?.path === '/' && to.path === '/') {
+      return { top: 0, behavior: 'smooth' };
     }
     return { top: 0 };
   }

@@ -12,7 +12,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(mainNav.getByAltText('Logo Fakultas Tarbiyah')).toBeVisible();
     await expect(mainNav.getByText('Fakultas Tarbiyah', { exact: true })).toBeVisible();
     await expect(mainNav.getByText('Institut Islam Mambaul Ulum Surakarta', { exact: true })).toBeVisible();
-    await expect(mainNav.getByRole('link', { name: 'Tentang Kami' })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: 'Beranda' })).toHaveAttribute('href', '/');
     await expect(mainNav.getByRole('button', { name: 'Program Studi' })).toBeVisible();
     await expect(mainNav.getByRole('button', { name: 'Akademik' })).toBeVisible();
     await expect(mainNav.getByRole('button', { name: 'Publikasi' })).toBeVisible();
@@ -183,6 +183,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.getByTestId('lang-switch-en').click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(mainNav.getByText('Faculty of Tarbiyah', { exact: true })).toBeVisible();
+    await expect(mainNav.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome to the Faculty of Tarbiyah');
     await expect(page.getByText('Featured Study Programs')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Faculty News' })).toBeVisible();
@@ -426,7 +427,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
 
     await moreBtn.click();
     await expect(mobileSheet.getByRole('heading', { name: 'Menu', exact: true })).toBeVisible();
-    await expect(mobileSheet.getByText('Tentang Kami')).toHaveCount(0);
+    await expect(mobileSheet.getByText('Beranda')).toHaveCount(0);
     await expect(mobileSheet.getByRole('link', { name: 'Jurnal' })).toHaveCount(0);
     await mobileSheet.getByRole('button', { name: 'Publikasi' }).click();
     await expect(mobileSheet.getByRole('link', { name: 'Jurnal' })).toHaveAttribute('href', '/publikasi/jurnal');
@@ -447,6 +448,17 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await expect(bottomNav).toBeHidden();
 
+    await page.evaluate(() => window.scrollTo(0, 900));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
+    await mainNav.getByTestId('navbar-logo').click();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+    await page.evaluate(() => window.scrollTo(0, 900));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
+    await mainNav.getByRole('link', { name: 'Beranda' }).click();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+    await page.waitForTimeout(1100);
     await mainNav.getByTestId('navbar-logo').click();
     await mainNav.getByTestId('navbar-logo').click();
     await mainNav.getByTestId('navbar-logo').click();
