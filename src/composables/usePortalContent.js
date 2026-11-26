@@ -226,6 +226,7 @@ export function usePortalContent() {
       ...detail,
       degree: nonEmptyString(ov.degree, detail.degree),
       studyMode: nonEmptyString(ov.studyMode, detail.studyMode),
+      accreditationStatus: nonEmptyString(ov.accreditationStatus, detail.accreditationStatus || ''),
       overview: nonEmptyString(ov.overview, detail.overview),
       accreditationUrl,
       highlights: highlights.length ? highlights : detail.highlights,

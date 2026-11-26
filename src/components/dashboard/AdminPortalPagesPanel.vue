@@ -81,6 +81,7 @@ function loadDraft() {
       accreditationUrl: saved.accreditationUrl ?? rawSaved.accreditationUrl ?? baseDetail.accreditationUrl ?? '',
       degree: saved.degree ?? baseDetail.degree ?? '',
       studyMode: saved.studyMode ?? baseDetail.studyMode ?? '',
+      accreditationStatus: saved.accreditationStatus ?? baseDetail.accreditationStatus ?? '',
       overview: saved.overview ?? baseDetail.overview ?? '',
       highlightsText: linesToText(saved.highlights ?? baseDetail.highlights),
       careersText: linesToText(saved.careers ?? baseDetail.careers)
@@ -234,6 +235,7 @@ function saveCurrent() {
       accreditationUrl: draft.value.accreditationUrl.trim(),
       degree: draft.value.degree.trim(),
       studyMode: draft.value.studyMode.trim(),
+      accreditationStatus: draft.value.accreditationStatus.trim(),
       overview: draft.value.overview.trim(),
       highlights: textToLines(draft.value.highlightsText),
       careers: textToLines(draft.value.careersText)
@@ -458,6 +460,10 @@ function resetCurrentDefault() {
           <div>
             <label for="pg-mode" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.studyMode') }}</label>
             <input id="pg-mode" v-model="draft.studyMode" type="text" class="min-h-[40px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="pg-accreditation-status" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.accreditationStatus') }}</label>
+            <input id="pg-accreditation-status" v-model="draft.accreditationStatus" type="text" class="min-h-[40px] w-full rounded-xl border border-surface-border px-3 text-sm" />
           </div>
           <div class="sm:col-span-2">
             <label for="pg-pmb" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.pmbUrl') }}</label>

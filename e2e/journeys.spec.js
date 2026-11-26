@@ -168,7 +168,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.locator('#courses-section h3', { hasText: 'Program Studi Pendidikan Agama Islam' })).toHaveCount(0);
     const pmbLinks = page.locator('#courses-section a', { hasText: 'Info PMB' });
     await expect(pmbLinks).toHaveCount(3);
-    await expect(page.locator('#courses-section').getByText('Terakreditasi BAIK SEKALI')).toHaveCount(3);
+    await expect(page.locator('#courses-section').getByText('Terakreditasi LAMDIK')).toHaveCount(3);
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
@@ -217,8 +217,8 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.goto('/program-studi/pai');
     await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Agama Islam' })).toBeVisible();
     await expect(page.locator('main section img')).toHaveCount(0);
-    await expect(page.getByText('Terakreditasi LAMDIK')).toHaveCount(0);
-    await expect(page.getByText('Terakreditasi BAIK SEKALI').first()).toBeVisible();
+    await expect(page.getByText('Terakreditasi LAMDIK')).toBeVisible();
+    await expect(page.locator('main aside').getByText('Terakreditasi BAIK SEKALI')).toBeVisible();
     await expect(page.locator('main a', { hasText: 'Info PMB' })).toHaveCount(0);
     await expect(page.locator('main a', { hasText: 'Sertifikat Akreditasi' })).toHaveAttribute(
       'href',
@@ -240,14 +240,16 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.locator('main aside').getByRole('button', { name: /Dosen Prodi/ })).toBeVisible();
     await page.goto('/program-studi/pgmi');
     await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toBeVisible();
-    await expect(page.getByText('Terakreditasi BAIK SEKALI').first()).toBeVisible();
+    await expect(page.getByText('Terakreditasi LAMDIK')).toBeVisible();
+    await expect(page.locator('main aside').getByText('Terakreditasi BAIK SEKALI')).toBeVisible();
     await page.locator('main aside').getByRole('button', { name: /Sertifikat Akreditasi/ }).click();
     const pgmiCertModal = page.getByRole('dialog', { name: 'Sertifikat Akreditasi' });
     await expect(pgmiCertModal).toBeVisible();
     await pgmiCertModal.getByRole('button', { name: 'Close modal' }).click();
     await page.goto('/program-studi/piaud');
     await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Islam Anak Usia Dini' })).toBeVisible();
-    await expect(page.getByText('Terakreditasi BAIK SEKALI').first()).toBeVisible();
+    await expect(page.getByText('Terakreditasi LAMDIK')).toBeVisible();
+    await expect(page.locator('main aside').getByText('Terakreditasi BAIK SEKALI')).toBeVisible();
     await expect(page.locator('main aside').getByRole('button', { name: /Sertifikat Akreditasi/ })).toBeVisible();
     await page.goto('/program-studi/unknown-slug');
     await expect(page.getByRole('heading', { name: 'Halaman tidak ditemukan' })).toBeVisible();

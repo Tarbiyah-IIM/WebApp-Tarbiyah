@@ -121,7 +121,7 @@ const otherPrograms = computed(() =>
         <div class="space-y-2.5 text-sm">
           <div class="flex items-center justify-between gap-2 border-b border-surface-border pb-2">
             <span class="text-slate-500">{{ t('portalPages.common.accreditationLabel') }}</span>
-            <span class="font-bold text-brand-900">{{ prodiCard.badge }}</span>
+            <span class="font-bold text-brand-900">{{ prodiDetail.accreditationStatus }}</span>
           </div>
           <div class="flex items-center justify-between gap-2 border-b border-surface-border pb-2">
             <span class="text-slate-500">{{ t('portalPages.common.degreeLabel') }}</span>

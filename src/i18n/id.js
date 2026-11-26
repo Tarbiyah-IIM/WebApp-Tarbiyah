@@ -89,7 +89,7 @@ export default {
       {
         id: 'pai',
         code: 'S1 · PAI',
-        badge: 'Terakreditasi BAIK SEKALI',
+        badge: 'Terakreditasi LAMDIK',
         title: 'Pendidikan Agama Islam',
         description:
           'Prodi ini menyelenggarakan pembelajaran yang profesional, responsif, dan berwawasan global hingga mampu menciptakan lulusan yang unggul.',
@@ -99,7 +99,7 @@ export default {
       {
         id: 'pgmi',
         code: 'S1 · PGMI',
-        badge: 'Terakreditasi BAIK SEKALI',
+        badge: 'Terakreditasi LAMDIK',
         title: 'Pendidikan Guru Madrasah Ibtidaiyah',
         description:
           'Menyiapkan sarjana yang mempunyai kemampuan akademis profesional, berkarakter, serta kecakapan sosial dan manajerial dalam pengembangan Madrasah Ibtidaiyah.',
@@ -109,7 +109,7 @@ export default {
       {
         id: 'piaud',
         code: 'S1 · PIAUD',
-        badge: 'Terakreditasi BAIK SEKALI',
+        badge: 'Terakreditasi LAMDIK',
         title: 'Pendidikan Islam Anak Usia Dini',
         description:
           'Membekali mahasiswa dengan ilmu pendidikan, kreativitas, dan nilai-nilai keislaman untuk menjadi pendidik profesional, inovatif, dan inspiratif sejak usia dini.',
@@ -582,6 +582,7 @@ export default {
         fields: {
           title: 'Judul Halaman',
           badge: 'Badge / Status Akreditasi',
+          accreditationStatus: 'Peringkat Akreditasi (Sidebar)',
           description: 'Deskripsi Singkat (Kartu Beranda)',
           pmbUrl: 'Tautan Info PMB',
           accreditationUrl: 'Tautan Sertifikat Akreditasi',

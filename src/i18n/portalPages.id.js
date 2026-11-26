@@ -40,6 +40,7 @@ export const portalPagesId = {
     pai: {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
+      accreditationStatus: 'Terakreditasi BAIK SEKALI',
       accreditationUrl: 'https://drive.google.com/drive/folders/1ZFCUeq0-_wgpt0aqk42FUYi_CYDwkVnW?usp=drive_link',
       overview:
         'Program Studi Pendidikan Agama Islam (PAI) membekali calon pendidik dengan penguasaan ilmu keislaman komprehensif, pedagogi modern, dan literasi digital untuk menjawab kebutuhan pembelajaran abad ke-21 di madrasah dan sekolah.',
@@ -59,6 +60,7 @@ export const portalPagesId = {
     pgmi: {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
+      accreditationStatus: 'Terakreditasi BAIK SEKALI',
       accreditationUrl: '',
       overview:
         'Program Studi Pendidikan Guru Madrasah Ibtidaiyah (PGMI) mempersiapkan guru kelas MI/SD profesional yang mampu memadukan pembelajaran tematik integratif, penguatan numerasi-literasi dasar, serta penanaman adab Islami.',
@@ -78,6 +80,7 @@ export const portalPagesId = {
     piaud: {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
+      accreditationStatus: 'Terakreditasi BAIK SEKALI',
       accreditationUrl: '',
       overview:
         'Program Studi Pendidikan Islam Anak Usia Dini (PIAUD) berfokus pada pendidikan anak usia emas (0–6 tahun) melalui pendekatan bermain bermakna, stimulasi tumbuh kembang holistik, seni Islami, dan kemitraan orang tua.',
