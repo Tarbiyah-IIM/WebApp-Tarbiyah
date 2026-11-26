@@ -1,3 +1,9 @@
+import googleScholarLogo from '../assets/logos/google-scholar.png';
+import orcidLogo from '../assets/logos/orcid.webp';
+import scopusLogo from '../assets/logos/scopus.webp';
+import sintaLogo from '../assets/logos/sinta.png';
+import wosLogo from '../assets/logos/web-of-science.png';
+
 export const TEACHING_STATUS_STYLES = {
   active: 'bg-emerald-600 text-white',
   study_leave: 'bg-amber-400 text-slate-900',
@@ -5,12 +11,64 @@ export const TEACHING_STATUS_STYLES = {
 };
 
 export const ACADEMIC_INDEX_CONFIG = [
-  { key: 'scholar_url', labelKey: 'scholar', pillClass: 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100' },
-  { key: 'orcid_url', labelKey: 'orcid', pillClass: 'border-lime-200 bg-lime-50 text-lime-800 hover:bg-lime-100' },
-  { key: 'scopus_url', labelKey: 'scopus', pillClass: 'border-orange-200 bg-orange-50 text-orange-800 hover:bg-orange-100' },
-  { key: 'sinta_url', labelKey: 'sinta', pillClass: 'border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100' },
-  { key: 'wos_url', labelKey: 'wos', pillClass: 'border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100' }
+  {
+    key: 'scholar_url',
+    formKey: 'scholarUrl',
+    labelKey: 'scholar',
+    fieldKey: 'scholarUrl',
+    placeholder: 'https://scholar.google.com/...',
+    logo: googleScholarLogo,
+    pillClass: 'border-slate-200 bg-[#ffffff] hover:border-sky-300 hover:shadow-sm'
+  },
+  {
+    key: 'sinta_url',
+    formKey: 'sintaUrl',
+    labelKey: 'sinta',
+    fieldKey: 'sintaUrl',
+    placeholder: 'https://sinta.kemdikbud.go.id/...',
+    logo: sintaLogo,
+    pillClass: 'border-slate-200 bg-[#ffffff] hover:border-teal-300 hover:shadow-sm'
+  },
+  {
+    key: 'orcid_url',
+    formKey: 'orcidUrl',
+    labelKey: 'orcid',
+    fieldKey: 'orcidUrl',
+    placeholder: 'https://orcid.org/...',
+    logo: orcidLogo,
+    pillClass: 'border-slate-200 bg-[#ffffff] hover:border-lime-300 hover:shadow-sm'
+  },
+  {
+    key: 'scopus_url',
+    formKey: 'scopusUrl',
+    labelKey: 'scopus',
+    fieldKey: 'scopusUrl',
+    placeholder: 'https://www.scopus.com/...',
+    logo: scopusLogo,
+    pillClass: 'border-slate-200 bg-[#ffffff] hover:border-orange-300 hover:shadow-sm'
+  },
+  {
+    key: 'wos_url',
+    formKey: 'wosUrl',
+    labelKey: 'wos',
+    fieldKey: 'wosUrl',
+    placeholder: 'https://www.webofscience.com/...',
+    logo: wosLogo,
+    pillClass: 'border-slate-200 bg-[#ffffff] hover:border-indigo-300 hover:shadow-sm'
+  }
 ];
+
+function parseSafeExternalUrl(rawValue) {
+  if (typeof rawValue !== 'string') return '';
+  const trimmed = rawValue.trim();
+  if (!trimmed) return '';
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.href : '';
+  } catch {
+    return '';
+  }
+}
 
 export function formatRankAndGrade(lecturer) {
   const parts = [lecturer?.academic_rank, lecturer?.rank_grade]
@@ -19,14 +77,15 @@ export function formatRankAndGrade(lecturer) {
   return parts.length ? parts.join(' | ') : '-';
 }
 
-export function extractLecturerIndexes(lecturer) {
-  return ACADEMIC_INDEX_CONFIG.filter((cfg) => {
-    const val = lecturer?.[cfg.key];
-    return typeof val === 'string' && val.trim().length > 0;
-  }).map((cfg) => ({
-    ...cfg,
-    url: lecturer[cfg.key].trim()
-  }));
+export function extractLecturerIndexes(source) {
+  return ACADEMIC_INDEX_CONFIG.reduce((items, cfg) => {
+    const raw = source?.[cfg.key] ?? source?.[cfg.formKey];
+    const url = parseSafeExternalUrl(raw);
+    if (url) {
+      items.push({ ...cfg, url });
+    }
+    return items;
+  }, []);
 }
 
 export function getNameInitials(name) {

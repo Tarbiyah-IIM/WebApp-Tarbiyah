@@ -277,18 +277,24 @@ function lecturerDetailRoute(id) {
             </div>
           </div>
 
-          <div v-if="extractLecturerIndexes(lecturer).length" class="mt-3 flex flex-wrap gap-1.5 border-t border-surface-border pt-3">
+          <div v-if="extractLecturerIndexes(lecturer).length" class="mt-3 flex flex-wrap gap-2 border-t border-surface-border pt-3">
             <a
               v-for="idx in extractLecturerIndexes(lecturer)"
               :key="idx.key"
               :href="idx.url"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold transition"
+              :aria-label="t(`portalPages.common.lecturers.indexes.${idx.labelKey}`)"
+              :title="t(`portalPages.common.lecturers.indexes.${idx.labelKey}`)"
+              class="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border px-2.5 py-1 transition"
               :class="idx.pillClass"
             >
-              <span>{{ t(`portalPages.common.lecturers.indexes.${idx.labelKey}`) }}</span>
-              <ExternalLink class="h-2.5 w-2.5" aria-hidden="true" />
+              <img
+                :src="idx.logo"
+                :alt="t(`portalPages.common.lecturers.indexes.${idx.labelKey}`)"
+                class="h-4 w-auto max-w-[84px] object-contain"
+              />
+              <ExternalLink class="h-2.5 w-2.5 shrink-0 text-slate-400" aria-hidden="true" />
             </a>
           </div>
 

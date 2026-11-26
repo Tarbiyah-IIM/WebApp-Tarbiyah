@@ -654,6 +654,9 @@ export default {
         saveBtn: 'Save Lecturer Profile',
         savingBtn: 'Saving...',
         cancelBtn: 'Cancel',
+        indexesSectionTitle: 'Academic Index Links (Automatically Wrapped in Logos)',
+        indexesPreviewLabel: 'Active Logo Badges Preview:',
+        indexesPreviewEmpty: 'Enter any valid https:// profile URL above to automatically wrap it as a clickable logo badge.',
         fields: {
           programSlug: 'Study Program',
           name: 'Full Name & Titles',

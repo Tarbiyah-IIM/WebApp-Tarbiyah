@@ -65,18 +65,24 @@ const biographyParagraphs = computed(() =>
           {{ t('portalPages.common.lecturers.profilePrefix') }} {{ lecturer.name }}
         </h1>
 
-        <div v-if="indexLinks.length" class="flex flex-wrap items-center justify-center gap-2 pt-1">
+        <div v-if="indexLinks.length" class="flex flex-wrap items-center justify-center gap-2.5 pt-2">
           <a
             v-for="item in indexLinks"
             :key="item.key"
             :href="item.url"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex min-h-[34px] items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold transition"
+            :aria-label="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
+            :title="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
+            class="inline-flex min-h-[40px] items-center gap-2 rounded-xl border px-3.5 py-1.5 transition hover:-translate-y-0.5"
             :class="item.pillClass"
           >
-            <span>{{ t(`portalPages.common.lecturers.indexes.${item.labelKey}`) }}</span>
-            <ExternalLink class="h-3 w-3 shrink-0" aria-hidden="true" />
+            <img
+              :src="item.logo"
+              :alt="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
+              class="h-5 w-auto max-w-[116px] object-contain"
+            />
+            <ExternalLink class="h-3 w-3 shrink-0 text-slate-400" aria-hidden="true" />
           </a>
         </div>
       </div>

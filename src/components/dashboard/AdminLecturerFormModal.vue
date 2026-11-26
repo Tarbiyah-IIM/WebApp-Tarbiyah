@@ -1,11 +1,11 @@
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
-import { ImagePlus, Trash2 } from 'lucide-vue-next';
+import { ExternalLink, ImagePlus, Trash2 } from 'lucide-vue-next';
 import ModalDialog from '../ModalDialog.vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
 import { adminService } from '../../services/admin.service.js';
-import { getNameInitials } from '../../utils/lecturers.js';
+import { ACADEMIC_INDEX_CONFIG, extractLecturerIndexes, getNameInitials } from '../../utils/lecturers.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -49,6 +49,7 @@ const form = reactive({
 });
 
 const isBusy = computed(() => props.syncing || uploadingPhoto.value);
+const activeFormIndexes = computed(() => extractLecturerIndexes(form));
 
 function formSnapshot() {
   return JSON.stringify({ ...form });
@@ -320,27 +321,65 @@ function submit() {
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label for="lec-scholar" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.scholarUrl') }}</label>
-          <input id="lec-scholar" v-model="form.scholarUrl" type="url" maxlength="500" placeholder="https://scholar.google.com/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
+      <div class="rounded-2xl border border-surface-border bg-surface-page p-4 space-y-3">
+        <p class="text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.indexesSectionTitle') }}</p>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            v-for="(idx, pos) in ACADEMIC_INDEX_CONFIG"
+            :key="idx.key"
+            :class="{ 'sm:col-span-2': pos === ACADEMIC_INDEX_CONFIG.length - 1 && ACADEMIC_INDEX_CONFIG.length % 2 === 1 }"
+          >
+            <label :for="`lec-${idx.labelKey}`" class="mb-1.5 flex items-center justify-between gap-2 text-xs font-bold text-slate-700">
+              <span>{{ t(`adminDashboard.cmsPanel.lecturersPanel.fields.${idx.fieldKey}`) }}</span>
+              <span class="inline-flex h-6 items-center rounded-md border border-slate-200 bg-[#ffffff] px-2">
+                <img
+                  :src="idx.logo"
+                  alt=""
+                  aria-hidden="true"
+                  class="h-3.5 w-auto max-w-[72px] object-contain"
+                />
+              </span>
+            </label>
+            <input
+              :id="`lec-${idx.labelKey}`"
+              v-model="form[idx.formKey]"
+              type="url"
+              maxlength="500"
+              :placeholder="idx.placeholder"
+              class="min-h-[38px] w-full rounded-xl border border-surface-border bg-white px-3 text-xs"
+            />
+          </div>
         </div>
-        <div>
-          <label for="lec-sinta" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.sintaUrl') }}</label>
-          <input id="lec-sinta" v-model="form.sintaUrl" type="url" maxlength="500" placeholder="https://sinta.kemdikbud.go.id/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
+
+        <div
+          v-if="activeFormIndexes.length > 0"
+          data-testid="lecturer-form-index-preview"
+          class="flex flex-wrap items-center gap-2 rounded-xl border border-surface-border bg-white px-3 py-2.5"
+        >
+          <span class="text-[11px] font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.indexesPreviewLabel') }}</span>
+          <a
+            v-for="item in activeFormIndexes"
+            :key="item.key"
+            :href="item.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
+            :title="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
+            class="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border px-2.5 py-1 transition"
+            :class="item.pillClass"
+          >
+            <img
+              :src="item.logo"
+              :alt="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
+              class="h-4 w-auto max-w-[88px] object-contain"
+            />
+            <ExternalLink class="h-2.5 w-2.5 shrink-0 text-slate-400" aria-hidden="true" />
+          </a>
         </div>
-        <div>
-          <label for="lec-orcid" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.orcidUrl') }}</label>
-          <input id="lec-orcid" v-model="form.orcidUrl" type="url" maxlength="500" placeholder="https://orcid.org/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
-        </div>
-        <div>
-          <label for="lec-scopus" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.scopusUrl') }}</label>
-          <input id="lec-scopus" v-model="form.scopusUrl" type="url" maxlength="500" placeholder="https://www.scopus.com/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
-        </div>
-        <div class="sm:col-span-2">
-          <label for="lec-wos" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.wosUrl') }}</label>
-          <input id="lec-wos" v-model="form.wosUrl" type="url" maxlength="500" placeholder="https://www.webofscience.com/..." class="min-h-[38px] w-full rounded-xl border border-surface-border px-3 text-xs" />
-        </div>
+        <p v-else class="text-[11px] text-slate-500">
+          {{ t('adminDashboard.cmsPanel.lecturersPanel.indexesPreviewEmpty') }}
+        </p>
       </div>
 
       <div>

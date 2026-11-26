@@ -48,6 +48,9 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await dialog.getByLabel('Link Google Scholar').fill('https://scholar.google.com/citations?user=e2etest');
     await dialog.getByLabel('Link SINTA').fill('https://sinta.kemdikbud.go.id/authors/profile/e2etest');
     await dialog.getByLabel('Link ORCID').fill('https://orcid.org/0000-0000-0000-0001');
+    const indexPreview = dialog.getByTestId('lecturer-form-index-preview');
+    await expect(indexPreview).toBeVisible();
+    await expect(indexPreview.locator('img')).toHaveCount(3);
     await dialog.getByLabel('Biografi Singkat').fill('Mengajar sejak 2010 pada bidang manajemen pendidikan Islam.');
 
     await dialog.getByRole('button', { name: 'Simpan Profil Dosen' }).click();
@@ -76,8 +79,11 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
       'href',
       'https://scholar.google.com/citations?user=e2etest'
     );
+    await expect(page.getByRole('img', { name: 'Google Scholar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'SINTA' })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'SINTA' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'ORCID' })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'ORCID' })).toBeVisible();
     await expect(page.getByText('Lektor Kepala | IV/A')).toBeVisible();
     await expect(page.getByText('S3 | Pendidikan Agama Islam')).toBeVisible();
     await expect(page.getByText('Mengajar sejak 2010 pada bidang manajemen pendidikan Islam.')).toBeVisible();
