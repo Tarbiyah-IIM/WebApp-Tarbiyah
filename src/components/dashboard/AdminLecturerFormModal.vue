@@ -1,11 +1,11 @@
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
-import { ExternalLink, ImagePlus, Trash2 } from 'lucide-vue-next';
 import ModalDialog from '../ModalDialog.vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
+import AdminLecturerIndexesSection from './AdminLecturerIndexesSection.vue';
+import AdminLecturerPhotoSection from './AdminLecturerPhotoSection.vue';
 import { useI18n } from '../../composables/useI18n.js';
 import { adminService } from '../../services/admin.service.js';
-import { ACADEMIC_INDEX_CONFIG, extractLecturerIndexes, getNameInitials } from '../../utils/lecturers.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -18,7 +18,6 @@ const emit = defineEmits(['close', 'save', 'dirty-change']);
 const { t } = useI18n();
 
 const uploadingPhoto = ref(false);
-const photoInputRef = ref(null);
 const pendingUploads = new Set();
 const baselineSnapshot = ref('');
 const sessionToken = ref(0);
@@ -49,7 +48,6 @@ const form = reactive({
 });
 
 const isBusy = computed(() => props.syncing || uploadingPhoto.value);
-const activeFormIndexes = computed(() => extractLecturerIndexes(form));
 
 function formSnapshot() {
   return JSON.stringify({ ...form });
@@ -164,8 +162,7 @@ onBeforeUnmount(() => {
   cleanupAllPendingUploads();
 });
 
-async function handlePhotoFile(event) {
-  const file = event.target.files?.[0];
+async function handlePhotoFile(file) {
   if (!file) return;
   const token = sessionToken.value;
   uploadingPhoto.value = true;
@@ -181,7 +178,6 @@ async function handlePhotoFile(event) {
     }
   } finally {
     if (token === sessionToken.value) uploadingPhoto.value = false;
-    if (photoInputRef.value) photoInputRef.value.value = '';
   }
 }
 
@@ -226,45 +222,14 @@ function submit() {
     @close="requestClose"
   >
     <form class="space-y-4" @submit.prevent="submit">
-      <div class="rounded-2xl border border-surface-border bg-surface-page p-4 space-y-3">
-        <p class="text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.photoSection') }}</p>
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="h-24 w-20 shrink-0 overflow-hidden rounded-xl border border-surface-border bg-white flex items-center justify-center">
-            <img v-if="form.photoUrl" :src="form.photoUrl" :alt="form.name || 'Preview'" class="h-full w-full object-cover object-top" />
-            <span v-else class="text-sm font-extrabold text-brand-700">{{ getNameInitials(form.name) }}</span>
-          </div>
-          <div class="flex-1 min-w-[200px] space-y-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <input ref="photoInputRef" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="sr-only" @change="handlePhotoFile" />
-              <button
-                type="button"
-                :disabled="isBusy"
-                class="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-brand-600 px-3.5 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-50"
-                @click="photoInputRef?.click()"
-              >
-                <ImagePlus class="h-4 w-4" aria-hidden="true" />
-                <span>{{ uploadingPhoto ? t('adminDashboard.cmsPanel.lecturersPanel.uploadingBtn') : t('adminDashboard.cmsPanel.lecturersPanel.uploadPhotoBtn') }}</span>
-              </button>
-              <button
-                v-if="form.photoUrl"
-                type="button"
-                :disabled="isBusy"
-                class="inline-flex min-h-[38px] items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs font-bold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
-                @click="clearPhoto"
-              >
-                <Trash2 class="h-3.5 w-3.5" aria-hidden="true" />
-                <span>{{ t('adminDashboard.cmsPanel.lecturersPanel.removePhotoBtn') }}</span>
-              </button>
-            </div>
-            <input
-              v-model="form.photoUrl"
-              type="text"
-              :placeholder="t('adminDashboard.cmsPanel.lecturersPanel.photoUrlPlaceholder')"
-              class="min-h-[38px] w-full rounded-xl border border-surface-border bg-white px-3 text-xs"
-            />
-          </div>
-        </div>
-      </div>
+      <AdminLecturerPhotoSection
+        v-model="form.photoUrl"
+        :lecturer-name="form.name"
+        :disabled="isBusy"
+        :uploading="uploadingPhoto"
+        @upload="handlePhotoFile"
+        @clear="clearPhoto"
+      />
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
@@ -321,66 +286,7 @@ function submit() {
         </div>
       </div>
 
-      <div class="rounded-2xl border border-surface-border bg-surface-page p-4 space-y-3">
-        <p class="text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.indexesSectionTitle') }}</p>
-
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div
-            v-for="(idx, pos) in ACADEMIC_INDEX_CONFIG"
-            :key="idx.key"
-            :class="{ 'sm:col-span-2': pos === ACADEMIC_INDEX_CONFIG.length - 1 && ACADEMIC_INDEX_CONFIG.length % 2 === 1 }"
-          >
-            <label :for="`lec-${idx.labelKey}`" class="mb-1.5 flex items-center justify-between gap-2 text-xs font-bold text-slate-700">
-              <span>{{ t(`adminDashboard.cmsPanel.lecturersPanel.fields.${idx.fieldKey}`) }}</span>
-              <span class="inline-flex h-6 items-center rounded-md border border-slate-200 bg-[#ffffff] px-2">
-                <img
-                  :src="idx.logo"
-                  alt=""
-                  aria-hidden="true"
-                  class="h-3.5 w-auto max-w-[72px] object-contain"
-                />
-              </span>
-            </label>
-            <input
-              :id="`lec-${idx.labelKey}`"
-              v-model="form[idx.formKey]"
-              type="url"
-              maxlength="500"
-              :placeholder="idx.placeholder"
-              class="min-h-[38px] w-full rounded-xl border border-surface-border bg-white px-3 text-xs"
-            />
-          </div>
-        </div>
-
-        <div
-          v-if="activeFormIndexes.length > 0"
-          data-testid="lecturer-form-index-preview"
-          class="flex flex-wrap items-center gap-2 rounded-xl border border-surface-border bg-white px-3 py-2.5"
-        >
-          <span class="text-[11px] font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.lecturersPanel.indexesPreviewLabel') }}</span>
-          <a
-            v-for="item in activeFormIndexes"
-            :key="item.key"
-            :href="item.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            :aria-label="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
-            :title="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
-            class="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border px-2.5 py-1 transition"
-            :class="item.pillClass"
-          >
-            <img
-              :src="item.logo"
-              :alt="t(`portalPages.common.lecturers.indexes.${item.labelKey}`)"
-              class="h-4 w-auto max-w-[88px] object-contain"
-            />
-            <ExternalLink class="h-2.5 w-2.5 shrink-0 text-slate-400" aria-hidden="true" />
-          </a>
-        </div>
-        <p v-else class="text-[11px] text-slate-500">
-          {{ t('adminDashboard.cmsPanel.lecturersPanel.indexesPreviewEmpty') }}
-        </p>
-      </div>
+      <AdminLecturerIndexesSection :form="form" />
 
       <div>
         <label for="lec-bio" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.biography') }}</label>

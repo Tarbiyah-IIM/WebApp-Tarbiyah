@@ -1,8 +1,8 @@
-import googleScholarLogo from '../assets/logos/google-scholar.png';
+import googleScholarLogo from '../assets/logos/google-scholar.webp';
 import orcidLogo from '../assets/logos/orcid.webp';
 import scopusLogo from '../assets/logos/scopus.webp';
 import sintaLogo from '../assets/logos/sinta.png';
-import wosLogo from '../assets/logos/web-of-science.png';
+import wosLogo from '../assets/logos/web-of-science.webp';
 
 export const TEACHING_STATUS_STYLES = {
   active: 'bg-emerald-600 text-white',
