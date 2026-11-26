@@ -18,8 +18,10 @@ import {
 import { useAuthStore } from '../stores/auth.store.js';
 import { useAdminPortal } from '../composables/useAdminPortal.js';
 import { useI18n } from '../composables/useI18n.js';
+import { useToast } from '../composables/useToast.js';
 import StateFeedback from '../components/StateFeedback.vue';
 import AdminShell from '../components/dashboard/AdminShell.vue';
+import AdminAccountModal from '../components/dashboard/AdminAccountModal.vue';
 import AdminOverviewPanel from '../components/dashboard/AdminOverviewPanel.vue';
 import AdminCmsSettingsForm from '../components/dashboard/AdminCmsSettingsForm.vue';
 import AdminNewsPanel from '../components/dashboard/AdminNewsPanel.vue';
@@ -37,12 +39,14 @@ import AdminConfirmModal from '../components/dashboard/AdminConfirmModal.vue';
 const router = useRouter();
 const auth = useAuthStore();
 const { t } = useI18n();
+const toast = useToast();
 const portal = useAdminPortal();
 const activeTab = ref('overview');
 const pendingTab = ref(null);
 const pendingRoute = ref(null);
 const pendingLogout = ref(false);
 const unsavedConfirmOpen = ref(false);
+const accountModalOpen = ref(false);
 const dirtyTabs = ref(new Set());
 
 function setTabDirty(tabId, isDirty) {
@@ -225,6 +229,15 @@ async function handleToggleUserActive(user) {
   );
 }
 
+function handleAccountSaved(updatedUser) {
+  if (updatedUser?.id && Array.isArray(portal.users.value)) {
+    portal.users.value = portal.users.value.map((item) =>
+      item.id === updatedUser.id ? { ...item, ...updatedUser } : item
+    );
+  }
+  toast.success(t('adminDashboard.accountModal.savedToast'));
+}
+
 async function performLogout() {
   dirtyTabs.value = new Set();
   await auth.logout();
@@ -252,6 +265,7 @@ onMounted(() => {
     :syncing="portal.syncing.value"
     @select-tab="selectTab"
     @logout="handleLogout"
+    @open-account="accountModalOpen = true"
   >
     <StateFeedback
       :loading="portal.loading.value"
@@ -361,8 +375,15 @@ onMounted(() => {
         :syncing="portal.syncing.value"
         @update-role="handleUpdateUserRole"
         @toggle-active="handleToggleUserActive"
+        @open-account="accountModalOpen = true"
       />
     </StateFeedback>
+
+    <AdminAccountModal
+      :open="accountModalOpen"
+      @close="accountModalOpen = false"
+      @saved="handleAccountSaved"
+    />
 
     <AdminConfirmModal
       :open="unsavedConfirmOpen"

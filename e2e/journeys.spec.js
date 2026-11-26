@@ -1,5 +1,10 @@
 import { test, expect } from './auth.fixture.js';
 
+async function switchLanguage(page, code) {
+  await page.getByTestId('lang-dropdown-toggle').click();
+  await page.getByTestId(`lang-switch-${code}`).click();
+}
+
 test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
   test('J1: Landing sections, theme toggle, i18n, global search, /courses removal redirect, and 3x logo login', async ({ page }) => {
     const pageErrors = [];
@@ -172,6 +177,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
+    await expect(page.getByTestId('theme-toggle')).toHaveText('');
 
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
@@ -181,7 +187,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
-    await page.getByTestId('lang-switch-en').click();
+    await switchLanguage(page, 'en');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(mainNav.getByText('Faculty of Tarbiyah', { exact: true })).toBeVisible();
     await expect(mainNav.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
@@ -191,7 +197,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(footerSection.getByText('Office Address')).toBeVisible();
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await page.getByTestId('lang-switch-id').click();
+    await switchLanguage(page, 'id');
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
 
     await page.getByTestId('search-toggle').click();
@@ -333,9 +339,9 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.keyboard.press('Escape');
     await expect(matriksDialog).toHaveCount(0);
 
-    await page.getByTestId('lang-switch-en').click();
+    await switchLanguage(page, 'en');
     await expect(page.getByRole('heading', { level: 1, name: 'Comprehensive Examination' })).toBeVisible();
-    await page.getByTestId('lang-switch-id').click();
+    await switchLanguage(page, 'id');
     await page.goto('/publikasi/ppl');
     await expect(page.getByRole('heading', { level: 1, name: 'Praktek Pengalaman Lapangan (PPL)' })).toBeVisible();
     await expect(page.getByText('Pendaftaran (Akses Awal)')).toBeVisible();
@@ -398,9 +404,9 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     );
     await page.goto('/publikasi/pkn');
     await expect(page.getByRole('heading', { level: 1, name: 'Praktek Kerja Nyata (PKN)' })).toBeVisible();
-    await page.getByTestId('lang-switch-en').click();
+    await switchLanguage(page, 'en');
     await expect(page.getByRole('heading', { level: 1, name: 'Community Fieldwork (PKN)' })).toBeVisible();
-    await page.getByTestId('lang-switch-id').click();
+    await switchLanguage(page, 'id');
     await page.goto('/publikasi/jurnal');
     await expect(page.getByRole('heading', { level: 1, name: 'Jurnal Fakultas Tarbiyah' })).toBeVisible();
     await expect(page.locator('main aside')).toHaveCount(0);
@@ -576,11 +582,28 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     const landingPayload = await landingRes.json();
     expect(landingPayload.settings.contact_email).toBeUndefined();
 
-    await page.getByTestId('lang-switch-en').click();
+    await expect(page.getByTestId('theme-toggle')).toHaveText('');
+    await switchLanguage(page, 'en');
     await expect(page.getByRole('heading', { name: 'Faculty of Tarbiyah Portal Management' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Users & Roles' })).toBeVisible();
-    await page.getByTestId('lang-switch-id').click();
+    await switchLanguage(page, 'id');
 
+    await page.getByRole('button', { name: 'Statistik', exact: true }).click();
+    await expect(page.getByTestId('stats-filtered-heading')).toHaveText('Strip Hero');
+    await expect(page.locator('article .rounded-full', { hasText: /^journey$/i })).toHaveCount(0);
+    await page.getByTestId('stat-group-select').selectOption('journey');
+    await expect(page.getByTestId('stats-filtered-heading')).toHaveText('Tarbiyah dalam Angka');
+    await expect(page.locator('article .rounded-full', { hasText: /^hero$/i })).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Pengguna & Peran', exact: true }).click();
+    await page.getByTestId('open-account-modal-btn').click();
+    const accountDialog = page.getByRole('dialog', { name: 'Pengaturan Akun (ID/Email & Passcode)' });
+    await expect(accountDialog).toBeVisible();
+    await expect(accountDialog.getByLabel('ID / Email Login')).toHaveValue('tarbiyah@iim.ac.id');
+    await page.keyboard.press('Escape');
+    await expect(accountDialog).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'CMS Halaman Utama', exact: true }).click();
     const titleInput = page.getByLabel('Judul Hero');
     await expect(titleInput).toHaveValue(/.+/);
     const originalTitle = await titleInput.inputValue();

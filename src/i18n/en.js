@@ -345,7 +345,9 @@ export default {
     switchToLight: 'Enable Light Mode'
   },
   lang: {
-    switchLabel: 'Switch website language'
+    switchLabel: 'Switch website language',
+    idLabel: 'Indonesia',
+    enLabel: 'English'
   },
   search: {
     openLabel: 'Open global search',
@@ -423,6 +425,28 @@ export default {
     usersSearchPlaceholder: 'Search user by name or email...',
     usersEmpty: 'No users match your search.',
     currentUserBadge: 'You',
+    accountBtn: 'Change Email & Passcode',
+    selfLockedHint: 'Your active account role and status are locked to prevent accidental self-lockout.',
+    accountModal: {
+      title: 'Account Settings (ID/Email & Passcode)',
+      subtitle: 'Update display name, login email, or passcode for your active account.',
+      nameLabel: 'Display Name',
+      emailLabel: 'Login ID / Email',
+      currentPasswordLabel: 'Current Passcode',
+      currentPasswordPlaceholder: 'Enter current passcode',
+      currentPasswordHint: 'Required when updating Login ID/Email or setting a new Passcode.',
+      newPasswordLabel: 'New Passcode (Optional)',
+      newPasswordPlaceholder: 'Min. 8 chars (letters & numbers)',
+      confirmPasswordLabel: 'Confirm New Passcode',
+      confirmPasswordPlaceholder: 'Re-enter new passcode',
+      nameLengthError: 'Display name must be at least 2 characters.',
+      passwordRuleError: 'New passcode must be at least 8 characters with letters and numbers.',
+      passwordMismatchError: 'New passcode confirmation does not match.',
+      currentPasswordRequired: 'Current passcode is required to update Email or Passcode.',
+      saveBtn: 'Save Account Changes',
+      savingBtn: 'Saving...',
+      savedToast: 'Account credentials (ID/Email & Passcode) updated.'
+    },
     confirmSuspendTitle: 'Suspend User Account?',
     confirmSuspendDesc: 'The user will be unable to sign in until reactivated.',
     confirmSuspendBtn: 'Yes, Suspend',

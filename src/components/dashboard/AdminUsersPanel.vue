@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Search } from 'lucide-vue-next';
+import { KeyRound, Search } from 'lucide-vue-next';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import { useAuthStore } from '../../stores/auth.store.js';
 import { useI18n } from '../../composables/useI18n.js';
@@ -10,7 +10,7 @@ const props = defineProps({
   syncing: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['update-role', 'toggle-active']);
+const emit = defineEmits(['update-role', 'toggle-active', 'open-account']);
 
 const auth = useAuthStore();
 const { t } = useI18n();
@@ -46,16 +46,30 @@ function confirmSuspend() {
 <template>
   <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-5">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <h2 class="text-lg font-extrabold text-brand-900">{{ t('adminDashboard.usersHeading') }}</h2>
-      <div class="relative w-full sm:w-72">
-        <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-        <input
-          v-model="searchQuery"
-          type="search"
-          :aria-label="t('adminDashboard.usersSearchPlaceholder')"
-          :placeholder="t('adminDashboard.usersSearchPlaceholder')"
-          class="min-h-[40px] w-full rounded-xl border border-surface-border pl-9 pr-3 text-sm"
-        />
+      <div>
+        <h2 class="text-lg font-extrabold text-brand-900">{{ t('adminDashboard.usersHeading') }}</h2>
+        <p class="mt-0.5 text-xs text-slate-500">{{ t('adminDashboard.selfLockedHint') }}</p>
+      </div>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          data-testid="open-account-modal-btn"
+          class="inline-flex min-h-[40px] shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-3.5 text-xs font-bold text-white transition hover:bg-brand-700"
+          @click="emit('open-account')"
+        >
+          <KeyRound class="h-3.5 w-3.5" aria-hidden="true" />
+          <span>{{ t('adminDashboard.accountBtn') }}</span>
+        </button>
+        <div class="relative w-full sm:w-64">
+          <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <input
+            v-model="searchQuery"
+            type="search"
+            :aria-label="t('adminDashboard.usersSearchPlaceholder')"
+            :placeholder="t('adminDashboard.usersSearchPlaceholder')"
+            class="min-h-[40px] w-full rounded-xl border border-surface-border pl-9 pr-3 text-sm"
+          />
+        </div>
       </div>
     </div>
 
@@ -91,7 +105,8 @@ function confirmSuspend() {
               <select
                 :value="u.role"
                 :disabled="syncing || auth.user?.id === u.id"
-                class="min-h-[36px] rounded-xl border border-surface-border px-3 text-xs font-semibold disabled:opacity-60"
+                :title="auth.user?.id === u.id ? t('adminDashboard.selfLockedHint') : undefined"
+                class="min-h-[36px] rounded-xl border border-surface-border px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:bg-surface-muted disabled:opacity-60"
                 @change="emit('update-role', u, $event.target.value, () => { $event.target.value = u.role; })"
               >
                 <option value="student">student</option>
@@ -103,7 +118,8 @@ function confirmSuspend() {
               <button
                 type="button"
                 :disabled="syncing || auth.user?.id === u.id"
-                class="min-h-[34px] rounded-xl px-3.5 text-xs font-bold transition disabled:opacity-50"
+                :title="auth.user?.id === u.id ? t('adminDashboard.selfLockedHint') : undefined"
+                class="min-h-[34px] rounded-xl px-3.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50"
                 :class="u.is_active ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-rose-100 text-rose-800 hover:bg-rose-200'"
                 @click="handleToggleClick(u)"
               >

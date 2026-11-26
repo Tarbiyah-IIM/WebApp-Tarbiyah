@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import AdminConfirmModal from './AdminConfirmModal.vue';
 import { useI18n } from '../../composables/useI18n.js';
 
@@ -14,23 +14,34 @@ const { t } = useI18n();
 const form = ref(emptyForm());
 const pendingDelete = ref(null);
 
+const filteredStats = computed(() =>
+  props.stats.filter((item) => item.stat_group === form.value.statGroup)
+);
+
+const activeGroupLabel = computed(() =>
+  form.value.statGroup === 'journey'
+    ? t('adminDashboard.cmsPanel.statJourneyOpt')
+    : t('adminDashboard.cmsPanel.statHeroOpt')
+);
+
 watch(
   () => props.stats,
   (list) => {
     if (form.value.id && !list.some((item) => item.id === form.value.id)) {
-      form.value = emptyForm();
+      form.value = emptyForm(form.value.statGroup);
     }
   },
   { deep: true }
 );
 
-function emptyForm() {
-  return { id: null, statGroup: 'hero', label: '', valueNum: '', suffix: '', sortOrder: 0 };
+function emptyForm(statGroup = 'hero') {
+  return { id: null, statGroup, label: '', valueNum: '', suffix: '', sortOrder: 0 };
 }
 
 function submit() {
+  const currentGroup = form.value.statGroup;
   emit('save', { ...form.value }, () => {
-    form.value = emptyForm();
+    form.value = emptyForm(currentGroup);
   });
 }
 
@@ -60,6 +71,7 @@ function confirmDelete() {
       <form class="space-y-3" @submit.prevent="submit">
         <select
           v-model="form.statGroup"
+          data-testid="stat-group-select"
           :aria-label="t('adminDashboard.cmsPanel.statsHeading')"
           class="min-h-[42px] w-full rounded-xl border border-surface-border px-3.5 text-sm"
         >
@@ -111,7 +123,7 @@ function confirmDelete() {
             v-if="form.id"
             type="button"
             class="min-h-[42px] rounded-xl border border-surface-border px-4 text-xs font-bold text-slate-700 hover:bg-surface-muted"
-            @click="form = emptyForm()"
+            @click="form = emptyForm(form.statGroup)"
           >
             {{ t('adminDashboard.cmsPanel.cancelEditBtn') }}
           </button>
@@ -119,13 +131,21 @@ function confirmDelete() {
       </form>
     </section>
 
-    <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-3 xl:col-span-7">
-      <p v-if="stats.length === 0" class="py-8 text-center text-sm text-slate-500">
+    <section class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4 xl:col-span-7">
+      <div class="flex items-center justify-between gap-2 border-b border-surface-border pb-3">
+        <h3 data-testid="stats-filtered-heading" class="text-sm font-extrabold text-brand-900">
+          {{ activeGroupLabel }}
+        </h3>
+        <span class="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700">
+          {{ filteredStats.length }}
+        </span>
+      </div>
+      <p v-if="filteredStats.length === 0" class="py-8 text-center text-sm text-slate-500">
         {{ t('adminDashboard.cmsPanel.emptyItems') }}
       </p>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <article
-          v-for="item in stats"
+          v-for="item in filteredStats"
           :key="item.id"
           class="flex items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-page p-4"
         >

@@ -32,6 +32,7 @@ export const resetPasswordSchema = z.object({
 export const updateProfileSchema = z
   .object({
     name: z.string().trim().min(2).max(120).optional(),
+    email: z.string().trim().email('Format email tidak valid').max(191).optional(),
     avatarUrl: z
       .string()
       .trim()
@@ -44,11 +45,11 @@ export const updateProfileSchema = z
     newPassword: safePasswordSchema.optional()
   })
   .superRefine((data, ctx) => {
-    if (data.newPassword && !data.currentPassword) {
+    if ((data.newPassword || data.email) && !data.currentPassword) {
       ctx.addIssue({
         code: 'custom',
         path: ['currentPassword'],
-        message: 'Password saat ini wajib diisi untuk mengganti password'
+        message: 'Password saat ini wajib diisi untuk mengubah email atau password'
       });
     }
   });

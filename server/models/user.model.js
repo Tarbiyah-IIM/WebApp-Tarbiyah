@@ -16,6 +16,14 @@ export async function findUserById(id, executor = pool) {
   return rows[0] || null;
 }
 
+export async function findUserAuthById(id, executor = pool) {
+  const [rows] = await executor.execute(
+    'SELECT id, name, email, password_hash, role, avatar_url, bio, is_active, created_at FROM users WHERE id = ? LIMIT 1',
+    [id]
+  );
+  return rows[0] || null;
+}
+
 export async function createUser({ name, email, passwordHash, role = 'student', avatarUrl = null }) {
   const [result] = await pool.execute(
     'INSERT INTO users (name, email, password_hash, role, avatar_url) VALUES (?, ?, ?, ?, ?)',
@@ -24,11 +32,18 @@ export async function createUser({ name, email, passwordHash, role = 'student', 
   return findUserById(result.insertId);
 }
 
-export async function updateUserProfile(id, { name, avatarUrl, bio }, executor = pool) {
-  await executor.execute(
-    'UPDATE users SET name = ?, avatar_url = ?, bio = ? WHERE id = ?',
-    [name, avatarUrl, bio, id]
-  );
+export async function updateUserProfile(id, { name, email, avatarUrl, bio }, executor = pool) {
+  if (email !== undefined) {
+    await executor.execute(
+      'UPDATE users SET name = ?, email = ?, avatar_url = ?, bio = ? WHERE id = ?',
+      [name, email, avatarUrl, bio, id]
+    );
+  } else {
+    await executor.execute(
+      'UPDATE users SET name = ?, avatar_url = ?, bio = ? WHERE id = ?',
+      [name, avatarUrl, bio, id]
+    );
+  }
   return findUserById(id, executor);
 }
 

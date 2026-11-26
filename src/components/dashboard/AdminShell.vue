@@ -11,6 +11,7 @@ import {
   X
 } from 'lucide-vue-next';
 import ftarLogo from '../../assets/ftar-logo.png';
+import LanguageDropdown from '../LanguageDropdown.vue';
 import { useAuthStore } from '../../stores/auth.store.js';
 import { useUiStore } from '../../stores/ui.store.js';
 import { useI18n } from '../../composables/useI18n.js';
@@ -22,11 +23,11 @@ const props = defineProps({
   syncing: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['select-tab', 'logout']);
+const emit = defineEmits(['select-tab', 'logout', 'open-account']);
 
 const auth = useAuthStore();
 const ui = useUiStore();
-const { locale, setLocale, t } = useI18n();
+const { t } = useI18n();
 const mobileDrawerOpen = ref(false);
 const mobileDrawerRef = ref(null);
 
@@ -207,52 +208,35 @@ useFocusTrap(mobileDrawerRef, () => mobileDrawerOpen.value, {
               <span>{{ syncing ? t('adminDashboard.syncingBadge') : t('adminDashboard.syncedBadge') }}</span>
             </span>
 
-            <div
-              class="inline-flex items-center rounded-xl border border-surface-border bg-surface-muted p-0.5"
-              role="group"
-              :aria-label="t('lang.switchLabel')"
-            >
-              <button
-                type="button"
-                data-testid="lang-switch-id"
-                :aria-pressed="locale === 'id'"
-                class="min-h-[34px] rounded-lg px-2.5 text-xs font-bold transition"
-                :class="locale === 'id' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
-                @click="setLocale('id')"
-              >
-                ID
-              </button>
-              <button
-                type="button"
-                data-testid="lang-switch-en"
-                :aria-pressed="locale === 'en'"
-                class="min-h-[34px] rounded-lg px-2.5 text-xs font-bold transition"
-                :class="locale === 'en' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
-                @click="setLocale('en')"
-              >
-                EN
-              </button>
-            </div>
+            <LanguageDropdown compact />
 
             <button
               type="button"
               data-testid="theme-toggle"
               :aria-pressed="ui.isNight"
               :aria-label="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
-              class="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-surface-border bg-white px-3 text-xs font-bold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+              :title="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
+              class="inline-flex min-h-[38px] min-w-[38px] items-center justify-center rounded-xl border border-surface-border bg-white text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
               @click="ui.toggleTheme"
             >
               <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" aria-hidden="true" />
               <Sun v-else class="h-4 w-4 text-amber-500" aria-hidden="true" />
-              <span class="hidden sm:inline">{{ ui.isNight ? t('theme.night') : t('theme.light') }}</span>
             </button>
 
-            <div v-if="auth.user" class="hidden items-center gap-2 rounded-xl border border-surface-border bg-surface-page px-3 py-1.5 xl:flex">
+            <button
+              v-if="auth.user"
+              type="button"
+              data-testid="admin-account-trigger"
+              :title="t('adminDashboard.accountBtn')"
+              :aria-label="t('adminDashboard.accountBtn')"
+              class="hidden items-center gap-2 rounded-xl border border-surface-border bg-surface-page px-3 py-1.5 transition hover:border-brand-300 hover:bg-brand-50 md:inline-flex"
+              @click="emit('open-account')"
+            >
               <span class="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-[11px] font-extrabold text-white">
                 {{ (auth.user.name || 'A').charAt(0).toUpperCase() }}
               </span>
               <span class="max-w-[130px] truncate text-xs font-bold text-brand-900">{{ auth.user.name }}</span>
-            </div>
+            </button>
 
             <button
               type="button"

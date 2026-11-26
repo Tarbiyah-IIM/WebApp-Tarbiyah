@@ -1,5 +1,10 @@
 import { expect, test } from './auth.fixture.js';
 
+async function switchLanguage(page, code) {
+  await page.getByTestId('lang-dropdown-toggle').click();
+  await page.getByTestId(`lang-switch-${code}`).click();
+}
+
 test('admin workspace shell syncs menu links and portal pages live to public routes', async ({ page, loginViaApi, request }) => {
   const admin = await loginViaApi('tarbiyah@iim.ac.id');
   const headers = { Authorization: `Bearer ${admin.accessToken}` };
@@ -18,8 +23,10 @@ test('admin workspace shell syncs menu links and portal pages live to public rou
     await expect(page.getByRole('button', { name: 'Menu & Kontak', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Halaman Portal', exact: true })).toBeVisible();
 
+    await expect(page.getByTestId('theme-toggle')).toHaveText('');
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
+    await expect(page.getByTestId('theme-toggle')).toHaveText('');
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
@@ -183,7 +190,7 @@ test('portal pages cross-locale reset keeps sibling language overrides intact', 
     await page.getByRole('button', { name: 'Halaman Portal', exact: true }).click();
     await expect(page.getByLabel('Badge / Status Akreditasi')).toHaveValue('Akreditasi ID Tersimpan');
 
-    await page.getByTestId('lang-switch-en').click();
+    await switchLanguage(page, 'en');
     await expect(page.getByLabel('Badge / Accreditation Status')).toHaveValue('Accreditation EN Override');
     await page.getByRole('button', { name: 'Restore Default' }).click();
     await expect(page.getByText('Page restored to default content.')).toBeVisible();
@@ -201,7 +208,7 @@ test('portal pages cross-locale reset keeps sibling language overrides intact', 
     expect(reseedRes.ok()).toBeTruthy();
 
     await page.reload();
-    await page.getByTestId('lang-switch-id').click();
+    await switchLanguage(page, 'id');
     await page.getByRole('button', { name: 'Halaman Portal', exact: true }).click();
     await expect(page.getByLabel('Badge / Status Akreditasi')).toHaveValue('Akreditasi ID Tersimpan');
     await page.getByRole('button', { name: 'Kembalikan Default' }).click();
@@ -240,7 +247,7 @@ test('portal pages ID/EN saves avoid locales.id bloat and canceled news upload c
     await page.getByRole('button', { name: 'Simpan Halaman Ini' }).click();
     await expect(page.getByText('Konten halaman portal disimpan & disinkronkan!')).toBeVisible();
 
-    await page.getByTestId('lang-switch-en').click();
+    await switchLanguage(page, 'en');
     await page.getByLabel('Badge / Accreditation Status').fill('Excellent EN Only');
     await page.getByLabel('Admissions Info Link').fill('https://pmb.iimsurakarta.ac.id/en');
     await page.getByRole('button', { name: 'Save This Page' }).click();
@@ -255,7 +262,7 @@ test('portal pages ID/EN saves avoid locales.id bloat and canceled news upload c
     expect(programsJson.pai?.locales?.en?.badge).toBe('Excellent EN Only');
     expect(programsJson.pai?.locales?.en?.pmbUrl).toBe('https://pmb.iimsurakarta.ac.id/en');
 
-    await page.getByTestId('lang-switch-id').click();
+    await switchLanguage(page, 'id');
     await page.getByRole('button', { name: 'Berita', exact: true }).click();
     await page.getByRole('button', { name: 'Tambah Berita' }).first().click();
 

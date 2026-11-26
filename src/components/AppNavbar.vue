@@ -11,6 +11,7 @@ import {
   Search
 } from 'lucide-vue-next';
 import ftarLogo from '../assets/ftar-logo.png';
+import LanguageDropdown from './LanguageDropdown.vue';
 import MobileBottomNav from './MobileBottomNav.vue';
 import SearchModal from './SearchModal.vue';
 import { useAuthStore } from '../stores/auth.store.js';
@@ -232,32 +233,7 @@ async function handleLogout() {
       </div>
 
       <div class="hidden shrink-0 items-center gap-1.5 lg:flex xl:gap-2.5">
-        <div
-          class="inline-flex items-center rounded-xl border border-surface-border bg-surface-muted p-0.5"
-          role="group"
-          :aria-label="t('lang.switchLabel')"
-        >
-          <button
-            type="button"
-            data-testid="lang-switch-id"
-            :aria-pressed="locale === 'id'"
-            class="min-h-[36px] rounded-lg px-2.5 text-xs font-bold transition"
-            :class="locale === 'id' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
-            @click="setLocale('id')"
-          >
-            ID
-          </button>
-          <button
-            type="button"
-            data-testid="lang-switch-en"
-            :aria-pressed="locale === 'en'"
-            class="min-h-[36px] rounded-lg px-2.5 text-xs font-bold transition"
-            :class="locale === 'en' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-brand-900'"
-            @click="setLocale('en')"
-          >
-            EN
-          </button>
-        </div>
+        <LanguageDropdown />
 
         <button
           type="button"
@@ -265,12 +241,11 @@ async function handleLogout() {
           :aria-pressed="ui.isNight"
           :aria-label="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
           :title="ui.isNight ? t('theme.switchToLight') : t('theme.switchToNight')"
-          class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-surface-border bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+          class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-xl border border-surface-border bg-white text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
           @click="ui.toggleTheme"
         >
-          <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" />
-          <Sun v-else class="h-4 w-4 text-amber-500" />
-          <span class="hidden xl:inline">{{ ui.isNight ? t('theme.night') : t('theme.light') }}</span>
+          <Moon v-if="ui.isNight" class="h-4 w-4 text-amber-300" aria-hidden="true" />
+          <Sun v-else class="h-4 w-4 text-amber-500" aria-hidden="true" />
         </button>
 
         <button

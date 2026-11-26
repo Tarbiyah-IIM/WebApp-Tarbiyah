@@ -345,7 +345,9 @@ export default {
     switchToLight: 'Aktifkan Mode Terang'
   },
   lang: {
-    switchLabel: 'Ganti bahasa website'
+    switchLabel: 'Ganti bahasa website',
+    idLabel: 'Indonesia',
+    enLabel: 'English'
   },
   search: {
     openLabel: 'Buka pencarian global',
@@ -423,6 +425,28 @@ export default {
     usersSearchPlaceholder: 'Cari nama atau email pengguna...',
     usersEmpty: 'Tidak ada pengguna yang sesuai pencarian.',
     currentUserBadge: 'Anda',
+    accountBtn: 'Ubah Email & Passcode',
+    selfLockedHint: 'Peran dan status akun Anda sendiri dikunci untuk mencegah terkunci keluar.',
+    accountModal: {
+      title: 'Pengaturan Akun (ID/Email & Passcode)',
+      subtitle: 'Perbarui nama tampilan, email login, atau passcode akun yang sedang aktif.',
+      nameLabel: 'Nama Pengguna',
+      emailLabel: 'ID / Email Login',
+      currentPasswordLabel: 'Passcode Saat Ini',
+      currentPasswordPlaceholder: 'Masukkan passcode saat ini',
+      currentPasswordHint: 'Wajib diisi saat mengubah ID/Email atau Passcode baru.',
+      newPasswordLabel: 'Passcode Baru (Opsional)',
+      newPasswordPlaceholder: 'Min. 8 karakter (huruf & angka)',
+      confirmPasswordLabel: 'Ulangi Passcode Baru',
+      confirmPasswordPlaceholder: 'Ketik ulang passcode baru',
+      nameLengthError: 'Nama pengguna minimal 2 karakter.',
+      passwordRuleError: 'Passcode baru minimal 8 karakter dan wajib memuat huruf serta angka.',
+      passwordMismatchError: 'Konfirmasi passcode baru tidak cocok.',
+      currentPasswordRequired: 'Passcode saat ini wajib diisi untuk mengubah ID/Email atau Passcode.',
+      saveBtn: 'Simpan Perubahan Akun',
+      savingBtn: 'Menyimpan...',
+      savedToast: 'Data akun (ID/Email & Passcode) berhasil diperbarui.'
+    },
     confirmSuspendTitle: 'Tangguhkan Akun Pengguna?',
     confirmSuspendDesc: 'Pengguna tidak akan dapat masuk ke portal sampai diaktifkan kembali.',
     confirmSuspendBtn: 'Ya, Tangguhkan',

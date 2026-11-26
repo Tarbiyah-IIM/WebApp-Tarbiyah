@@ -140,6 +140,16 @@ export const useAuthStore = defineStore('auth', () => {
     return me;
   }
 
+  async function updateAccount(payload) {
+    const res = await authService.updateMe(payload);
+    if (res.accessToken) {
+      setSession({ accessToken: res.accessToken, user: res.user });
+    } else if (res.user) {
+      user.value = res.user;
+    }
+    return res.user;
+  }
+
   async function logout() {
     try {
       await authService.logout();
@@ -182,6 +192,7 @@ export const useAuthStore = defineStore('auth', () => {
     initSession,
     login,
     refreshProfile,
+    updateAccount,
     logout,
     syncLogoutAcrossTabs,
     clearSession

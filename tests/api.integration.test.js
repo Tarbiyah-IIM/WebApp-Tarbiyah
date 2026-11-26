@@ -175,6 +175,47 @@ describe('Fakultas Tarbiyah Portal Integration & Sync Suite', () => {
       .send({ newPassword: 'NewPassword123!' });
     expect(noCurrentPass.status).toBe(400);
 
+    const noCurrentPassForEmail = await request(app)
+      .patch('/api/v1/me')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ email: `renamed.${Date.now()}@tarbiyah.test` });
+    expect(noCurrentPassForEmail.status).toBe(400);
+
+    const duplicateEmailRes = await request(app)
+      .patch('/api/v1/me')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ email: testAdminEmail, currentPassword: 'Password123!' });
+    expect(duplicateEmailRes.status).toBe(409);
+
+    const updatedUserEmail = `renamed.${Date.now()}@tarbiyah.test`;
+    const updatedUserPass = 'RenamedPass123!';
+    const updateAccountRes = await request(app)
+      .patch('/api/v1/me')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        name: 'Renamed Portal User',
+        email: updatedUserEmail,
+        currentPassword: 'Password123!',
+        newPassword: updatedUserPass
+      });
+    expect(updateAccountRes.status).toBe(200);
+    expect(updateAccountRes.body.user.email).toBe(updatedUserEmail);
+    expect(updateAccountRes.body.accessToken).toBeTruthy();
+    userToken = updateAccountRes.body.accessToken;
+
+    const meUpdatedRes = await request(app)
+      .get('/api/v1/me')
+      .set('Authorization', `Bearer ${userToken}`);
+    expect(meUpdatedRes.status).toBe(200);
+    expect(meUpdatedRes.body.user.email).toBe(updatedUserEmail);
+
+    const reloginUpdatedRes = await request(app).post('/api/v1/auth/login').send({
+      email: updatedUserEmail,
+      password: updatedUserPass
+    });
+    expect(reloginUpdatedRes.status).toBe(200);
+    expect(reloginUpdatedRes.body.user.name).toBe('Renamed Portal User');
+
     const selfDeleteAdmin = await request(app)
       .delete('/api/v1/me')
       .set('Authorization', `Bearer ${adminToken}`);

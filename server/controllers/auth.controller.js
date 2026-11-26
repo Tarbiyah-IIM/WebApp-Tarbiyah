@@ -6,10 +6,12 @@ import { env } from '../config/env.js';
 import { AppError } from '../middlewares/error.middleware.js';
 import { isTrustedMutationOrigin } from '../utils/security.js';
 import { isCookieTokenString, markUserAccessTokensRevoked } from '../utils/tokenRevocation.js';
+import { recordAdminAction } from '../models/audit.model.js';
 import {
   createPasswordReset,
   createUser,
   deleteUserById,
+  findUserAuthById,
   findUserByEmail,
   findUserById,
   findValidPasswordReset,
@@ -281,9 +283,12 @@ export async function getMe(req, res) {
 
 export async function updateMe(req, res, next) {
   try {
-    const { name, avatarUrl, bio, currentPassword, newPassword } = req.body;
-    if (newPassword) {
-      const userWithPassword = await findUserByEmail(req.user.email);
+    const { name, email, avatarUrl, bio, currentPassword, newPassword } = req.body;
+    const normalizedEmail = email !== undefined ? email.trim().toLowerCase() : undefined;
+    const emailChanged = Boolean(normalizedEmail && normalizedEmail !== String(req.user.email || '').toLowerCase());
+
+    if (emailChanged || newPassword) {
+      const userWithPassword = await findUserAuthById(req.user.id);
       const validCurrent =
         Boolean(currentPassword) &&
         Boolean(userWithPassword?.password_hash) &&
@@ -293,11 +298,19 @@ export async function updateMe(req, res, next) {
       }
     }
 
+    if (emailChanged) {
+      const existing = await findUserByEmail(normalizedEmail);
+      if (existing && existing.id !== req.user.id) {
+        return next(new AppError(409, 'EMAIL_EXISTS', 'Email sudah terdaftar pada akun lain'));
+      }
+    }
+
     const updated = await withTransaction(async (conn) => {
       const profile = await updateUserProfile(
         req.user.id,
         {
           name: name ? name.trim() : req.user.name,
+          ...(emailChanged ? { email: normalizedEmail } : {}),
           avatarUrl: avatarUrl !== undefined ? avatarUrl : req.user.avatar_url,
           bio: bio !== undefined ? bio : req.user.bio
         },
@@ -307,13 +320,29 @@ export async function updateMe(req, res, next) {
       if (newPassword) {
         const hash = await bcrypt.hash(newPassword, 10);
         await updateUserPassword(req.user.id, hash, conn);
+      }
+
+      if (newPassword || emailChanged) {
         await revokeAllUserRefreshTokens(req.user.id, conn);
       }
 
       return profile;
     });
 
-    if (newPassword) {
+    if (req.user.role === 'admin') {
+      await recordAdminAction(req, {
+        action: 'update',
+        entity: 'user_self',
+        entityId: req.user.id,
+        detail: {
+          nameChanged: Boolean(name && name.trim() !== req.user.name),
+          emailChanged,
+          passwordChanged: Boolean(newPassword)
+        }
+      });
+    }
+
+    if (newPassword || emailChanged) {
       await markUserAccessTokensRevoked(req.user.id);
       const accessToken = issueAccessToken(updated);
       const { rawToken, expiresAt } = await issueAndStoreRefreshToken(updated);
