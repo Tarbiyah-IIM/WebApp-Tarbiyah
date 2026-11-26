@@ -53,7 +53,10 @@ onBeforeUnmount(clearTimer);
 <template>
   <ModalDialog :open="open" :title="item?.label || ''" header-variant="macos" @close="emit('close')">
     <div v-if="item?.modalUrl" class="space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200 bg-brand-50/70 px-3.5 py-2.5 text-xs text-slate-600">
+      <div
+        v-if="!item?.hideExternalBar"
+        class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200 bg-brand-50/70 px-3.5 py-2.5 text-xs text-slate-600"
+      >
         <span>{{ t('portalPages.common.embedNotice') }}</span>
         <a
           :href="item.externalUrl || item.modalUrl"
@@ -81,6 +84,7 @@ onBeforeUnmount(clearTimer);
             {{ t('portalPages.common.embedNotice') }}
           </p>
           <a
+            v-if="!item?.hideExternalBar"
             :href="item.externalUrl || item.modalUrl"
             target="_blank"
             rel="noopener noreferrer"

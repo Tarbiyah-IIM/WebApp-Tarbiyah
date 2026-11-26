@@ -112,7 +112,7 @@ export const portalPagesEn = {
       degree: 'Bachelor of Education (S.Pd.)',
       studyMode: 'Regular & RPL · Integrated',
       accreditationStatus: 'Baik Sekali Accredited',
-      accreditationUrl: '',
+      accreditationUrl: 'https://drive.google.com/drive/folders/1R5GGMKOZiAbvHLmWEZK1UOIAdJB6mMnx?usp=sharing',
       overview:
         'The Madrasah Ibtidaiyah Teacher Education (PGMI) Study Program trains primary classroom educators skilled in integrative thematic instruction, foundational literacy-numeracy, and character formation.',
       highlights: [
@@ -132,7 +132,7 @@ export const portalPagesEn = {
       degree: 'Bachelor of Education (S.Pd.)',
       studyMode: 'Regular & RPL · Integrated',
       accreditationStatus: 'Good Accredited',
-      accreditationUrl: '',
+      accreditationUrl: 'https://drive.google.com/drive/folders/1NCyskHHOpq9thdt646_y3A0X7CYndSEp?usp=sharing',
       vision:
         'To advance holistic-integrative and globally oriented early childhood Islamic education knowledge to produce outstanding educators and educational personnel with rahmatan lil alamin character by 2035.',
       missions: [

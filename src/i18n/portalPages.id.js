@@ -112,7 +112,7 @@ export const portalPagesId = {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
       accreditationStatus: 'Terakreditasi BAIK SEKALI',
-      accreditationUrl: '',
+      accreditationUrl: 'https://drive.google.com/drive/folders/1R5GGMKOZiAbvHLmWEZK1UOIAdJB6mMnx?usp=sharing',
       overview:
         'Program Studi Pendidikan Guru Madrasah Ibtidaiyah (PGMI) mempersiapkan guru kelas MI/SD profesional yang mampu memadukan pembelajaran tematik integratif, penguatan numerasi-literasi dasar, serta penanaman adab Islami.',
       highlights: [
@@ -132,7 +132,7 @@ export const portalPagesId = {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
       accreditationStatus: 'Terakreditasi BAIK',
-      accreditationUrl: '',
+      accreditationUrl: 'https://drive.google.com/drive/folders/1NCyskHHOpq9thdt646_y3A0X7CYndSEp?usp=sharing',
       vision:
         'Mengembangkan ilmu pendidikan anak usia dini yang holistik integratif dan berorientasi global untuk menghasilkan pendidik dan tenaga kependidikan yang unggul dan berkarakter rahmatan lil alamin di tahun 2035.',
       missions: [

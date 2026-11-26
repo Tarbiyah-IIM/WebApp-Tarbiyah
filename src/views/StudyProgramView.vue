@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { Award, Briefcase, CheckCircle2, ChevronRight, ExternalLink, GraduationCap } from 'lucide-vue-next';
+import { Award, Briefcase, CheckCircle2, ChevronRight, GraduationCap } from 'lucide-vue-next';
 import ModalDialog from '../components/ModalDialog.vue';
 import PortalEmbedModal from '../components/PortalEmbedModal.vue';
 import PortalPageShell from '../components/PortalPageShell.vue';
@@ -27,6 +27,38 @@ watch(slug, () => {
   comingSoonModalItem.value = null;
   visionModalOpen.value = false;
 });
+
+function toEmbeddableDriveUrl(rawUrl) {
+  if (!rawUrl) return '';
+  try {
+    const parsed = new URL(rawUrl);
+    if (!parsed.hostname.endsWith('drive.google.com')) return rawUrl;
+    const folderMatch = parsed.pathname.match(/\/drive(?:\/u\/\d+)?\/folders\/([a-zA-Z0-9_-]+)/);
+    if (folderMatch) {
+      return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`;
+    }
+    const fileMatch = parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileMatch) {
+      return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+    }
+    return rawUrl;
+  } catch {
+    return rawUrl;
+  }
+}
+
+function handleAccreditationClick() {
+  const rawUrl = prodiDetail.value?.accreditationUrl;
+  if (rawUrl) {
+    comingSoonModalItem.value = {
+      label: t('portalPages.common.accreditationCertBtn'),
+      modalUrl: toEmbeddableDriveUrl(rawUrl),
+      hideExternalBar: true
+    };
+    return;
+  }
+  openComingSoon('accreditationCertBtn');
+}
 
 function handleVisionMissionClick() {
   if (hasVisionMissionObjectives.value) {
@@ -147,24 +179,15 @@ const otherPrograms = computed(() =>
           </div>
         </div>
 
-        <a
-          v-if="prodiDetail.accreditationUrl"
-          :href="prodiDetail.accreditationUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 text-sm font-bold text-white hover:bg-brand-700 transition"
-        >
-          <span>{{ t('portalPages.common.accreditationCertBtn') }}</span>
-          <ExternalLink class="h-4 w-4" />
-        </a>
         <button
-          v-else
           type="button"
+          data-testid="prodi-accreditation-btn"
           class="flex min-h-[46px] w-full items-center justify-between gap-2 rounded-xl bg-brand-600 px-4 text-sm font-bold text-white hover:bg-brand-700 transition"
-          @click="openComingSoon('accreditationCertBtn')"
+          @click="handleAccreditationClick"
         >
           <span>{{ t('portalPages.common.accreditationCertBtn') }}</span>
-          <span class="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white">
+          <ChevronRight v-if="prodiDetail.accreditationUrl" class="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span v-else class="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white">
             {{ t('portalPages.common.comingSoonShortBadge') }}
           </span>
         </button>

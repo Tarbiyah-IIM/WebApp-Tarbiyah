@@ -226,10 +226,16 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.getByText('Terakreditasi LAMDIK')).toBeVisible();
     await expect(page.locator('main aside').getByText('Terakreditasi BAIK SEKALI')).toBeVisible();
     await expect(page.locator('main a', { hasText: 'Info PMB' })).toHaveCount(0);
-    await expect(page.locator('main a', { hasText: 'Sertifikat Akreditasi' })).toHaveAttribute(
-      'href',
-      'https://drive.google.com/drive/folders/1ZFCUeq0-_wgpt0aqk42FUYi_CYDwkVnW?usp=drive_link'
+    await expect(page.locator('main a', { hasText: 'Sertifikat Akreditasi' })).toHaveCount(0);
+    await page.getByTestId('prodi-accreditation-btn').click();
+    const paiCertModal = page.getByRole('dialog', { name: 'Sertifikat Akreditasi' });
+    await expect(paiCertModal).toBeVisible();
+    await expect(paiCertModal.locator('iframe')).toHaveAttribute(
+      'src',
+      'https://drive.google.com/embeddedfolderview?id=1ZFCUeq0-_wgpt0aqk42FUYi_CYDwkVnW#list'
     );
+    await expect(paiCertModal.getByRole('link', { name: 'Buka di Tab Baru' })).toHaveCount(0);
+    await paiCertModal.getByRole('button', { name: 'Close modal' }).click();
     await expect(page.locator('main aside').getByText('Pusat Layanan Tarbiyah')).toHaveCount(0);
     await expect(page.locator('main aside').getByText('Email Resmi')).toHaveCount(0);
     await expect(page.locator('main aside').getByText(/tarbiyah platform/i)).toHaveCount(0);
@@ -258,15 +264,28 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toBeVisible();
     await expect(page.getByText('Terakreditasi LAMDIK')).toBeVisible();
     await expect(page.locator('main aside').getByText('Terakreditasi BAIK SEKALI')).toBeVisible();
-    await page.locator('main aside').getByRole('button', { name: /Sertifikat Akreditasi/ }).click();
+    await page.getByTestId('prodi-accreditation-btn').click();
     const pgmiCertModal = page.getByRole('dialog', { name: 'Sertifikat Akreditasi' });
     await expect(pgmiCertModal).toBeVisible();
+    await expect(pgmiCertModal.locator('iframe')).toHaveAttribute(
+      'src',
+      'https://drive.google.com/embeddedfolderview?id=1R5GGMKOZiAbvHLmWEZK1UOIAdJB6mMnx#list'
+    );
+    await expect(pgmiCertModal.getByRole('link', { name: 'Buka di Tab Baru' })).toHaveCount(0);
     await pgmiCertModal.getByRole('button', { name: 'Close modal' }).click();
     await page.goto('/program-studi/piaud');
     await expect(page.getByRole('heading', { level: 1, name: 'Pendidikan Islam Anak Usia Dini' })).toBeVisible();
     await expect(page.getByText('Terakreditasi LAMDIK')).toBeVisible();
     await expect(page.locator('main aside').getByText('Terakreditasi BAIK', { exact: true })).toBeVisible();
-    await expect(page.locator('main aside').getByRole('button', { name: /Sertifikat Akreditasi/ })).toBeVisible();
+    await page.getByTestId('prodi-accreditation-btn').click();
+    const piaudCertModal = page.getByRole('dialog', { name: 'Sertifikat Akreditasi' });
+    await expect(piaudCertModal).toBeVisible();
+    await expect(piaudCertModal.locator('iframe')).toHaveAttribute(
+      'src',
+      'https://drive.google.com/embeddedfolderview?id=1NCyskHHOpq9thdt646_y3A0X7CYndSEp#list'
+    );
+    await expect(piaudCertModal.getByRole('link', { name: 'Buka di Tab Baru' })).toHaveCount(0);
+    await piaudCertModal.getByRole('button', { name: 'Close modal' }).click();
     await page.getByTestId('prodi-vision-mission-btn').click();
     const piaudVisionModal = page.getByRole('dialog', { name: /Visi, Misi & Tujuan Prodi/ });
     await expect(piaudVisionModal).toBeVisible();
