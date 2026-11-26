@@ -96,19 +96,17 @@ function scrollToHomeTopIfAlreadyHome() {
   }
 }
 
-function handleLogoClick(event) {
+function handleLogoClick() {
   closeAllMenus();
   logoClickCount.value += 1;
   if (logoClickTimer) {
     clearTimeout(logoClickTimer);
   }
   if (logoClickCount.value >= 3) {
-    event.preventDefault();
     resetLogoClickTracker();
     router.push('/login');
     return;
   }
-  scrollToHomeTopIfAlreadyHome();
   logoClickTimer = setTimeout(() => {
     resetLogoClickTracker();
   }, 1000);
@@ -142,10 +140,9 @@ async function handleLogout() {
       class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:gap-2 lg:px-6 xl:gap-3 xl:px-8"
       :aria-label="t('nav.mainAria')"
     >
-      <router-link
-        to="/"
+      <div
         data-testid="navbar-logo"
-        class="flex min-w-0 shrink-0 cursor-pointer select-none items-center gap-2.5 min-h-[44px]"
+        class="flex min-w-0 shrink-0 select-none items-center gap-2.5 min-h-[44px]"
         @click="handleLogoClick"
       >
         <img
@@ -161,7 +158,7 @@ async function handleLogout() {
             {{ t('brand.institute') }}
           </span>
         </span>
-      </router-link>
+      </div>
 
       <div class="hidden items-center gap-3 lg:flex xl:gap-6">
         <template v-for="menu in navMenus" :key="menu.id">

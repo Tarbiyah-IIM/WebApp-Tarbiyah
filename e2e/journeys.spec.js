@@ -448,15 +448,23 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await expect(bottomNav).toBeHidden();
 
-    await page.evaluate(() => window.scrollTo(0, 900));
+    await page.evaluate(() => window.scrollTo({ top: 900, behavior: 'instant' }));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
     await mainNav.getByTestId('navbar-logo').click();
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(700);
 
-    await page.evaluate(() => window.scrollTo(0, 900));
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
     await mainNav.getByRole('link', { name: 'Beranda' }).click();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+    await page.goto('/program-studi/pai');
+    await expect(page).toHaveURL(/\/program-studi\/pai$/);
+    await mainNav.getByTestId('navbar-logo').click();
+    await page.waitForTimeout(200);
+    await expect(page).toHaveURL(/\/program-studi\/pai$/);
+
+    await mainNav.getByRole('link', { name: 'Beranda' }).click();
+    await expect(page).toHaveURL(/\/$/);
 
     await page.waitForTimeout(1100);
     await mainNav.getByTestId('navbar-logo').click();
