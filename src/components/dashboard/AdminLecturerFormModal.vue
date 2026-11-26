@@ -227,9 +227,9 @@ function submit() {
         <div>
           <label for="lec-prodi" class="mb-1 block text-xs font-bold text-brand-900">{{ t('adminDashboard.cmsPanel.lecturersPanel.fields.programSlug') }}</label>
           <select id="lec-prodi" v-model="form.programSlug" class="min-h-[42px] w-full rounded-xl border border-surface-border bg-white px-3 text-sm">
-            <option value="pai">Pendidikan Agama Islam</option>
-            <option value="pgmi">Pendidikan Guru Madrasah Ibtidaiyah</option>
-            <option value="piaud">Pendidikan Islam Anak Usia Dini</option>
+            <option value="pai">S1 - Pendidikan Agama Islam</option>
+            <option value="pgmi">S1 - Pendidikan Guru Madrasah Ibtidaiyah</option>
+            <option value="piaud">S1 - Pendidikan Islam Anak Usia Dini</option>
           </select>
         </div>
         <div>

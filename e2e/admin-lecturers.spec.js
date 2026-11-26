@@ -35,10 +35,11 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     const uploadedPhotoUrl = await photoUrlInput.inputValue();
 
     await expect(dialog.getByLabel('Program Studi').locator('option')).toHaveText([
-      'Pendidikan Agama Islam',
-      'Pendidikan Guru Madrasah Ibtidaiyah',
-      'Pendidikan Islam Anak Usia Dini'
+      'S1 - Pendidikan Agama Islam',
+      'S1 - Pendidikan Guru Madrasah Ibtidaiyah',
+      'S1 - Pendidikan Islam Anak Usia Dini'
     ]);
+    await expect(dialog.getByText('Link Indeks & Publikasi Akademik (Optional)')).toBeVisible();
     await dialog.getByLabel('Program Studi').selectOption('pai');
     await dialog.getByLabel('Status Mengajar').selectOption('active');
     await dialog.getByLabel(/Nama Lengkap & Gelar/).fill(lecturerName);

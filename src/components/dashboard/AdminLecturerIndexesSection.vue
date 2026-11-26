@@ -69,8 +69,5 @@ const activeFormIndexes = computed(() => extractLecturerIndexes(props.form));
         <ExternalLink class="h-2.5 w-2.5 shrink-0 text-slate-400" aria-hidden="true" />
       </a>
     </div>
-    <p v-else class="text-[11px] text-slate-500">
-      {{ t('adminDashboard.cmsPanel.lecturersPanel.indexesPreviewEmpty') }}
-    </p>
   </div>
 </template>

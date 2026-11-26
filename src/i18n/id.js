@@ -654,9 +654,8 @@ export default {
         saveBtn: 'Simpan Profil Dosen',
         savingBtn: 'Menyimpan...',
         cancelBtn: 'Batal',
-        indexesSectionTitle: 'Link Indeks & Publikasi Akademik (Otomatis Terbungkus Logo)',
+        indexesSectionTitle: 'Link Indeks & Publikasi Akademik (Optional)',
         indexesPreviewLabel: 'Pratinjau Tombol Logo Aktif:',
-        indexesPreviewEmpty: 'Isi salah satu link (https://...) di atas untuk membungkusnya menjadi tombol logo di profil dosen.',
         fields: {
           programSlug: 'Program Studi',
           name: 'Nama Lengkap & Gelar',
