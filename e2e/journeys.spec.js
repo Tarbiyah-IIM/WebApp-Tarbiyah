@@ -243,6 +243,8 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page).toHaveURL(/\/program-studi\/pai\/dosen$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Dosen Prodi' })).toBeVisible();
     await expect(page.getByTestId('lecturers-filter-leadership')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Staf Pengajar' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Program Studi Lainnya' })).toHaveCount(0);
     await expect(page.getByText('Data dosen belum tersedia')).toBeVisible();
     await page.getByRole('link', { name: 'Kembali ke Detail Prodi' }).click();
     await expect(page).toHaveURL(/\/program-studi\/pai$/);

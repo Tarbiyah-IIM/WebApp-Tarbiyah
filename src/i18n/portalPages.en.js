@@ -34,8 +34,6 @@ export const portalPagesEn = {
       viewProfileBtn: 'View Profile',
       backToListBtn: 'Back to Lecturers List',
       backToProgramBtn: 'Back to Study Program',
-      totalLecturersLabel: 'Total Lecturers',
-      activeCountLabel: 'Active Teaching',
       emptyDirectoryTitle: 'No lecturer profiles yet',
       emptyDirectoryDesc: 'Lecturer profiles for this study program have not been published yet or do not match your search filter.',
       notFoundTitle: 'Lecturer profile not found',

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { ArrowLeft, Award, ChevronRight, ExternalLink, GraduationCap, Search, Users } from 'lucide-vue-next';
+import { ArrowLeft, Award, ChevronRight, ExternalLink, GraduationCap, Search } from 'lucide-vue-next';
 import PortalPageShell from '../components/PortalPageShell.vue';
 import LecturerProfileDetail from '../components/LecturerProfileDetail.vue';
 import StateFeedback from '../components/StateFeedback.vue';
@@ -83,19 +83,6 @@ const programLabelText = computed(() => {
   return `${prodiCard.value.code} | ${prodiCard.value.title}`;
 });
 
-const activeTeachingCount = computed(
-  () => programLecturers.value.filter((item) => item.teaching_status === 'active').length
-);
-
-const otherProgramDirectories = computed(() =>
-  allCards.value
-    .filter((card) => card.id !== slug.value)
-    .map((card) => ({
-      to: `/program-studi/${card.id}/dosen`,
-      label: `${t('portalPages.common.lecturers.pageHeading')} · ${card.title}`
-    }))
-);
-
 function resetFilters() {
   searchQuery.value = '';
 }
@@ -110,11 +97,9 @@ function lecturerDetailRoute(id) {
     :category="prodiCard?.title || t('portalPages.common.studyProgramCategory')"
     :title="pageTitle"
     :missing="isMissing"
-    :hide-sidebar="Boolean(selectedLecturer)"
-    :hide-back-home="Boolean(selectedLecturer)"
+    :hide-sidebar="true"
+    :hide-back-home="true"
     :hide-contact-card="true"
-    :other-title="t('portalPages.common.otherProgramsHeading')"
-    :other-links="otherProgramDirectories"
   >
     <template v-if="selectedLecturer">
       <LecturerProfileDetail
@@ -182,7 +167,7 @@ function lecturerDetailRoute(id) {
         </template>
       </StateFeedback>
 
-      <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <article
           v-for="lecturer in filteredLecturers"
           :key="lecturer.id"
@@ -266,34 +251,16 @@ function lecturerDetailRoute(id) {
           </div>
         </article>
       </div>
-    </template>
 
-    <template #sidebar-top>
-      <section v-if="prodiCard" class="rounded-2xl border border-surface-border bg-white p-6 shadow-card space-y-4">
-        <div class="flex items-center gap-2">
-          <Users class="h-5 w-5 text-brand-600" aria-hidden="true" />
-          <h2 class="text-base font-extrabold text-brand-900">{{ t('portalPages.common.teachingStaffHeading') }}</h2>
-        </div>
-
-        <div class="space-y-2.5 text-sm">
-          <div class="flex items-center justify-between gap-2 border-b border-surface-border pb-2">
-            <span class="text-slate-500">{{ t('portalPages.common.lecturers.totalLecturersLabel') }}</span>
-            <span class="font-bold text-brand-900">{{ programLecturers.length }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-slate-500">{{ t('portalPages.common.lecturers.activeCountLabel') }}</span>
-            <span class="font-bold text-emerald-700">{{ activeTeachingCount }}</span>
-          </div>
-        </div>
-
+      <div>
         <router-link
           :to="`/program-studi/${slug}`"
-          class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface-page px-4 text-sm font-semibold text-slate-700 transition hover:bg-brand-50"
+          class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-surface-border bg-white px-5 text-sm font-semibold text-slate-700 shadow-card transition hover:bg-brand-50"
         >
           <ArrowLeft class="h-4 w-4" aria-hidden="true" />
           <span>{{ t('portalPages.common.lecturers.backToProgramBtn') }}</span>
         </router-link>
-      </section>
+      </div>
     </template>
   </PortalPageShell>
 </template>

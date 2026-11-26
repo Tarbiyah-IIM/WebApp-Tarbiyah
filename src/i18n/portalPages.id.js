@@ -34,8 +34,6 @@ export const portalPagesId = {
       viewProfileBtn: 'Lihat Profil',
       backToListBtn: 'Kembali ke Daftar Dosen',
       backToProgramBtn: 'Kembali ke Detail Prodi',
-      totalLecturersLabel: 'Total Dosen',
-      activeCountLabel: 'Aktif Mengajar',
       emptyDirectoryTitle: 'Data dosen belum tersedia',
       emptyDirectoryDesc: 'Profil dosen untuk program studi ini belum dipublikasikan atau tidak cocok dengan kata kunci pencarian.',
       notFoundTitle: 'Profil dosen tidak ditemukan',
