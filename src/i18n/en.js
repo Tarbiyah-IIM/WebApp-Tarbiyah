@@ -89,7 +89,7 @@ export default {
       {
         id: 'pai',
         code: 'B.Ed. · PAI',
-        badge: 'LAMDIK Accredited',
+        badge: 'Baik Sekali Accredited',
         title: 'Islamic Religious Education',
         description:
           'Delivering professional, responsive, and globally oriented instruction to cultivate outstanding Islamic education graduates.',
@@ -99,7 +99,7 @@ export default {
       {
         id: 'pgmi',
         code: 'B.Ed. · PGMI',
-        badge: 'LAMDIK Accredited',
+        badge: 'Baik Sekali Accredited',
         title: 'Madrasah Ibtidaiyah Teacher Education',
         description:
           'Preparing professional, principled graduates with strong social and managerial skills to advance Islamic primary education.',
@@ -109,7 +109,7 @@ export default {
       {
         id: 'piaud',
         code: 'B.Ed. · PIAUD',
-        badge: 'LAMDIK Accredited',
+        badge: 'Baik Sekali Accredited',
         title: 'Islamic Early Childhood Education',
         description:
           'Equipping students with pedagogy, creativity, and Islamic values to become inspiring early childhood educators.',
@@ -584,6 +584,7 @@ export default {
           badge: 'Badge / Accreditation Status',
           description: 'Short Description (Homepage Card)',
           pmbUrl: 'Admissions Info Link',
+          accreditationUrl: 'Accreditation Certificate Link',
           degree: 'Graduate Degree',
           studyMode: 'Study Mode',
           overview: 'Full Page Overview',

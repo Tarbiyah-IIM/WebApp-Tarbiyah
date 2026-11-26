@@ -113,7 +113,7 @@ onBeforeUnmount(clearTimer);
           {{ item?.badge || 'Coming Soon' }}
         </span>
         <p class="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-          {{ t('portalPages.common.comingSoonDesc') }}
+          {{ item?.description || t('portalPages.common.comingSoonDesc') }}
         </p>
       </div>
       <div class="flex flex-wrap items-center justify-center gap-3 pt-2">

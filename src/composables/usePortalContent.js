@@ -199,19 +199,35 @@ export function usePortalContent() {
 
   function mergeProgramDetail(slug, detail) {
     if (!detail) return null;
-    const ov = pickLocaleOverride(programsOverride.value[slug]);
-    if (!ov || typeof ov !== 'object') return detail;
+    const rawOv = programsOverride.value[slug];
+    const ov = pickLocaleOverride(rawOv);
+    if (!ov || typeof ov !== 'object') {
+      if (rawOv?.accreditationUrl !== undefined) {
+        return {
+          ...detail,
+          accreditationUrl: sanitizePortalUrl(rawOv.accreditationUrl, detail.accreditationUrl || '')
+        };
+      }
+      return detail;
+    }
     const highlights = Array.isArray(ov.highlights)
       ? ov.highlights.map((item) => String(item || '').trim()).filter(Boolean)
       : [];
     const careers = Array.isArray(ov.careers)
       ? ov.careers.map((item) => String(item || '').trim()).filter(Boolean)
       : [];
+    const accreditationUrl =
+      ov.accreditationUrl !== undefined
+        ? sanitizePortalUrl(ov.accreditationUrl, '')
+        : rawOv?.accreditationUrl !== undefined
+          ? sanitizePortalUrl(rawOv.accreditationUrl, '')
+          : detail.accreditationUrl || '';
     return {
       ...detail,
       degree: nonEmptyString(ov.degree, detail.degree),
       studyMode: nonEmptyString(ov.studyMode, detail.studyMode),
       overview: nonEmptyString(ov.overview, detail.overview),
+      accreditationUrl,
       highlights: highlights.length ? highlights : detail.highlights,
       careers: careers.length ? careers : detail.careers
     };

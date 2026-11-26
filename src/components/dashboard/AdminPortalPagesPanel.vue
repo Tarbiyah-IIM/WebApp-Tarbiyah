@@ -78,6 +78,7 @@ function loadDraft() {
       badge: saved.badge ?? baseCard.badge ?? '',
       description: saved.description ?? baseCard.description ?? '',
       pmbUrl: saved.pmbUrl ?? rawSaved.pmbUrl ?? baseCard.pmbUrl ?? '',
+      accreditationUrl: saved.accreditationUrl ?? rawSaved.accreditationUrl ?? baseDetail.accreditationUrl ?? '',
       degree: saved.degree ?? baseDetail.degree ?? '',
       studyMode: saved.studyMode ?? baseDetail.studyMode ?? '',
       overview: saved.overview ?? baseDetail.overview ?? '',
@@ -230,6 +231,7 @@ function saveCurrent() {
       badge: draft.value.badge.trim(),
       description: draft.value.description.trim(),
       pmbUrl: draft.value.pmbUrl.trim(),
+      accreditationUrl: draft.value.accreditationUrl.trim(),
       degree: draft.value.degree.trim(),
       studyMode: draft.value.studyMode.trim(),
       overview: draft.value.overview.trim(),
@@ -460,6 +462,10 @@ function resetCurrentDefault() {
           <div class="sm:col-span-2">
             <label for="pg-pmb" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.pmbUrl') }}</label>
             <input id="pg-pmb" v-model="draft.pmbUrl" type="text" class="min-h-[40px] w-full rounded-xl border border-surface-border px-3 text-sm" />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="pg-accreditation" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.accreditationUrl') }}</label>
+            <input id="pg-accreditation" v-model="draft.accreditationUrl" type="text" class="min-h-[40px] w-full rounded-xl border border-surface-border px-3 text-sm" />
           </div>
           <div class="sm:col-span-2">
             <label for="pg-desc" class="mb-1 block text-xs font-bold text-slate-600">{{ t('adminDashboard.cmsPanel.portalPages.fields.description') }}</label>

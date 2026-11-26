@@ -17,6 +17,13 @@ export const portalPagesEn = {
     waAdminLabel: 'Contact Faculty Admin',
     waPmbLabel: 'Admissions Consultation',
     backHomeBtn: 'Back to Home',
+    accreditationCertBtn: 'Accreditation Certificate',
+    programVisionMissionBtn: 'Program Vision, Mission & Objectives',
+    teachingStaffHeading: 'Teaching Staff',
+    programLeadershipBtn: 'Program Leadership',
+    programLecturersBtn: 'Program Lecturers',
+    comingSoonShortBadge: 'Coming Soon',
+    comingSoonPageInfoDesc: 'Official information and links for this section are currently being prepared (Coming Soon).',
     retryBtn: 'Reload Sync',
     comingSoonBadge: 'Link coming soon',
     openInNewTabBtn: 'Open in New Tab',
@@ -33,6 +40,7 @@ export const portalPagesEn = {
     pai: {
       degree: 'Bachelor of Education (S.Pd.)',
       studyMode: 'Regular & RPL · Integrated',
+      accreditationUrl: 'https://drive.google.com/drive/folders/1ZFCUeq0-_wgpt0aqk42FUYi_CYDwkVnW?usp=drive_link',
       overview:
         'The Islamic Religious Education (PAI) Study Program equips future educators with comprehensive Islamic scholarship, modern pedagogy, and digital literacy for 21st-century classrooms.',
       highlights: [
@@ -51,6 +59,7 @@ export const portalPagesEn = {
     pgmi: {
       degree: 'Bachelor of Education (S.Pd.)',
       studyMode: 'Regular & RPL · Integrated',
+      accreditationUrl: '',
       overview:
         'The Madrasah Ibtidaiyah Teacher Education (PGMI) Study Program trains primary classroom educators skilled in integrative thematic instruction, foundational literacy-numeracy, and character formation.',
       highlights: [
@@ -69,6 +78,7 @@ export const portalPagesEn = {
     piaud: {
       degree: 'Bachelor of Education (S.Pd.)',
       studyMode: 'Regular & RPL · Integrated',
+      accreditationUrl: '',
       overview:
         'The Early Childhood Islamic Education (PIAUD) Study Program specializes in golden-age education (0–6 years) through meaningful play, holistic growth stimulation, Islamic storytelling, and family partnerships.',
       highlights: [

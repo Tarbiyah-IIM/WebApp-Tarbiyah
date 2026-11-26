@@ -17,6 +17,13 @@ export const portalPagesId = {
     waAdminLabel: 'Hubungi Admin Fakultas',
     waPmbLabel: 'Konsultasi PMB Center',
     backHomeBtn: 'Kembali ke Beranda',
+    accreditationCertBtn: 'Sertifikat Akreditasi',
+    programVisionMissionBtn: 'Visi, Misi & Tujuan Prodi',
+    teachingStaffHeading: 'Staf Pengajar',
+    programLeadershipBtn: 'Pimpinan Prodi',
+    programLecturersBtn: 'Dosen Prodi',
+    comingSoonShortBadge: 'Segera hadir',
+    comingSoonPageInfoDesc: 'Informasi dan tautan resmi untuk bagian ini sedang dipersiapkan (Segera hadir).',
     retryBtn: 'Muat Ulang Sinkronisasi',
     comingSoonBadge: 'Link menyusul',
     openInNewTabBtn: 'Buka di Tab Baru',
@@ -33,6 +40,7 @@ export const portalPagesId = {
     pai: {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
+      accreditationUrl: 'https://drive.google.com/drive/folders/1ZFCUeq0-_wgpt0aqk42FUYi_CYDwkVnW?usp=drive_link',
       overview:
         'Program Studi Pendidikan Agama Islam (PAI) membekali calon pendidik dengan penguasaan ilmu keislaman komprehensif, pedagogi modern, dan literasi digital untuk menjawab kebutuhan pembelajaran abad ke-21 di madrasah dan sekolah.',
       highlights: [
@@ -51,6 +59,7 @@ export const portalPagesId = {
     pgmi: {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
+      accreditationUrl: '',
       overview:
         'Program Studi Pendidikan Guru Madrasah Ibtidaiyah (PGMI) mempersiapkan guru kelas MI/SD profesional yang mampu memadukan pembelajaran tematik integratif, penguatan numerasi-literasi dasar, serta penanaman adab Islami.',
       highlights: [
@@ -69,6 +78,7 @@ export const portalPagesId = {
     piaud: {
       degree: 'Sarjana Pendidikan (S.Pd.)',
       studyMode: 'Reguler & RPL · Terpadu',
+      accreditationUrl: '',
       overview:
         'Program Studi Pendidikan Islam Anak Usia Dini (PIAUD) berfokus pada pendidikan anak usia emas (0–6 tahun) melalui pendekatan bermain bermakna, stimulasi tumbuh kembang holistik, seni Islami, dan kemitraan orang tua.',
       highlights: [
