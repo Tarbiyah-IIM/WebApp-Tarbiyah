@@ -6,7 +6,8 @@ import {
   TEACHING_STATUS_STYLES,
   extractLecturerIndexes,
   formatRankAndGrade,
-  getNameInitials
+  getNameInitials,
+  stripAcademicTitles
 } from '../utils/lecturers.js';
 
 const props = defineProps({
@@ -35,6 +36,7 @@ const statusClass = computed(
   () => TEACHING_STATUS_STYLES[statusKey.value] || TEACHING_STATUS_STYLES.inactive
 );
 const rankAndGrade = computed(() => formatRankAndGrade(props.lecturer));
+const displayHeadingName = computed(() => stripAcademicTitles(props.lecturer?.name));
 const biographyParagraphs = computed(() =>
   String(props.lecturer?.biography || '')
     .split(/\r?\n\r?\n|\r?\n/)
@@ -46,8 +48,8 @@ const biographyParagraphs = computed(() =>
 <template>
   <article class="space-y-6">
     <section class="rounded-3xl border border-surface-border bg-white p-6 sm:p-8 shadow-card space-y-6">
-      <div class="text-center space-y-3 border-b border-surface-border pb-6">
-        <div class="flex flex-wrap items-center justify-center gap-2">
+      <div class="border-b border-surface-border pb-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
             <UserRound class="h-3.5 w-3.5" aria-hidden="true" />
             {{ t('portalPages.common.lecturers.roleBadge') }}
@@ -61,9 +63,10 @@ const biographyParagraphs = computed(() =>
           </span>
         </div>
 
-        <h1 class="text-2xl font-extrabold tracking-tight text-brand-900 sm:text-3xl">
-          {{ t('portalPages.common.lecturers.profilePrefix') }} {{ lecturer.name }}
-        </h1>
+        <div class="text-center space-y-3">
+          <h1 class="text-2xl font-extrabold tracking-tight text-brand-900 sm:text-3xl">
+            {{ t('portalPages.common.lecturers.profilePrefix') }} {{ displayHeadingName }}
+          </h1>
 
         <div v-if="indexLinks.length" class="flex flex-wrap items-center justify-center gap-2.5 pt-2">
           <a
@@ -84,6 +87,7 @@ const biographyParagraphs = computed(() =>
             />
             <ExternalLink class="h-3 w-3 shrink-0 text-slate-400" aria-hidden="true" />
           </a>
+        </div>
         </div>
       </div>
 

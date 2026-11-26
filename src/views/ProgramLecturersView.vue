@@ -12,7 +12,8 @@ import {
   TEACHING_STATUS_STYLES,
   extractLecturerIndexes,
   formatRankAndGrade,
-  getNameInitials
+  getNameInitials,
+  stripAcademicTitles
 } from '../utils/lecturers.js';
 
 const route = useRoute();
@@ -81,7 +82,7 @@ const directoryBackRoute = computed(() =>
 const pageTitle = computed(() => {
   if (!prodiCard.value) return t('portalPages.common.lecturers.notFoundTitle');
   if (selectedLecturer.value) {
-    return `${t('portalPages.common.lecturers.profilePrefix')} ${selectedLecturer.value.name}`;
+    return `${t('portalPages.common.lecturers.profilePrefix')} ${stripAcademicTitles(selectedLecturer.value.name)}`;
   }
   if (lecturerIdParam.value !== null && landingStore.loaded) {
     return t('portalPages.common.lecturers.notFoundTitle');
@@ -134,6 +135,8 @@ function lecturerDetailRoute(id) {
     :category="prodiCard?.title || t('portalPages.common.studyProgramCategory')"
     :title="pageTitle"
     :missing="isMissing"
+    :hide-sidebar="Boolean(selectedLecturer)"
+    :hide-back-home="Boolean(selectedLecturer)"
     :hide-contact-card="true"
     :other-title="t('portalPages.common.otherProgramsHeading')"
     :other-links="otherProgramDirectories"

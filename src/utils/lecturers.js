@@ -88,12 +88,20 @@ export function extractLecturerIndexes(source) {
   }, []);
 }
 
+const LEADING_TITLE_PATTERN = /^(?:(?:Prof\.?|Drs?\.?|Dra\.?|Ir\.?|K\.?H\.?|Hj\.?|H\.|Ust\.?|Ustadzah|Ustadz|Tgk\.?)\s+)+/i;
+const TRAILING_DOTTED_DEGREE_PATTERN = /(?:\s+(?:Lc\.?|[A-Z]\.[A-Za-z.]+))+$/;
+
+export function stripAcademicTitles(name) {
+  const base = String(name || '').split(',')[0].trim();
+  const stripped = base
+    .replace(LEADING_TITLE_PATTERN, '')
+    .replace(TRAILING_DOTTED_DEGREE_PATTERN, '')
+    .trim();
+  return stripped || base || String(name || '').trim();
+}
+
 export function getNameInitials(name) {
-  const words = String(name || '')
-    .trim()
-    .replace(/^(Prof\.?|Dr\.?|H\.?|Hj\.?)\s+/gi, '')
-    .split(/\s+/)
-    .filter(Boolean);
+  const words = stripAcademicTitles(name).split(/\s+/).filter(Boolean);
   if (!words.length) return 'DT';
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return `${words[0][0]}${words[1][0]}`.toUpperCase();

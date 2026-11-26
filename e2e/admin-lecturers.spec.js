@@ -77,7 +77,8 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await card.getByRole('link', { name: 'Lihat Profil' }).click();
 
     await expect(page).toHaveURL(new RegExp(`/program-studi/pai/dosen/${createdLecturerId}`));
-    await expect(page.getByRole('heading', { level: 1, name: `Profil ${lecturerName}` })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Profil E2E Ahmad Darmawan' })).toBeVisible();
+    await expect(page.getByText('Program Studi Lainnya')).toHaveCount(0);
     await expect(page.locator(`img[alt="${lecturerName}"]`)).toHaveAttribute('src', uploadedPhotoUrl);
     await expect(page.getByRole('link', { name: 'Google Scholar' })).toHaveAttribute(
       'href',

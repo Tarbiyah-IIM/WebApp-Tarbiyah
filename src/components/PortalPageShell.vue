@@ -12,6 +12,7 @@ defineProps({
   title: { type: String, required: true },
   missing: { type: Boolean, default: false },
   hideSidebar: { type: Boolean, default: false },
+  hideBackHome: { type: Boolean, default: false },
   hideContactCard: { type: Boolean, default: false },
   otherTitle: { type: String, default: '' },
   otherLinks: { type: Array, default: () => [] }
@@ -105,7 +106,7 @@ onUnmounted(() => {
           <div class="space-y-6" :class="hideSidebar ? 'lg:col-span-12' : 'lg:col-span-8'">
             <slot />
 
-            <div v-if="hideSidebar" class="pt-1">
+            <div v-if="hideSidebar && !hideBackHome" class="pt-1">
               <router-link
                 to="/"
                 class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-surface-border bg-white px-5 text-sm font-semibold text-slate-700 shadow-card hover:bg-brand-50 transition"
