@@ -139,7 +139,7 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     expect(galleryFetch.status()).toBe(200);
 
     await page.getByRole('button', { name: new RegExp(newsTitle) }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(new RegExp(`\\?newsId=${createdNewsId}$`));
     const articleDialog = page.getByRole('dialog');
     await expect(articleDialog).toBeVisible();
     await expect(articleDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
@@ -148,6 +148,7 @@ test('admin uploads news image directly to MySQL and displays it on homepage', a
     await expect(articleDialog.getByText('Paragraf penutup artikel E2E.')).toBeVisible();
     await articleDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(articleDialog).toHaveCount(0);
+    await expect(page).toHaveURL(/\/$/);
   } finally {
     if (createdNewsId) {
       await request.delete(`http://localhost:3001/api/v1/admin/testimonials/${createdNewsId}`, { headers });
@@ -208,6 +209,7 @@ test('portal pages cross-locale reset keeps sibling language overrides intact', 
     expect(reseedRes.ok()).toBeTruthy();
 
     await page.reload();
+    await expect(page.getByRole('navigation', { name: 'Admin menu' })).toBeVisible();
     await switchLanguage(page, 'id');
     await page.getByRole('button', { name: 'Halaman Portal', exact: true }).click();
     await expect(page.getByLabel('Badge / Status Akreditasi')).toHaveValue('Akreditasi ID Tersimpan');

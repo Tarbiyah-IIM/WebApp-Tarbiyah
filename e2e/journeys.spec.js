@@ -538,9 +538,13 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('J2: Tarbiyah login UI, admin forgot-password restriction, and RBAC guard', async ({ page, createIsolatedStudent }) => {
+  test('J2: Tarbiyah login UI, admin forgot-password restriction, and RBAC guard', async ({
+    page,
+    createIsolatedAdmin,
+    createIsolatedStudent
+  }) => {
     const nonAdmin = await createIsolatedStudent('E2E Portal NonAdmin');
-    const adminPassword = process.env.E2E_ADMIN_PASSWORD || '';
+    const isolatedAdmin = await createIsolatedAdmin('E2E Portal Admin');
 
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/login/);
@@ -567,15 +571,13 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.getByRole('link', { name: 'Kembali ke Halaman Masuk' }).click();
     await expect(page).toHaveURL(/\/login/);
 
-    if (adminPassword) {
-      await page.getByLabel('Email / ID').fill('tarbiyah@iim.ac.id');
-      await page.getByLabel('Kata Sandi').fill(adminPassword);
-      await page.getByRole('button', { name: 'Masuk', exact: true }).click();
-      await expect(page).toHaveURL(/\/admin/);
+    await page.getByLabel('Email / ID').fill(isolatedAdmin.email);
+    await page.getByLabel('Kata Sandi').fill(isolatedAdmin.password);
+    await page.getByRole('button', { name: 'Masuk', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin/);
 
-      await page.getByRole('button', { name: 'Logout' }).click();
-      await expect(page).toHaveURL('/');
-    }
+    await page.getByRole('button', { name: 'Logout' }).click();
+    await expect(page).toHaveURL('/');
 
     await page.goto('/login');
     await page.getByLabel('Email / ID').fill(nonAdmin.email);
@@ -588,7 +590,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
   });
 
   test('J3: Admin Control Center CMS updates Hero Title, switches i18n, and syncs to Home', async ({ page, loginViaApi }) => {
-    await loginViaApi('tarbiyah@iim.ac.id');
+    const admin = await loginViaApi();
     await page.goto('/admin');
 
     await expect(page.getByRole('button', { name: 'CMS Halaman Utama' })).toBeVisible();
@@ -618,7 +620,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await page.getByTestId('open-account-modal-btn').click();
     const accountDialog = page.getByRole('dialog', { name: 'Pengaturan Akun (ID/Email & Passcode)' });
     await expect(accountDialog).toBeVisible();
-    await expect(accountDialog.getByLabel('ID / Email Login')).toHaveValue('tarbiyah@iim.ac.id');
+    await expect(accountDialog.getByLabel('ID / Email Login')).toHaveValue(admin.email);
     await page.keyboard.press('Escape');
     await expect(accountDialog).toHaveCount(0);
 

@@ -33,7 +33,7 @@ sekitar 2,3 MB.
 
 ```bash
 npm test                  # Vitest (wajib DB berakhiran _test)
-npm run test:e2e          # Playwright (E2E_DB_NAME + E2E_ADMIN_PASSWORD)
+npm run test:e2e          # Playwright (otomatis memakai DB _test & admin uji terisolasi)
 npm run check:server      # node --check seluruh berkas JS
 ```
 
