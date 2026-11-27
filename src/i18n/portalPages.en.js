@@ -32,7 +32,6 @@ export const portalPagesEn = {
       directorySubtitle: 'Faculty lecturers teaching in',
       profilePrefix: 'Profile',
       modalTitle: 'Lecturer Profile',
-      shareProfileLabel: 'Lecturer Profile Link',
       roleBadge: 'Lecturer',
       searchPlaceholder: 'Search name, academic rank, or degree...',
       resetFilterBtn: 'Reset Filter',

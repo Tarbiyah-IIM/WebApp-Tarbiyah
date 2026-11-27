@@ -57,18 +57,26 @@ const biographyParagraphs = computed(() =>
   <article class="space-y-6">
     <section class="rounded-3xl border border-surface-border bg-white p-6 sm:p-8 shadow-card space-y-6">
       <div class="border-b border-surface-border pb-6 space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
-            <UserRound class="h-3.5 w-3.5" aria-hidden="true" />
-            {{ t('portalPages.common.lecturers.roleBadge') }}
-          </span>
-          <span
-            v-if="lecturer.leadership_role"
-            class="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-slate-900"
-          >
-            <Award class="h-3.5 w-3.5" aria-hidden="true" />
-            {{ lecturer.leadership_role }}
-          </span>
+        <div class="flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
+              <UserRound class="h-3.5 w-3.5" aria-hidden="true" />
+              {{ t('portalPages.common.lecturers.roleBadge') }}
+            </span>
+            <span
+              v-if="lecturer.leadership_role"
+              class="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-slate-900"
+            >
+              <Award class="h-3.5 w-3.5" aria-hidden="true" />
+              {{ lecturer.leadership_role }}
+            </span>
+          </div>
+
+          <ShareActionBar
+            :url="shareUrl"
+            :title="`${t('portalPages.common.lecturers.profilePrefix')} ${lecturer.name}`"
+            test-id-prefix="lecturer"
+          />
         </div>
 
         <div class="text-center space-y-3">
@@ -232,13 +240,6 @@ const biographyParagraphs = computed(() =>
         </table>
       </div>
     </section>
-
-    <ShareActionBar
-      :url="shareUrl"
-      :title="`${t('portalPages.common.lecturers.profilePrefix')} ${lecturer.name}`"
-      :label="t('portalPages.common.lecturers.shareProfileLabel')"
-      test-id-prefix="lecturer"
-    />
 
     <div v-if="!isModal">
       <router-link

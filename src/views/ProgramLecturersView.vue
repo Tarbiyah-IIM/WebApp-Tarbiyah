@@ -290,7 +290,7 @@ function closeLecturerModal() {
         :open="Boolean(selectedLecturer)"
         :title="t('portalPages.common.lecturers.modalTitle')"
         header-variant="macos"
-        max-width-class="max-w-4xl"
+        max-width-class="max-w-5xl"
         @close="closeLecturerModal"
       >
         <LecturerProfileDetail

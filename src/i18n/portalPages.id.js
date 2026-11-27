@@ -32,7 +32,6 @@ export const portalPagesId = {
       directorySubtitle: 'Daftar dosen pengampu pada Program Studi',
       profilePrefix: 'Profil',
       modalTitle: 'Profil Dosen',
-      shareProfileLabel: 'Tautan Profil Dosen',
       roleBadge: 'Dosen',
       searchPlaceholder: 'Cari nama, jabatan akademik, atau pendidikan...',
       resetFilterBtn: 'Reset Filter',
