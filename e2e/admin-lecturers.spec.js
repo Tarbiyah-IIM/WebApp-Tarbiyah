@@ -88,30 +88,42 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await expect(card).toBeVisible();
     await expect(card).toContainText('Ketua Program Studi');
     await expect(card).toContainText('Aktif Mengajar');
-    await card.getByRole('link', { name: 'Lihat Profil' }).click();
+    await card.getByRole('button', { name: 'Lihat Profil' }).click();
 
     await expect(page).toHaveURL(new RegExp(`/program-studi/pai/dosen/${createdLecturerId}`));
-    await expect(page.getByRole('heading', { level: 1, name: 'Profil E2E Ahmad Darmawan' })).toBeVisible();
+    const profileDialog = page.getByRole('dialog');
+    await expect(profileDialog).toBeVisible();
+    await expect(profileDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
+    await expect(profileDialog.getByRole('heading', { level: 1, name: 'Profil E2E Ahmad Darmawan' })).toBeVisible();
     await expect(page.getByText('Program Studi Lainnya')).toHaveCount(0);
-    await expect(page.locator(`img[alt="${lecturerName}"]`)).toHaveAttribute('src', uploadedPhotoUrl);
-    await expect(page.getByRole('link', { name: 'Google Scholar' })).toHaveAttribute(
+    await expect(profileDialog.locator(`img[alt="${lecturerName}"]`)).toHaveAttribute('src', uploadedPhotoUrl);
+    await expect(profileDialog.getByRole('link', { name: 'Google Scholar' })).toHaveAttribute(
       'href',
       'https://scholar.google.com/citations?user=e2etest'
     );
-    await expect(page.getByRole('img', { name: 'Google Scholar' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'SINTA' })).toBeVisible();
-    await expect(page.getByRole('img', { name: 'SINTA' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'ORCID' })).toBeVisible();
-    await expect(page.getByRole('img', { name: 'ORCID' })).toBeVisible();
-    await expect(page.getByText('Lektor Kepala | IV/A')).toBeVisible();
-    await expect(page.getByText('S3 | Pendidikan Agama Islam')).toBeVisible();
-    await expect(page.getByText('Mengajar sejak 2010 pada bidang manajemen pendidikan Islam.')).toBeVisible();
-    const eduSection = page.getByTestId('lecturer-education-history');
+    await expect(profileDialog.getByRole('img', { name: 'Google Scholar' })).toBeVisible();
+    await expect(profileDialog.getByRole('link', { name: 'SINTA' })).toBeVisible();
+    await expect(profileDialog.getByRole('img', { name: 'SINTA' })).toBeVisible();
+    await expect(profileDialog.getByRole('link', { name: 'ORCID' })).toBeVisible();
+    await expect(profileDialog.getByRole('img', { name: 'ORCID' })).toBeVisible();
+    await expect(profileDialog.getByText('Lektor Kepala | IV/A')).toBeVisible();
+    await expect(profileDialog.getByText('S3 | Pendidikan Agama Islam')).toBeVisible();
+    const bioParagraph = profileDialog.getByText('Mengajar sejak 2010 pada bidang manajemen pendidikan Islam.');
+    await expect(bioParagraph).toBeVisible();
+    await expect(bioParagraph).toHaveCSS('text-align', 'justify');
+    const eduSection = profileDialog.getByTestId('lecturer-education-history');
     await expect(eduSection).toBeVisible();
     await expect(eduSection.getByRole('columnheader', { name: 'Perguruan Tinggi' })).toBeVisible();
     await expect(eduSection).toContainText('Universitas Pendidikan Indonesia');
     await expect(eduSection).toContainText('Manajemen Pendidikan');
     await expect(eduSection).toContainText('2014');
+    await expect(profileDialog.getByTestId('lecturer-share-bar')).toBeVisible();
+    await expect(profileDialog.getByTestId('lecturer-copy-link-btn')).toBeVisible();
+    await expect(profileDialog.getByTestId('lecturer-share-whatsapp')).toHaveAttribute('href', /https:\/\/wa\.me\/\?text=/);
+
+    await profileDialog.getByRole('button', { name: 'Close modal' }).click();
+    await expect(profileDialog).toHaveCount(0);
+    await expect(page).toHaveURL(/\/program-studi\/pai\/dosen$/);
 
     await page.getByTestId('search-toggle').click();
     const searchDialog = page.getByRole('dialog', { name: 'Pencarian Cepat Tarbiyah' });
@@ -119,6 +131,8 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await expect(searchDialog.getByText('Dosen & Pimpinan Prodi')).toBeVisible();
     await searchDialog.getByRole('button', { name: new RegExp(lecturerName) }).click();
     await expect(page).toHaveURL(new RegExp(`/program-studi/pai/dosen/${createdLecturerId}`));
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('heading', { level: 1, name: 'Profil E2E Ahmad Darmawan' })).toBeVisible();
 
     await page.goto('/admin');
     await page.getByRole('button', { name: /Dosen & Pimpinan/ }).click();

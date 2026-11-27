@@ -1,8 +1,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, Award, ChevronRight, ExternalLink, GraduationCap, Search } from 'lucide-vue-next';
 import PortalPageShell from '../components/PortalPageShell.vue';
+import ModalDialog from '../components/ModalDialog.vue';
 import LecturerProfileDetail from '../components/LecturerProfileDetail.vue';
 import StateFeedback from '../components/StateFeedback.vue';
 import { useLandingStore } from '../stores/landing.store.js';
@@ -17,6 +18,7 @@ import {
 } from '../utils/lecturers.js';
 
 const route = useRoute();
+const router = useRouter();
 const landingStore = useLandingStore();
 const { t } = useI18n();
 const { mergeProgramCard } = usePortalContent();
@@ -29,6 +31,11 @@ const lecturerIdParam = computed(() => {
   const num = Number(route.params.lecturerId);
   return Number.isSafeInteger(num) && num > 0 ? num : -1;
 });
+const activeLecturerId = ref(lecturerIdParam.value);
+
+watch(lecturerIdParam, (nextId) => {
+  activeLecturerId.value = nextId;
+});
 
 const allCards = computed(() => (t('courses.cards') || []).map(mergeProgramCard));
 const prodiCard = computed(() => allCards.value.find((card) => card.id === slug.value) || null);
@@ -39,13 +46,17 @@ const programLecturers = computed(() => {
 });
 
 const selectedLecturer = computed(() => {
-  if (lecturerIdParam.value === null) return null;
-  return programLecturers.value.find((item) => Number(item.id) === lecturerIdParam.value) || null;
+  if (activeLecturerId.value === null || activeLecturerId.value <= 0) return null;
+  return programLecturers.value.find((item) => Number(item.id) === activeLecturerId.value) || null;
 });
 
 const isMissing = computed(() => {
   if (!prodiCard.value) return true;
-  if (lecturerIdParam.value !== null && landingStore.loaded && !selectedLecturer.value) {
+  if (
+    lecturerIdParam.value !== null &&
+    landingStore.loaded &&
+    !programLecturers.value.some((item) => Number(item.id) === lecturerIdParam.value)
+  ) {
     return true;
   }
   return false;
@@ -90,6 +101,26 @@ function resetFilters() {
 function lecturerDetailRoute(id) {
   return `/program-studi/${slug.value}/dosen/${id}`;
 }
+
+const selectedLecturerShareUrl = computed(() => {
+  if (!selectedLecturer.value?.id || typeof window === 'undefined') return '';
+  return `${window.location.origin}${lecturerDetailRoute(selectedLecturer.value.id)}`;
+});
+
+function openLecturerModal(lecturer) {
+  activeLecturerId.value = Number(lecturer.id);
+  const targetPath = lecturerDetailRoute(lecturer.id);
+  if (route.path !== targetPath) {
+    router.replace(targetPath);
+  }
+}
+
+function closeLecturerModal() {
+  activeLecturerId.value = null;
+  if (route.path !== directoryBackRoute.value) {
+    router.replace(directoryBackRoute.value);
+  }
+}
 </script>
 
 <template>
@@ -101,15 +132,7 @@ function lecturerDetailRoute(id) {
     :hide-back-home="true"
     :hide-contact-card="true"
   >
-    <template v-if="selectedLecturer">
-      <LecturerProfileDetail
-        :lecturer="selectedLecturer"
-        :program-label="programLabelText"
-        :back-to="directoryBackRoute"
-      />
-    </template>
-
-    <template v-else-if="prodiCard">
+    <template v-if="prodiCard">
       <section class="rounded-3xl border border-surface-border bg-white p-6 sm:p-8 shadow-card space-y-5">
         <div class="space-y-2">
           <div class="flex flex-wrap items-center gap-2">
@@ -241,13 +264,14 @@ function lecturerDetailRoute(id) {
           </div>
 
           <div class="mt-auto pt-4">
-            <router-link
-              :to="lecturerDetailRoute(lecturer.id)"
+            <button
+              type="button"
               class="flex min-h-[42px] w-full items-center justify-between rounded-xl border border-brand-200 bg-brand-50 px-4 text-xs font-bold text-brand-700 transition hover:bg-brand-100"
+              @click="openLecturerModal(lecturer)"
             >
               <span>{{ t('portalPages.common.lecturers.viewProfileBtn') }}</span>
               <ChevronRight class="h-4 w-4" aria-hidden="true" />
-            </router-link>
+            </button>
           </div>
         </article>
       </div>
@@ -261,6 +285,23 @@ function lecturerDetailRoute(id) {
           <span>{{ t('portalPages.common.lecturers.backToProgramBtn') }}</span>
         </router-link>
       </div>
+
+      <ModalDialog
+        :open="Boolean(selectedLecturer)"
+        :title="t('portalPages.common.lecturers.modalTitle')"
+        header-variant="macos"
+        max-width-class="max-w-4xl"
+        @close="closeLecturerModal"
+      >
+        <LecturerProfileDetail
+          v-if="selectedLecturer"
+          :lecturer="selectedLecturer"
+          :program-label="programLabelText"
+          :back-to="directoryBackRoute"
+          :share-url="selectedLecturerShareUrl"
+          :is-modal="true"
+        />
+      </ModalDialog>
     </template>
   </PortalPageShell>
 </template>

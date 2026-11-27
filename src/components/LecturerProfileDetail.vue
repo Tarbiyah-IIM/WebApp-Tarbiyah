@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { ArrowLeft, Award, ExternalLink, GraduationCap, Mail, UserRound } from 'lucide-vue-next';
+import ShareActionBar from './ShareActionBar.vue';
 import { useI18n } from '../composables/useI18n.js';
 import {
   TEACHING_STATUS_STYLES,
@@ -13,7 +14,9 @@ import {
 const props = defineProps({
   lecturer: { type: Object, required: true },
   programLabel: { type: String, required: true },
-  backTo: { type: [String, Object], required: true }
+  backTo: { type: [String, Object], required: true },
+  shareUrl: { type: String, default: '' },
+  isModal: { type: Boolean, default: false }
 });
 
 const { t } = useI18n();
@@ -190,7 +193,7 @@ const biographyParagraphs = computed(() =>
       <h2 class="text-lg font-extrabold text-brand-900">
         {{ t('portalPages.common.lecturers.fields.biography') }}
       </h2>
-      <div class="space-y-3 text-sm leading-relaxed text-slate-700 sm:text-base">
+      <div class="space-y-3 text-justify text-sm leading-relaxed text-slate-700 sm:text-base">
         <p v-for="(para, idx) in biographyParagraphs" :key="idx">{{ para }}</p>
       </div>
     </section>
@@ -230,7 +233,14 @@ const biographyParagraphs = computed(() =>
       </div>
     </section>
 
-    <div>
+    <ShareActionBar
+      :url="shareUrl"
+      :title="`${t('portalPages.common.lecturers.profilePrefix')} ${lecturer.name}`"
+      :label="t('portalPages.common.lecturers.shareProfileLabel')"
+      test-id-prefix="lecturer"
+    />
+
+    <div v-if="!isModal">
       <router-link
         :to="backTo"
         class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-surface-border bg-white px-5 text-sm font-semibold text-slate-700 shadow-card transition hover:bg-brand-50"

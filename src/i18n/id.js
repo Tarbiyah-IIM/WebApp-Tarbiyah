@@ -266,7 +266,14 @@ export default {
     photosCountBadge: 'Foto',
     photoAltLabel: 'Foto',
     prevPhotoAria: 'Foto sebelumnya',
-    nextPhotoAria: 'Foto berikutnya'
+    nextPhotoAria: 'Foto berikutnya',
+    shareLinkLabel: 'Tautan',
+    copyLinkBtn: 'Salin Tautan',
+    copiedLinkBtn: 'Tersalin',
+    shareWhatsAppBtn: 'WhatsApp',
+    shareNativeBtn: 'Bagikan',
+    shareCopiedToast: 'Tautan berhasil disalin ke papan klip.',
+    shareCopyError: 'Gagal menyalin tautan.'
   },
   agenda: {
     badge: 'Jadwal & Kegiatan',

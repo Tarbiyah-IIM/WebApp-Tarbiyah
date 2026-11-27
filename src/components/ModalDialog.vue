@@ -10,6 +10,10 @@ const props = defineProps({
     type: String,
     default: 'default',
     validator: (value) => ['default', 'macos'].includes(value)
+  },
+  maxWidthClass: {
+    type: String,
+    default: 'max-w-2xl'
   }
 });
 
@@ -34,7 +38,7 @@ useFocusTrap(panelRef, () => props.open, {
       <div
         ref="panelRef"
         tabindex="-1"
-        class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-float focus:outline-none"
+        :class="['max-h-[90vh] w-full overflow-y-auto rounded-2xl bg-white p-6 shadow-float focus:outline-none', maxWidthClass]"
       >
         <div
           v-if="headerVariant === 'macos'"

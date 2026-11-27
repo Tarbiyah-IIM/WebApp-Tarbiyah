@@ -136,14 +136,27 @@ test('admin manages news categories; refuses deletion while category is assigned
 
     await page.goto('/');
     await page.getByRole('button', { name: new RegExp(fullArticle.name) }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(new RegExp(`\\?newsId=${fullArticle.id}$`));
     const articleDialog = page.getByRole('dialog');
     await expect(articleDialog).toBeVisible();
     await expect(articleDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
     await expect(articleDialog.getByRole('heading', { name: fullArticle.name })).toBeVisible();
-    await expect(articleDialog.getByText('Isi paragraf lengkap artikel uji coba.')).toBeVisible();
+    const articleParagraph = articleDialog.getByText('Isi paragraf lengkap artikel uji coba.');
+    await expect(articleParagraph).toBeVisible();
+    await expect(articleParagraph).toHaveCSS('text-align', 'justify');
+    await expect(articleDialog.getByTestId('news-share-bar')).toBeVisible();
+    await expect(articleDialog.getByTestId('news-copy-link-btn')).toBeVisible();
+    await expect(articleDialog.getByTestId('news-share-whatsapp')).toHaveAttribute('href', /https:\/\/wa\.me\/\?text=/);
     await articleDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(articleDialog).toHaveCount(0);
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.goto(`/?newsId=${fullArticle.id}#testimonials`);
+    const deepLinkedDialog = page.getByRole('dialog');
+    await expect(deepLinkedDialog).toBeVisible();
+    await expect(deepLinkedDialog.getByRole('heading', { name: fullArticle.name })).toBeVisible();
+    await deepLinkedDialog.getByRole('button', { name: 'Close modal' }).click();
+    await expect(deepLinkedDialog).toHaveCount(0);
 
     const createdBulkNames = [];
     for (let idx = 1; idx <= 6; idx += 1) {

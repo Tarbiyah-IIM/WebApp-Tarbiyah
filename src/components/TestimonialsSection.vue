@@ -31,17 +31,49 @@ watch(
   () => [route.query.newsId, props.testimonials],
   ([rawId, list]) => {
     const targetId = Number(rawId);
-    if (!Number.isInteger(targetId) || targetId <= 0 || !Array.isArray(list) || !list.length) return;
+    if (!Number.isInteger(targetId) || targetId <= 0) {
+      if (selectedNews.value && !rawId) {
+        selectedNews.value = null;
+      }
+      return;
+    }
+    if (!Array.isArray(list) || !list.length) return;
     const index = list.findIndex((item) => item.id === targetId);
     if (index === -1) return;
     currentPage.value = Math.floor(index / PAGE_SIZE) + 1;
     selectedNews.value = list[index];
-    const nextQuery = { ...route.query };
-    delete nextQuery.newsId;
-    router.replace({ path: route.path, query: nextQuery, hash: route.hash });
   },
   { immediate: true }
 );
+
+const selectedShareUrl = computed(() => {
+  if (!selectedNews.value?.id || typeof window === 'undefined') return '';
+  return `${window.location.origin}/?newsId=${selectedNews.value.id}#testimonials`;
+});
+
+function openNews(item) {
+  selectedNews.value = item;
+  if (String(route.query.newsId || '') !== String(item.id)) {
+    router.replace({
+      path: route.path,
+      query: { ...route.query, newsId: String(item.id) },
+      hash: route.hash
+    });
+  }
+}
+
+function closeNews() {
+  selectedNews.value = null;
+  if (route.query.newsId !== undefined || route.hash === '#testimonials') {
+    const nextQuery = { ...route.query };
+    delete nextQuery.newsId;
+    router.replace({
+      path: route.path,
+      query: nextQuery,
+      hash: route.hash === '#testimonials' ? '' : route.hash
+    });
+  }
+}
 
 const paginatedNews = computed(() => {
   const start = (currentPage.value - 1) * PAGE_SIZE;
@@ -80,7 +112,7 @@ function getCategories(item) {
           <button
             type="button"
             class="flex min-w-0 flex-1 flex-col text-left"
-            @click="selectedNews = item"
+            @click="openNews(item)"
           >
             <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
               <img
@@ -131,7 +163,8 @@ function getCategories(item) {
       <NewsDetailModal
         :open="Boolean(selectedNews)"
         :item="selectedNews"
-        @close="selectedNews = null"
+        :share-url="selectedShareUrl"
+        @close="closeNews"
       />
 
       <div class="mt-4">

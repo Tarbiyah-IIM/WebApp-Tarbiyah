@@ -31,17 +31,49 @@ watch(
   () => [route.query.agendaId, props.agendas],
   ([rawId, list]) => {
     const targetId = Number(rawId);
-    if (!Number.isInteger(targetId) || targetId <= 0 || !Array.isArray(list) || !list.length) return;
+    if (!Number.isInteger(targetId) || targetId <= 0) {
+      if (selectedAgenda.value && !rawId) {
+        selectedAgenda.value = null;
+      }
+      return;
+    }
+    if (!Array.isArray(list) || !list.length) return;
     const index = list.findIndex((item) => item.id === targetId);
     if (index === -1) return;
     currentPage.value = Math.floor(index / PAGE_SIZE) + 1;
     selectedAgenda.value = list[index];
-    const nextQuery = { ...route.query };
-    delete nextQuery.agendaId;
-    router.replace({ path: route.path, query: nextQuery, hash: route.hash });
   },
   { immediate: true }
 );
+
+const selectedShareUrl = computed(() => {
+  if (!selectedAgenda.value?.id || typeof window === 'undefined') return '';
+  return `${window.location.origin}/?agendaId=${selectedAgenda.value.id}#agendas`;
+});
+
+function openAgenda(item) {
+  selectedAgenda.value = item;
+  if (String(route.query.agendaId || '') !== String(item.id)) {
+    router.replace({
+      path: route.path,
+      query: { ...route.query, agendaId: String(item.id) },
+      hash: route.hash
+    });
+  }
+}
+
+function closeAgenda() {
+  selectedAgenda.value = null;
+  if (route.query.agendaId !== undefined || route.hash === '#agendas') {
+    const nextQuery = { ...route.query };
+    delete nextQuery.agendaId;
+    router.replace({
+      path: route.path,
+      query: nextQuery,
+      hash: route.hash === '#agendas' ? '' : route.hash
+    });
+  }
+}
 
 const paginatedAgendas = computed(() => {
   const start = (currentPage.value - 1) * PAGE_SIZE;
@@ -74,7 +106,7 @@ const paginatedAgendas = computed(() => {
           <button
             type="button"
             class="flex min-w-0 flex-1 flex-col text-left"
-            @click="selectedAgenda = item"
+            @click="openAgenda(item)"
           >
             <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
               <img
@@ -124,7 +156,8 @@ const paginatedAgendas = computed(() => {
         :open="Boolean(selectedAgenda)"
         :item="selectedAgenda"
         :badge-fallback="t('agenda.pillLabel')"
-        @close="selectedAgenda = null"
+        :share-url="selectedShareUrl"
+        @close="closeAgenda"
       />
 
       <div class="mt-4">

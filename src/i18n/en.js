@@ -266,7 +266,14 @@ export default {
     photosCountBadge: 'Photos',
     photoAltLabel: 'Photo',
     prevPhotoAria: 'Previous photo',
-    nextPhotoAria: 'Next photo'
+    nextPhotoAria: 'Next photo',
+    shareLinkLabel: 'Link',
+    copyLinkBtn: 'Copy Link',
+    copiedLinkBtn: 'Copied',
+    shareWhatsAppBtn: 'WhatsApp',
+    shareNativeBtn: 'Share',
+    shareCopiedToast: 'Link copied to clipboard.',
+    shareCopyError: 'Failed to copy link.'
   },
   agenda: {
     badge: 'Schedules & Events',

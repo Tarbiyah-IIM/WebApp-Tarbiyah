@@ -4,13 +4,15 @@ import { Calendar, Clock } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.webp';
 import ModalDialog from './ModalDialog.vue';
 import NewsGallerySlideshow from './NewsGallerySlideshow.vue';
+import ShareActionBar from './ShareActionBar.vue';
 import { useI18n } from '../composables/useI18n.js';
 import { tokenizeLinkSegments } from '../services/linkify.service.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
   item: { type: Object, default: null },
-  badgeFallback: { type: String, default: '' }
+  badgeFallback: { type: String, default: '' },
+  shareUrl: { type: String, default: '' }
 });
 
 const emit = defineEmits(['close']);
@@ -114,7 +116,7 @@ const splitParagraphs = computed(() => {
         <p
           v-for="(segments, idx) in splitParagraphs.before"
           :key="'before-' + idx"
-          class="whitespace-pre-line text-sm leading-relaxed text-slate-700 sm:text-base"
+          class="whitespace-pre-line text-justify text-sm leading-relaxed text-slate-700 sm:text-base"
         >
           <template v-for="(part, partIdx) in segments" :key="'before-' + idx + '-' + partIdx">
             <a
@@ -138,7 +140,7 @@ const splitParagraphs = computed(() => {
         <p
           v-for="(segments, idx) in splitParagraphs.after"
           :key="'after-' + idx"
-          class="whitespace-pre-line text-sm leading-relaxed text-slate-700 sm:text-base"
+          class="whitespace-pre-line text-justify text-sm leading-relaxed text-slate-700 sm:text-base"
         >
           <template v-for="(part, partIdx) in segments" :key="'after-' + idx + '-' + partIdx">
             <a
@@ -158,6 +160,12 @@ const splitParagraphs = computed(() => {
         :images="gallery"
         :title="displayTitle"
         :heading="t('news.galleryHeading')"
+      />
+
+      <ShareActionBar
+        :url="shareUrl"
+        :title="displayTitle"
+        test-id-prefix="news"
       />
     </article>
   </ModalDialog>

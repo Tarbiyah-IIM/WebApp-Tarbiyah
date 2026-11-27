@@ -111,6 +111,21 @@ const router = createRouter({
         tryFind();
       });
     }
+    const isLecturerModalToggle =
+      from?.params?.slug &&
+      from.params.slug === to.params?.slug &&
+      (from.name === 'study-program-lecturers' || from.name === 'study-program-lecturer-detail') &&
+      (to.name === 'study-program-lecturers' || to.name === 'study-program-lecturer-detail');
+    if (isLecturerModalToggle) {
+      return false;
+    }
+    if (
+      from?.path === to.path &&
+      !to.hash &&
+      (from?.query?.newsId || to.query?.newsId || from?.query?.agendaId || to.query?.agendaId)
+    ) {
+      return false;
+    }
     if (from?.path === '/' && to.path === '/') {
       return { top: 0, behavior: 'smooth' };
     }
