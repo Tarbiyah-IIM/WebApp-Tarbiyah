@@ -187,6 +187,13 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(page.locator('#courses-section').getByText('Terakreditasi LAMDIK')).toHaveCount(3);
     for (let idx = 0; idx < 3; idx += 1) {
       await expect.poll(async () => courseImages.nth(idx).evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
+      const [cardBox, imgBox] = await Promise.all([
+        courseArticles.nth(idx).boundingBox(),
+        courseImages.nth(idx).boundingBox()
+      ]);
+      expect(imgBox.height).toBeGreaterThanOrEqual(220);
+      expect(imgBox.x).toBeGreaterThanOrEqual(cardBox.x - 1);
+      expect(imgBox.x + imgBox.width).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
     }
     await courseArticles.nth(0).hover();
     await expect(courseArticles.nth(0)).toHaveCSS('filter', /grayscale\(0\)|none/);

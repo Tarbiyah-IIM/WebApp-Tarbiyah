@@ -129,30 +129,30 @@ function getCardStateClasses(prodiId, index) {
             v-for="(prodi, index) in studyPrograms"
             :key="prodi.id"
             :style="isExpanded ? { animationDelay: `${index * 70}ms` } : undefined"
-            class="group grid grid-cols-1 overflow-hidden rounded-3xl border border-surface-border bg-white shadow-card transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none sm:grid-cols-12"
+            class="group relative grid grid-cols-1 overflow-hidden rounded-3xl border border-surface-border bg-white shadow-card transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none sm:grid-cols-12"
             :class="getCardStateClasses(prodi.id, index)"
             @mouseenter="isExpanded && (hoveredId = prodi.id)"
             @mouseleave="isExpanded && (hoveredId = null)"
             @focusin="isExpanded && (hoveredId = prodi.id)"
             @focusout="isExpanded && handleCardFocusOut($event, prodi.id)"
           >
-            <div class="relative flex items-end justify-center overflow-hidden bg-gradient-to-br from-brand-50/80 via-white to-white pt-4 sm:col-span-6">
-              <div
-                class="pointer-events-none absolute inset-x-4 bottom-3 top-6 rounded-full bg-brand-100/70 blur-2xl transition duration-500 group-hover:scale-110"
-                aria-hidden="true"
-              />
+            <div
+              class="pointer-events-none absolute -left-8 bottom-0 top-4 w-3/5 rounded-full bg-brand-100/70 blur-3xl transition duration-500 group-hover:scale-110"
+              aria-hidden="true"
+            />
+
+            <div class="relative z-10 flex items-end justify-center pt-4 sm:col-span-6">
               <img
                 :src="resolveProgramPhoto(prodi.id)"
                 :alt="prodi.title"
                 decoding="async"
-                class="relative z-10 h-64 w-full max-w-[230px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out origin-bottom group-hover:scale-[1.08] sm:h-full sm:min-h-[250px] sm:max-h-[300px] sm:max-w-none"
-                :class="isExpanded ? 'lg:scale-[1.06]' : ''"
+                class="relative z-10 h-64 w-full max-w-[230px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out group-hover:-translate-y-1 sm:h-full sm:min-h-[260px] sm:max-w-none"
               />
             </div>
 
-            <div class="flex flex-1 flex-col p-5 sm:col-span-6 sm:p-5">
+            <div class="relative z-10 flex flex-1 flex-col p-4 sm:col-span-6 sm:p-5">
               <div
-                class="mb-3 flex flex-wrap items-center gap-1.5"
+                class="mb-2.5 flex flex-wrap items-center gap-1.5"
                 :class="isExpanded ? 'justify-between lg:flex-col lg:items-end' : 'justify-between'"
               >
                 <span
@@ -173,12 +173,12 @@ function getCardStateClasses(prodiId, index) {
                 {{ prodi.title }}
               </h3>
 
-              <p class="mt-2 flex-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
+              <p class="mt-2 flex-1 text-xs leading-relaxed text-slate-600" :class="isExpanded ? 'sm:text-xs' : 'sm:text-sm'">
                 {{ prodi.description }}
               </p>
 
               <div
-                class="mt-4 flex flex-col gap-2 pt-2 transition-all duration-300"
+                class="mt-3 flex flex-col gap-2 pt-1 transition-all duration-300"
                 :class="isExpanded ? 'flex' : 'flex lg:hidden'"
               >
                 <router-link
