@@ -120,13 +120,32 @@ test('admin manages study program lecturers with photo cleanup and syncs leaders
     await expect(profileDialog.getByTestId('lecturer-share-bar')).toBeVisible();
     await expect(profileDialog.getByText('Tautan Profil Dosen')).toHaveCount(0);
     await expect(profileDialog.getByTestId('lecturer-copy-link-btn')).toHaveText(/Salin Link/);
+    await page.evaluate(() => {
+      window.__openedLecturerShares = [];
+      window.open = (url) => {
+        window.__openedLecturerShares.push(String(url));
+        return null;
+      };
+    });
+    for (const [testId, expectedPattern] of [
+      ['lecturer-share-whatsapp', /^https:\/\/wa\.me\/\?text=/],
+      ['lecturer-share-telegram', /^https:\/\/t\.me\/share\/url/],
+      ['lecturer-share-facebook', /facebook\.com\/sharer/],
+      ['lecturer-share-x', /twitter\.com\/intent\/tweet/]
+    ]) {
+      await profileDialog.getByTestId('lecturer-share-menu-btn').click();
+      const lecturerSharePopover = profileDialog.getByTestId('lecturer-share-popover');
+      await expect(lecturerSharePopover).toBeVisible();
+      const shareBtn = lecturerSharePopover.getByTestId(testId);
+      await expect(shareBtn).toBeVisible();
+      await shareBtn.click();
+      await expect(lecturerSharePopover).toHaveCount(0);
+      const opened = await page.evaluate(() => window.__openedLecturerShares[window.__openedLecturerShares.length - 1] || '');
+      expect(opened).toMatch(expectedPattern);
+    }
     await profileDialog.getByTestId('lecturer-share-menu-btn').click();
     const lecturerSharePopover = profileDialog.getByTestId('lecturer-share-popover');
     await expect(lecturerSharePopover).toBeVisible();
-    await expect(lecturerSharePopover.getByTestId('lecturer-share-whatsapp')).toHaveAttribute('href', /https:\/\/wa\.me\/\?text=/);
-    await expect(lecturerSharePopover.getByTestId('lecturer-share-telegram')).toHaveAttribute('href', /https:\/\/t\.me\/share\/url/);
-    await expect(lecturerSharePopover.getByTestId('lecturer-share-facebook')).toHaveAttribute('href', /facebook\.com\/sharer/);
-    await expect(lecturerSharePopover.getByTestId('lecturer-share-x')).toHaveAttribute('href', /twitter\.com\/intent\/tweet/);
     await page.keyboard.press('Escape');
     await expect(lecturerSharePopover).toHaveCount(0);
     await expect(profileDialog).toBeVisible();

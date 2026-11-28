@@ -12,11 +12,17 @@ const props = defineProps({
   open: { type: Boolean, default: false },
   item: { type: Object, default: null },
   badgeFallback: { type: String, default: '' },
-  shareUrl: { type: String, default: '' }
+  shareUrl: { type: String, default: '' },
+  coverMode: {
+    type: String,
+    default: 'banner',
+    validator: (value) => ['banner', 'poster'].includes(value)
+  }
 });
 
 const emit = defineEmits(['close']);
 const { t, tr } = useI18n();
+const isPosterMode = computed(() => props.coverMode === 'poster');
 
 const displayTitle = computed(() => (props.item ? tr(props.item.name || props.item.title || '') : ''));
 const displayDate = computed(() => (props.item ? tr(props.item.job_title || props.item.event_date || '') : ''));
@@ -115,71 +121,96 @@ const splitParagraphs = computed(() => {
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-2xl border border-surface-border bg-slate-100">
-          <img
-            :src="displayCover"
-            :alt="displayTitle"
-            class="aspect-[16/9] w-full object-cover"
-          />
-        </div>
       </header>
 
-      <NewsGallerySlideshow
-        v-if="showSlideshow && slideshowPos === 'top'"
-        :images="gallery"
-        :title="displayTitle"
-        :heading="t('news.galleryHeading')"
-      />
+      <div :class="isPosterMode ? 'grid grid-cols-1 gap-6 md:grid-cols-12 md:items-start' : 'space-y-5'">
+        <div :class="isPosterMode ? 'md:col-span-5' : ''">
+          <div
+            v-if="isPosterMode"
+            data-testid="agenda-poster-frame"
+            class="relative flex items-center justify-center overflow-hidden rounded-2xl border border-surface-border bg-surface-muted p-3 sm:p-4"
+          >
+            <img
+              :src="displayCover"
+              alt=""
+              aria-hidden="true"
+              class="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-20 blur-2xl"
+            />
+            <img
+              :src="displayCover"
+              :alt="displayTitle"
+              class="relative z-10 max-h-[460px] w-auto max-w-full rounded-xl object-contain shadow-card"
+            />
+          </div>
 
-      <div class="space-y-4">
-        <p
-          v-for="(segments, idx) in splitParagraphs.before"
-          :key="'before-' + idx"
-          class="whitespace-pre-line text-justify text-sm leading-relaxed text-slate-700 sm:text-base"
-        >
-          <template v-for="(part, partIdx) in segments" :key="'before-' + idx + '-' + partIdx">
-            <a
-              v-if="part.type === 'link'"
-              :href="part.href"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="break-all font-medium text-brand-600 underline decoration-brand-600/40 underline-offset-2 transition hover:text-brand-700 hover:decoration-brand-700"
-            >{{ part.text }}</a>
-            <template v-else>{{ part.text }}</template>
-          </template>
-        </p>
+          <div v-else class="overflow-hidden rounded-2xl border border-surface-border bg-slate-100">
+            <img
+              :src="displayCover"
+              :alt="displayTitle"
+              class="aspect-[16/9] w-full object-cover"
+            />
+          </div>
+        </div>
 
-        <NewsGallerySlideshow
-          v-if="splitParagraphs.middleSlideshow"
-          :images="gallery"
-          :title="displayTitle"
-          :heading="t('news.galleryHeading')"
-        />
+        <div :class="isPosterMode ? 'space-y-5 md:col-span-7' : 'space-y-5'">
+          <NewsGallerySlideshow
+            v-if="showSlideshow && slideshowPos === 'top'"
+            :images="gallery"
+            :title="displayTitle"
+            :heading="t('news.galleryHeading')"
+          />
 
-        <p
-          v-for="(segments, idx) in splitParagraphs.after"
-          :key="'after-' + idx"
-          class="whitespace-pre-line text-justify text-sm leading-relaxed text-slate-700 sm:text-base"
-        >
-          <template v-for="(part, partIdx) in segments" :key="'after-' + idx + '-' + partIdx">
-            <a
-              v-if="part.type === 'link'"
-              :href="part.href"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="break-all font-medium text-brand-600 underline decoration-brand-600/40 underline-offset-2 transition hover:text-brand-700 hover:decoration-brand-700"
-            >{{ part.text }}</a>
-            <template v-else>{{ part.text }}</template>
-          </template>
-        </p>
+          <div class="space-y-4">
+            <p
+              v-for="(segments, idx) in splitParagraphs.before"
+              :key="'before-' + idx"
+              class="whitespace-pre-line text-justify text-sm leading-relaxed text-slate-700 sm:text-base"
+            >
+              <template v-for="(part, partIdx) in segments" :key="'before-' + idx + '-' + partIdx">
+                <a
+                  v-if="part.type === 'link'"
+                  :href="part.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="break-all font-medium text-brand-600 underline decoration-brand-600/40 underline-offset-2 transition hover:text-brand-700 hover:decoration-brand-700"
+                >{{ part.text }}</a>
+                <template v-else>{{ part.text }}</template>
+              </template>
+            </p>
+
+            <NewsGallerySlideshow
+              v-if="splitParagraphs.middleSlideshow"
+              :images="gallery"
+              :title="displayTitle"
+              :heading="t('news.galleryHeading')"
+            />
+
+            <p
+              v-for="(segments, idx) in splitParagraphs.after"
+              :key="'after-' + idx"
+              class="whitespace-pre-line text-justify text-sm leading-relaxed text-slate-700 sm:text-base"
+            >
+              <template v-for="(part, partIdx) in segments" :key="'after-' + idx + '-' + partIdx">
+                <a
+                  v-if="part.type === 'link'"
+                  :href="part.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="break-all font-medium text-brand-600 underline decoration-brand-600/40 underline-offset-2 transition hover:text-brand-700 hover:decoration-brand-700"
+                >{{ part.text }}</a>
+                <template v-else>{{ part.text }}</template>
+              </template>
+            </p>
+          </div>
+
+          <NewsGallerySlideshow
+            v-if="showSlideshow && slideshowPos === 'bottom'"
+            :images="gallery"
+            :title="displayTitle"
+            :heading="t('news.galleryHeading')"
+          />
+        </div>
       </div>
-
-      <NewsGallerySlideshow
-        v-if="showSlideshow && slideshowPos === 'bottom'"
-        :images="gallery"
-        :title="displayTitle"
-        :heading="t('news.galleryHeading')"
-      />
     </article>
   </ModalDialog>
 </template>

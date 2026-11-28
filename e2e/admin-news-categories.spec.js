@@ -147,13 +147,32 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(articleDialog.getByTestId('news-share-bar')).toBeVisible();
     await expect(articleDialog.getByTestId('news-copy-link-btn')).toHaveText(/Salin Link/);
     await expect(articleDialog.getByText(/^Tautan$/)).toHaveCount(0);
+    await page.evaluate(() => {
+      window.__openedShareUrls = [];
+      window.open = (url) => {
+        window.__openedShareUrls.push(String(url));
+        return null;
+      };
+    });
+    for (const [testId, expectedPattern] of [
+      ['news-share-whatsapp', /^https:\/\/wa\.me\/\?text=/],
+      ['news-share-telegram', /^https:\/\/t\.me\/share\/url/],
+      ['news-share-facebook', /facebook\.com\/sharer/],
+      ['news-share-x', /twitter\.com\/intent\/tweet/]
+    ]) {
+      await articleDialog.getByTestId('news-share-menu-btn').click();
+      const newsSharePopover = articleDialog.getByTestId('news-share-popover');
+      await expect(newsSharePopover).toBeVisible();
+      const shareBtn = newsSharePopover.getByTestId(testId);
+      await expect(shareBtn).toBeVisible();
+      await shareBtn.click();
+      await expect(newsSharePopover).toHaveCount(0);
+      const opened = await page.evaluate(() => window.__openedShareUrls[window.__openedShareUrls.length - 1] || '');
+      expect(opened).toMatch(expectedPattern);
+    }
     await articleDialog.getByTestId('news-share-menu-btn').click();
     const newsSharePopover = articleDialog.getByTestId('news-share-popover');
     await expect(newsSharePopover).toBeVisible();
-    await expect(newsSharePopover.getByTestId('news-share-whatsapp')).toHaveAttribute('href', /https:\/\/wa\.me\/\?text=/);
-    await expect(newsSharePopover.getByTestId('news-share-telegram')).toHaveAttribute('href', /https:\/\/t\.me\/share\/url/);
-    await expect(newsSharePopover.getByTestId('news-share-facebook')).toHaveAttribute('href', /facebook\.com\/sharer/);
-    await expect(newsSharePopover.getByTestId('news-share-x')).toHaveAttribute('href', /twitter\.com\/intent\/tweet/);
     await page.keyboard.press('Escape');
     await expect(newsSharePopover).toHaveCount(0);
     await expect(articleDialog).toBeVisible();
@@ -249,6 +268,12 @@ test('admin manages news categories; refuses deletion while category is assigned
     await page.getByRole('button', { name: new RegExp(newestAgendaTitle) }).click();
     const agendaDialog = page.getByRole('dialog');
     await expect(agendaDialog).toBeVisible();
+    const agendaPosterFrame = agendaDialog.getByTestId('agenda-poster-frame');
+    await expect(agendaPosterFrame).toBeVisible();
+    const agendaPosterImg = agendaPosterFrame.locator('img').last();
+    await expect(agendaPosterImg).toHaveCSS('object-fit', 'contain');
+    const agendaPosterBox = await agendaPosterImg.boundingBox();
+    expect(agendaPosterBox.width).toBeLessThan(500);
     await expect(agendaDialog.getByRole('button', { name: 'Close modal' })).toBeVisible();
     await expect(agendaDialog.getByText('08.00 - 11.00 WIB')).toBeVisible();
     await expect(agendaDialog.getByText(/Rincian kegiatan agenda E2E nomor 4/)).toBeVisible();

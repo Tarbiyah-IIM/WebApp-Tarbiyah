@@ -61,39 +61,59 @@ onBeforeUnmount(() => {
   }
 });
 
+function buildShareTargetUrl(key, rawUrl, rawTitle) {
+  if (!rawUrl) return '';
+  const encodedUrl = encodeURIComponent(rawUrl);
+  const encodedTitle = encodeURIComponent(rawTitle || '');
+  const combinedText = encodeURIComponent(rawTitle ? `${rawTitle}\n${rawUrl}` : rawUrl);
+
+  if (key === 'whatsapp') {
+    return `https://wa.me/?text=${combinedText}`;
+  }
+  if (key === 'telegram') {
+    return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+  }
+  if (key === 'facebook') {
+    return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+  }
+  if (key === 'x') {
+    return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
+  }
+  return '';
+}
+
 const shareTargets = computed(() => {
   if (!props.url) return [];
-  const encodedUrl = encodeURIComponent(props.url);
-  const encodedTitle = encodeURIComponent(props.title || '');
-  const combinedText = encodeURIComponent(props.title ? `${props.title}\n${props.url}` : props.url);
-
   return [
     {
       key: 'whatsapp',
       label: t('news.shareWhatsAppBtn'),
-      href: `https://wa.me/?text=${combinedText}`,
       btnClass: 'border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50'
     },
     {
       key: 'telegram',
       label: t('news.shareTelegramBtn'),
-      href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
       btnClass: 'border-sky-200 bg-white text-sky-700 hover:bg-sky-50'
     },
     {
       key: 'facebook',
       label: t('news.shareFacebookBtn'),
-      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
       btnClass: 'border-brand-200 bg-white text-brand-600 hover:bg-brand-50'
     },
     {
       key: 'x',
       label: t('news.shareXBtn'),
-      href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
       btnClass: 'border-surface-border bg-white text-brand-900 hover:bg-surface-muted'
     }
   ];
 });
+
+function openShareTarget(key) {
+  const targetUrl = buildShareTargetUrl(key, props.url, props.title);
+  menuOpen.value = false;
+  if (!targetUrl || typeof window === 'undefined') return;
+  window.open(targetUrl, '_blank', 'noopener,noreferrer');
+}
 
 async function copyShareLink() {
   if (!props.url) return;
@@ -165,17 +185,16 @@ async function copyShareLink() {
       </div>
 
       <div class="mt-2.5 grid grid-cols-2 gap-2">
-        <a
+        <button
           v-for="item in shareTargets"
           :key="item.key"
-          :href="item.href"
-          target="_blank"
-          rel="noopener noreferrer"
+          type="button"
           role="menuitem"
+          :data-share-platform="item.key"
           :data-testid="`${testIdPrefix}-share-${item.key}`"
           class="inline-flex min-h-[36px] items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold transition"
           :class="item.btnClass"
-          @click="menuOpen = false"
+          @click="openShareTarget(item.key)"
         >
           <svg
             v-if="item.key === 'whatsapp'"
@@ -208,8 +227,17 @@ async function copyShareLink() {
           >
             <path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14c-.326-.043-1.557-.14-2.857-.14C11.928 2 10 3.657 10 6.7v2.8H7v4h3V22h4v-8.5z" />
           </svg>
+          <svg
+            v-else-if="item.key === 'x'"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="h-3.5 w-3.5 shrink-0"
+            aria-hidden="true"
+          >
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
           <span class="truncate">{{ item.label }}</span>
-        </a>
+        </button>
       </div>
     </div>
   </div>

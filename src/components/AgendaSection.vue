@@ -108,12 +108,19 @@ const paginatedAgendas = computed(() => {
             class="flex min-w-0 flex-1 flex-col text-left"
             @click="openAgenda(item)"
           >
-            <div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+            <div class="relative aspect-[4/3] w-full overflow-hidden bg-surface-muted p-2.5">
+              <img
+                :src="item.cover_url || gedungIimFallback"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                class="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-xl transition duration-500 group-hover:scale-125"
+              />
               <img
                 :src="item.cover_url || gedungIimFallback"
                 :alt="tr(item.title)"
                 loading="lazy"
-                class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                class="relative z-10 h-full w-full rounded-xl object-contain drop-shadow-[0_10px_20px_rgba(15,23,42,0.14)] transition duration-300 group-hover:scale-[1.03]"
               />
             </div>
 
@@ -157,6 +164,7 @@ const paginatedAgendas = computed(() => {
         :item="selectedAgenda"
         :badge-fallback="t('agenda.pillLabel')"
         :share-url="selectedShareUrl"
+        cover-mode="poster"
         @close="closeAgenda"
       />
 
