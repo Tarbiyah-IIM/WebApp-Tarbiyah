@@ -13,6 +13,7 @@ const studyPrograms = computed(() => (t('courses.cards') || []).map(mergeProgram
 
 const deckContainerRef = ref(null);
 const isExpanded = ref(false);
+const hasExpandedOnce = ref(false);
 const hoveredId = ref(null);
 
 const programPhotos = {
@@ -26,6 +27,7 @@ function resolveProgramPhoto(prodiId) {
 }
 
 function expandCards() {
+  hasExpandedOnce.value = true;
   isExpanded.value = true;
   hoveredId.value = null;
 }
@@ -72,21 +74,30 @@ function handleCardFocusOut(event, prodiId) {
 function getCardStateClasses(prodiId, index) {
   if (!isExpanded.value) {
     if (index === 0) {
-      return 'lg:col-start-1 lg:row-start-1 lg:z-30 lg:translate-x-0 lg:translate-y-0 lg:rotate-0 lg:scale-100 lg:group-hover/deck:-translate-y-1';
+      return [
+        'lg:col-start-1 lg:row-start-1 lg:z-30 lg:translate-x-0 lg:translate-y-0 lg:rotate-0 lg:scale-100 lg:shadow-float lg:group-hover/deck:-translate-y-2 lg:group-hover/deck:scale-[1.015]',
+        hasExpandedOnce.value ? 'courses-collapse-front' : ''
+      ].join(' ');
     }
     if (index === 1) {
-      return 'lg:col-start-1 lg:row-start-1 lg:z-20 lg:translate-x-10 lg:translate-y-3 lg:rotate-[3.5deg] lg:scale-[0.96] lg:opacity-95 lg:pointer-events-none lg:group-hover/deck:translate-x-16 lg:group-hover/deck:rotate-[5.5deg]';
+      return [
+        'lg:col-start-1 lg:row-start-1 lg:z-20 lg:translate-x-12 lg:translate-y-3.5 lg:rotate-[4deg] lg:scale-[0.95] lg:opacity-95 lg:pointer-events-none lg:group-hover/deck:translate-x-20 lg:group-hover/deck:rotate-[6.5deg]',
+        hasExpandedOnce.value ? 'courses-collapse-right' : ''
+      ].join(' ');
     }
-    return 'lg:col-start-1 lg:row-start-1 lg:z-10 lg:-translate-x-10 lg:translate-y-4 lg:-rotate-[3.5deg] lg:scale-[0.93] lg:opacity-90 lg:pointer-events-none lg:group-hover/deck:-translate-x-16 lg:group-hover/deck:-rotate-[5.5deg]';
+    return [
+      'lg:col-start-1 lg:row-start-1 lg:z-10 lg:-translate-x-12 lg:translate-y-4.5 lg:-rotate-[4deg] lg:scale-[0.92] lg:opacity-90 lg:pointer-events-none lg:group-hover/deck:-translate-x-20 lg:group-hover/deck:-rotate-[6.5deg]',
+      hasExpandedOnce.value ? 'courses-collapse-left' : ''
+    ].join(' ');
   }
 
   if (hoveredId.value === null) {
-    return 'courses-popup-card lg:grayscale-0 lg:opacity-100 lg:hover:-translate-y-1 lg:hover:shadow-float';
+    return 'courses-popup-card lg:grayscale-0 lg:opacity-100 lg:hover:-translate-y-2 lg:hover:shadow-float';
   }
   if (hoveredId.value === prodiId) {
-    return 'courses-popup-card lg:z-20 lg:-translate-y-2 lg:scale-[1.03] lg:grayscale-0 lg:opacity-100 lg:shadow-float lg:ring-2 lg:ring-brand-600/25';
+    return 'courses-popup-card lg:z-20 lg:-translate-y-2.5 lg:scale-[1.03] lg:grayscale-0 lg:opacity-100 lg:shadow-[0_28px_60px_-15px_rgba(37,99,235,0.28)] lg:ring-2 lg:ring-brand-600/25';
   }
-  return 'courses-popup-card lg:grayscale lg:opacity-75 lg:scale-[0.98]';
+  return 'courses-popup-card lg:grayscale lg:opacity-70 lg:scale-[0.97]';
 }
 </script>
 
@@ -117,29 +128,43 @@ function getCardStateClasses(prodiId, index) {
           <article
             v-for="(prodi, index) in studyPrograms"
             :key="prodi.id"
-            :style="isExpanded ? { animationDelay: `${index * 60}ms` } : undefined"
-            class="group grid grid-cols-1 overflow-hidden rounded-2xl border border-surface-border bg-white shadow-card transition-all duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none sm:grid-cols-12"
+            :style="isExpanded ? { animationDelay: `${index * 70}ms` } : undefined"
+            class="group grid grid-cols-1 overflow-hidden rounded-3xl border border-surface-border bg-white shadow-card transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none sm:grid-cols-12"
             :class="getCardStateClasses(prodi.id, index)"
             @mouseenter="isExpanded && (hoveredId = prodi.id)"
             @mouseleave="isExpanded && (hoveredId = null)"
             @focusin="isExpanded && (hoveredId = prodi.id)"
             @focusout="isExpanded && handleCardFocusOut($event, prodi.id)"
           >
-            <div class="relative flex items-end justify-center overflow-hidden border-b border-surface-border bg-gradient-to-br from-brand-50/80 via-white to-white px-2 pt-4 sm:col-span-5 sm:border-b-0 sm:border-r">
+            <div class="relative flex items-end justify-center overflow-hidden bg-gradient-to-br from-brand-50/80 via-white to-white pt-4 sm:col-span-6">
+              <div
+                class="pointer-events-none absolute inset-x-4 bottom-3 top-6 rounded-full bg-brand-100/70 blur-2xl transition duration-500 group-hover:scale-110"
+                aria-hidden="true"
+              />
               <img
                 :src="resolveProgramPhoto(prodi.id)"
                 :alt="prodi.title"
                 decoding="async"
-                class="h-60 w-auto max-w-full object-contain object-bottom drop-shadow-md transition duration-300 group-hover:scale-[1.03] sm:h-full sm:max-h-[300px]"
+                class="relative z-10 h-64 w-full max-w-[230px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out origin-bottom group-hover:scale-[1.08] sm:h-full sm:min-h-[250px] sm:max-h-[300px] sm:max-w-none"
+                :class="isExpanded ? 'lg:scale-[1.06]' : ''"
               />
             </div>
 
-            <div class="flex flex-1 flex-col p-5 sm:col-span-7">
-              <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <span class="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
+            <div class="flex flex-1 flex-col p-5 sm:col-span-6 sm:p-5">
+              <div
+                class="mb-3 flex flex-wrap items-center gap-1.5"
+                :class="isExpanded ? 'justify-between lg:flex-col lg:items-end' : 'justify-between'"
+              >
+                <span
+                  class="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700"
+                  :class="isExpanded ? 'lg:order-2' : ''"
+                >
                   {{ prodi.code }}
                 </span>
-                <span class="ml-auto rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-bold text-slate-900 shadow-xs">
+                <span
+                  class="ml-auto rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-bold text-slate-900 shadow-xs"
+                  :class="isExpanded ? 'lg:order-1 lg:ml-0' : ''"
+                >
                   {{ prodi.badge }}
                 </span>
               </div>
@@ -148,13 +173,13 @@ function getCardStateClasses(prodiId, index) {
                 {{ prodi.title }}
               </h3>
 
-              <p class="mt-2 mb-5 flex-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
+              <p class="mt-2 flex-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
                 {{ prodi.description }}
               </p>
 
               <div
-                class="mt-auto flex flex-col gap-2 border-t border-surface-border pt-3.5"
-                :class="isExpanded ? '' : 'sm:flex-row'"
+                class="mt-4 flex flex-col gap-2 pt-2 transition-all duration-300"
+                :class="isExpanded ? 'flex' : 'flex lg:hidden'"
               >
                 <router-link
                   :to="`/program-studi/${prodi.id}`"
@@ -181,7 +206,7 @@ function getCardStateClasses(prodiId, index) {
           type="button"
           data-testid="courses-stack-trigger"
           :aria-label="t('courses.expandAria')"
-          class="hidden lg:block absolute inset-0 z-40 mx-auto max-w-2xl cursor-pointer rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          class="hidden lg:block absolute inset-0 z-40 mx-auto max-w-2xl cursor-pointer rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
           @click="expandCards"
         />
       </div>

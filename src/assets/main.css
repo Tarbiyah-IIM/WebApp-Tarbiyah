@@ -53,23 +53,71 @@
 
 @keyframes courseDeckPop {
   0% {
-    opacity: 0.45;
-    transform: scale(0.88) translateY(18px);
+    opacity: 0.35;
+    transform: perspective(1200px) translateY(22px) scale(0.86) rotateX(6deg);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: perspective(1200px) translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@keyframes courseDeckCollapseFront {
+  0% {
+    opacity: 0.85;
+    transform: perspective(1200px) translateY(10px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) translateY(0) scale(1);
+  }
+}
+
+@keyframes courseDeckCollapseRight {
+  0% {
+    opacity: 0.6;
+    transform: translateX(150px) translateY(0) rotate(0deg) scale(0.95);
+  }
+  100% {
+    opacity: 0.95;
+    transform: translateX(3rem) translateY(0.875rem) rotate(4deg) scale(0.95);
+  }
+}
+
+@keyframes courseDeckCollapseLeft {
+  0% {
+    opacity: 0.6;
+    transform: translateX(-150px) translateY(0) rotate(0deg) scale(0.95);
+  }
+  100% {
+    opacity: 0.9;
+    transform: translateX(-3rem) translateY(1.125rem) rotate(-4deg) scale(0.92);
   }
 }
 
 @media (min-width: 1024px) {
   .courses-popup-card {
-    animation: courseDeckPop 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: courseDeckPop 0.54s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .courses-collapse-front {
+    animation: courseDeckCollapseFront 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .courses-collapse-right {
+    animation: courseDeckCollapseRight 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .courses-collapse-left {
+    animation: courseDeckCollapseLeft 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .courses-popup-card {
+  .courses-popup-card,
+  .courses-collapse-front,
+  .courses-collapse-right,
+  .courses-collapse-left {
     animation: none;
   }
 }
