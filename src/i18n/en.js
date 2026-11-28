@@ -85,6 +85,9 @@ export default {
       'For complete admissions details on each Study Program, click “Admissions Info” below:',
     detailBtn: 'Program Details',
     pmbBtn: 'Admissions Info',
+    expandHint: 'Click stack to view all 3 Study Programs',
+    expandAria: 'Expand Featured Study Programs card stack',
+    collapseBtn: 'Stack Cards',
     cards: [
       {
         id: 'pai',

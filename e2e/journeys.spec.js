@@ -167,13 +167,27 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
       footerSection.locator('iframe[title="Peta Lokasi Kampus Fakultas Tarbiyah IIM Surakarta"]')
     ).toBeVisible();
 
-    await expect(page.locator('#courses-section article')).toHaveCount(3);
+    const courseArticles = page.locator('#courses-section article');
+    await expect(courseArticles).toHaveCount(3);
     await expect(page.locator('#courses-section img')).toHaveCount(0);
+    const stackTrigger = page.getByTestId('courses-stack-trigger');
+    await expect(stackTrigger).toBeVisible();
+    await stackTrigger.click();
+    await expect(page.getByTestId('courses-collapse-btn')).toBeVisible();
     await expect(page.locator('#courses-section h3', { hasText: /^Pendidikan Agama Islam$/ })).toBeVisible();
+    await expect(page.locator('#courses-section h3', { hasText: /^Pendidikan Guru Madrasah Ibtidaiyah$/ })).toBeVisible();
+    await expect(page.locator('#courses-section h3', { hasText: /^Pendidikan Islam Anak Usia Dini$/ })).toBeVisible();
     await expect(page.locator('#courses-section h3', { hasText: 'Program Studi Pendidikan Agama Islam' })).toHaveCount(0);
     const pmbLinks = page.locator('#courses-section a', { hasText: 'Info PMB' });
     await expect(pmbLinks).toHaveCount(3);
     await expect(page.locator('#courses-section').getByText('Terakreditasi LAMDIK')).toHaveCount(3);
+    await courseArticles.nth(0).hover();
+    await expect(courseArticles.nth(0)).toHaveCSS('filter', /grayscale\(0\)|none/);
+    await expect(courseArticles.nth(1)).toHaveCSS('filter', /grayscale\(1\)/);
+    await expect(courseArticles.nth(2)).toHaveCSS('filter', /grayscale\(1\)/);
+    await page.mouse.move(0, 0);
+    await page.getByTestId('courses-collapse-btn').click();
+    await expect(stackTrigger).toBeVisible();
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');

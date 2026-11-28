@@ -51,6 +51,29 @@
   animation: floatSlow 6s ease-in-out 1.5s infinite;
 }
 
+@keyframes courseDeckPop {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.88) translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (min-width: 1024px) {
+  .courses-popup-card {
+    animation: courseDeckPop 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .courses-popup-card {
+    animation: none;
+  }
+}
+
 html[data-theme="night"] .bg-surface-page {
   background-color: #0b1120;
 }
