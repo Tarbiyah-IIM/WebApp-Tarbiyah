@@ -3,13 +3,16 @@ import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { resolveAppVersion } from './scripts/resolveAppVersion.mjs';
 
-const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+const rootDir = fileURLToPath(new URL('.', import.meta.url));
+const { version: baseVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+const appVersion = resolveAppVersion({ rootDir, baseVersion });
 
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   define: {
-    __APP_VERSION__: JSON.stringify(version)
+    __APP_VERSION__: JSON.stringify(appVersion)
   },
   resolve: {
     alias: {
