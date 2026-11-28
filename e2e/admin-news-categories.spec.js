@@ -259,7 +259,7 @@ test('admin manages news categories; refuses deletion while category is assigned
 
     await page.goto('/');
     await expect(page.locator('[data-testid="landing-news-grid"] article')).toHaveCount(3);
-    await expect(page.locator('[data-testid="landing-agenda-grid"] article')).toHaveCount(3);
+    await expect(page.locator('[data-testid="landing-agenda-grid"] article')).toHaveCount(4);
     await expect(
       page.locator('[data-testid="landing-agenda-grid"]').getByText('Rincian kegiatan agenda E2E nomor 4')
     ).toHaveCount(0);
@@ -283,6 +283,10 @@ test('admin manages news categories; refuses deletion while category is assigned
     await expect(agendaLink).toHaveAttribute('target', '_blank');
     await agendaDialog.getByRole('button', { name: 'Close modal' }).click();
     await expect(agendaDialog).toHaveCount(0);
+
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await expect(page.locator('[data-testid="landing-agenda-grid"] article')).toHaveCount(3);
+    await page.setViewportSize({ width: 1280, height: 720 });
   } finally {
     for (const id of agendaIds) {
       await request.delete(`http://localhost:3001/api/v1/admin/agendas/${id}`, { headers });

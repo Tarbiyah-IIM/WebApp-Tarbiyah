@@ -1,11 +1,13 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Calendar, ChevronRight, Clock } from 'lucide-vue-next';
 import gedungIimFallback from '../assets/gedung-iim.webp';
 import NewsDetailModal from './NewsDetailModal.vue';
 import PaginationControls from './PaginationControls.vue';
 import { useI18n } from '../composables/useI18n.js';
+
+const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
 
 const props = defineProps({
   agendas: { type: Array, default: () => [] }
@@ -15,11 +17,35 @@ const { t, tr } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
-const PAGE_SIZE = 3;
+const isDesktop = ref(
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia(DESKTOP_MEDIA_QUERY).matches
+    : true
+);
 const currentPage = ref(1);
 const selectedAgenda = ref(null);
+let desktopQueryList = null;
 
-const totalPages = computed(() => Math.max(1, Math.ceil(props.agendas.length / PAGE_SIZE)));
+function handleViewportChange(event) {
+  isDesktop.value = event.matches;
+}
+
+onMounted(() => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+  desktopQueryList = window.matchMedia(DESKTOP_MEDIA_QUERY);
+  isDesktop.value = desktopQueryList.matches;
+  desktopQueryList.addEventListener('change', handleViewportChange);
+});
+
+onBeforeUnmount(() => {
+  if (desktopQueryList) {
+    desktopQueryList.removeEventListener('change', handleViewportChange);
+    desktopQueryList = null;
+  }
+});
+
+const pageSize = computed(() => (isDesktop.value ? 4 : 3));
+const totalPages = computed(() => Math.max(1, Math.ceil(props.agendas.length / pageSize.value)));
 
 watch(totalPages, (nextTotal) => {
   if (currentPage.value > nextTotal) {
@@ -28,8 +54,8 @@ watch(totalPages, (nextTotal) => {
 });
 
 watch(
-  () => [route.query.agendaId, props.agendas],
-  ([rawId, list]) => {
+  () => [route.query.agendaId, props.agendas, pageSize.value],
+  ([rawId, list, activeSize]) => {
     const targetId = Number(rawId);
     if (!Number.isInteger(targetId) || targetId <= 0) {
       if (selectedAgenda.value && !rawId) {
@@ -40,7 +66,7 @@ watch(
     if (!Array.isArray(list) || !list.length) return;
     const index = list.findIndex((item) => item.id === targetId);
     if (index === -1) return;
-    currentPage.value = Math.floor(index / PAGE_SIZE) + 1;
+    currentPage.value = Math.floor(index / activeSize) + 1;
     selectedAgenda.value = list[index];
   },
   { immediate: true }
@@ -76,8 +102,9 @@ function closeAgenda() {
 }
 
 const paginatedAgendas = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE;
-  return props.agendas.slice(start, start + PAGE_SIZE);
+  const size = pageSize.value;
+  const start = (currentPage.value - 1) * size;
+  return props.agendas.slice(start, start + size);
 });
 </script>
 
@@ -96,7 +123,7 @@ const paginatedAgendas = computed(() => {
       <div
         v-if="paginatedAgendas.length"
         data-testid="landing-agenda-grid"
-        class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
       >
         <article
           v-for="item in paginatedAgendas"
@@ -108,7 +135,7 @@ const paginatedAgendas = computed(() => {
             class="flex min-w-0 flex-1 flex-col text-left"
             @click="openAgenda(item)"
           >
-            <div class="relative aspect-[4/3] w-full overflow-hidden bg-surface-muted p-2.5">
+            <div class="relative aspect-[4/5] w-full overflow-hidden bg-surface-muted p-2">
               <img
                 :src="item.cover_url || gedungIimFallback"
                 alt=""
@@ -124,7 +151,7 @@ const paginatedAgendas = computed(() => {
               />
             </div>
 
-            <div class="flex flex-1 flex-col p-6">
+            <div class="flex flex-1 flex-col p-5">
               <div class="flex flex-wrap items-center gap-1.5">
                 <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
                   {{ t('agenda.pillLabel') }}
@@ -142,7 +169,7 @@ const paginatedAgendas = computed(() => {
                 </span>
               </div>
 
-              <h3 class="mt-2.5 flex-1 break-words text-base font-bold leading-snug text-brand-900 group-hover:text-brand-600">
+              <h3 class="mt-2.5 flex-1 break-words text-sm font-bold leading-snug text-brand-900 group-hover:text-brand-600 xl:text-base">
                 {{ tr(item.title) }}
               </h3>
 
