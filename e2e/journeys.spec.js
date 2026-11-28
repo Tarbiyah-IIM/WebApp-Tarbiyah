@@ -174,13 +174,14 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     const courseArticles = page.locator('#courses-section article');
     await expect(courseArticles).toHaveCount(3);
     const courseImages = page.locator('#courses-section img');
-    await expect(courseImages).toHaveCount(3);
+    await expect(courseImages.first()).toBeHidden();
     const stackTrigger = page.getByTestId('courses-stack-trigger');
     await expect(stackTrigger).toBeVisible();
     await expect(page.getByTestId('courses-collapse-btn')).toHaveCount(0);
     await expect(page.locator('#courses-section a', { hasText: 'Info PMB' }).first()).toBeHidden();
     await stackTrigger.click();
     await expect(stackTrigger).toHaveCount(0);
+    await expect(courseImages).toHaveCount(3);
     await expect(page.locator('#courses-section h3', { hasText: /^Pendidikan Agama Islam$/ })).toBeVisible();
     await expect(page.locator('#courses-section h3', { hasText: /^Pendidikan Guru Madrasah Ibtidaiyah$/ })).toBeVisible();
     await expect(page.locator('#courses-section h3', { hasText: /^Pendidikan Islam Anak Usia Dini$/ })).toBeVisible();
@@ -190,6 +191,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(pmbLinks.first()).toBeVisible();
     await expect(page.locator('#courses-section').getByText('Terakreditasi LAMDIK')).toHaveCount(3);
     for (let idx = 0; idx < 3; idx += 1) {
+      await expect(courseImages.nth(idx)).toBeVisible();
       await expect.poll(async () => courseImages.nth(idx).evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
       const [cardBox, imgBox] = await Promise.all([
         courseArticles.nth(idx).boundingBox(),
@@ -205,6 +207,7 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(courseArticles.nth(2)).toHaveCSS('filter', /grayscale\(1\)/);
     await page.locator('#courses-section h2').click();
     await expect(stackTrigger).toBeVisible();
+    await expect(courseImages.first()).toBeHidden();
     await expect(pmbLinks.first()).toBeHidden();
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
