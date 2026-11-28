@@ -194,7 +194,7 @@ async function handleLogout() {
 
             <div
               v-if="activeDropdown === menu.id"
-              class="absolute left-0 top-full z-50 w-72 pt-1.5"
+              class="absolute left-0 top-full z-50 w-max min-w-[16rem] max-w-[min(90vw,36rem)] pt-1.5"
             >
               <div class="rounded-2xl border border-surface-border bg-white p-2 shadow-float">
                 <template v-for="child in menu.children" :key="child.label">
@@ -203,7 +203,7 @@ async function handleLogout() {
                     :href="child.href"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+                    class="flex items-center justify-between gap-3 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
                     @click="closeDesktopDropdown"
                   >
                     <span>{{ child.label }}</span>
@@ -212,7 +212,7 @@ async function handleLogout() {
                   <router-link
                     v-else-if="child.to"
                     :to="child.to"
-                    class="flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+                    class="flex items-center justify-between gap-3 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
                     @click="closeDesktopDropdown"
                   >
                     <span>{{ child.label }}</span>
@@ -220,7 +220,7 @@ async function handleLogout() {
                   <button
                     v-else
                     type="button"
-                    class="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
+                    class="flex w-full items-center justify-between gap-3 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-brand-50 hover:text-brand-700"
                     @click="handlePendingItem(menu.label, child.label)"
                   >
                     <span>{{ child.label }}</span>

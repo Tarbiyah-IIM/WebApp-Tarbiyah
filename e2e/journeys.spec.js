@@ -27,7 +27,9 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
 
     await mainNav.getByRole('button', { name: 'Program Studi' }).click();
     await expect(mainNav.getByRole('link', { name: 'Pendidikan Agama Islam' })).toHaveAttribute('href', '/program-studi/pai');
-    await expect(mainNav.getByRole('link', { name: 'Pendidikan Guru Madrasah Ibtidaiyah' })).toHaveAttribute('href', '/program-studi/pgmi');
+    const pgmiMenuLink = mainNav.getByRole('link', { name: 'Pendidikan Guru Madrasah Ibtidaiyah' });
+    await expect(pgmiMenuLink).toHaveAttribute('href', '/program-studi/pgmi');
+    await expect(pgmiMenuLink).toHaveCSS('white-space', 'nowrap');
     await expect(mainNav.getByRole('link', { name: 'Pendidikan Islam Anak Usia Dini' })).toHaveAttribute('href', '/program-studi/piaud');
 
     await mainNav.getByRole('button', { name: 'Akademik' }).click();
@@ -49,7 +51,9 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     );
 
     await mainNav.getByRole('button', { name: 'Publikasi' }).click();
-    await expect(mainNav.getByRole('link', { name: 'Praktek Pengalaman Lapangan (PPL)' })).toHaveAttribute('href', '/publikasi/ppl');
+    const pplMenuLink = mainNav.getByRole('link', { name: 'Praktek Pengalaman Lapangan (PPL)' });
+    await expect(pplMenuLink).toHaveAttribute('href', '/publikasi/ppl');
+    await expect(pplMenuLink).toHaveCSS('white-space', 'nowrap');
     await expect(mainNav.getByRole('link', { name: 'Praktek Kerja Nyata (PKN)' })).toHaveAttribute('href', '/publikasi/pkn');
     await expect(mainNav.getByRole('link', { name: 'Jurnal' })).toHaveAttribute('href', '/publikasi/jurnal');
     await expect(mainNav.getByRole('button', { name: 'Penelitian dan Pengabdian' })).toBeVisible();
