@@ -85,9 +85,7 @@ export default {
       'Untuk informasi lengkap tentang penerimaan mahasiswa baru Program Studi, klik “Info PMB” di bawah ini:',
     detailBtn: 'Detail Prodi',
     pmbBtn: 'Info PMB',
-    expandHint: 'Klik kartu untuk lihat 3 Program Studi',
     expandAria: 'Buka tumpukan kartu Program Studi Unggulan',
-    collapseBtn: 'Tumpuk Kartu',
     cards: [
       {
         id: 'pai',
