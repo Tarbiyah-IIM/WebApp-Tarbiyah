@@ -75,7 +75,7 @@ function getCardStateClasses(prodiId, index) {
   if (!isExpanded.value) {
     if (index === 0) {
       return [
-        'lg:col-start-1 lg:row-start-1 lg:z-30 lg:translate-x-0 lg:translate-y-0 lg:rotate-0 lg:scale-100 lg:shadow-float lg:group-hover/deck:-translate-y-2 lg:group-hover/deck:scale-[1.015]',
+        'lg:col-start-1 lg:row-start-1 lg:z-30 lg:translate-x-0 lg:translate-y-0 lg:rotate-0 lg:shadow-float lg:group-hover/deck:-translate-y-2',
         hasExpandedOnce.value ? 'courses-collapse-front' : ''
       ].join(' ');
     }
@@ -95,9 +95,9 @@ function getCardStateClasses(prodiId, index) {
     return 'courses-popup-card lg:grayscale-0 lg:opacity-100 lg:hover:-translate-y-2 lg:hover:shadow-float';
   }
   if (hoveredId.value === prodiId) {
-    return 'courses-popup-card lg:z-20 lg:-translate-y-2.5 lg:scale-[1.03] lg:grayscale-0 lg:opacity-100 lg:shadow-[0_28px_60px_-15px_rgba(37,99,235,0.28)] lg:ring-2 lg:ring-brand-600/25';
+    return 'courses-popup-card lg:z-20 lg:-translate-y-2.5 lg:grayscale-0 lg:opacity-100 lg:shadow-[0_28px_60px_-15px_rgba(37,99,235,0.28)] lg:ring-2 lg:ring-brand-600/25';
   }
-  return 'courses-popup-card lg:grayscale lg:opacity-70 lg:scale-[0.97]';
+  return 'courses-popup-card lg:grayscale lg:opacity-70';
 }
 </script>
 
@@ -123,14 +123,14 @@ function getCardStateClasses(prodiId, index) {
       >
         <div
           class="grid grid-cols-1 gap-6 md:grid-cols-2"
-          :class="isExpanded ? 'lg:grid-cols-3' : 'lg:mx-auto lg:max-w-xl lg:grid-cols-1'"
+          :class="isExpanded ? 'lg:grid-cols-3' : 'lg:mx-auto lg:max-w-[628px] lg:grid-cols-1'"
         >
           <article
             v-for="(prodi, index) in studyPrograms"
             :key="prodi.id"
             :style="isExpanded ? { animationDelay: `${index * 70}ms` } : undefined"
             class="group relative grid grid-cols-1 overflow-hidden rounded-3xl border border-surface-border bg-white shadow-card transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none sm:grid-cols-12"
-            :class="[getCardStateClasses(prodi.id, index), isExpanded ? '' : 'lg:h-[260px]']"
+            :class="[getCardStateClasses(prodi.id, index), isExpanded ? '' : 'lg:h-[300px]']"
             @mouseenter="isExpanded && (hoveredId = prodi.id)"
             @mouseleave="isExpanded && (hoveredId = null)"
             @focusin="isExpanded && (hoveredId = prodi.id)"
@@ -141,17 +141,23 @@ function getCardStateClasses(prodiId, index) {
               aria-hidden="true"
             />
 
-            <div class="relative z-10 flex items-end justify-center pt-3 sm:col-span-6">
+            <div
+              class="relative z-10 flex items-end pt-3 sm:col-span-6"
+              :class="isExpanded ? 'justify-center' : 'justify-center lg:justify-end lg:pr-2'"
+            >
               <img
                 :src="resolveProgramPhoto(prodi.id)"
                 :alt="prodi.title"
                 decoding="async"
                 class="relative z-10 h-72 w-full max-w-[240px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out group-hover:-translate-y-1 sm:h-full sm:max-w-none"
-                :class="isExpanded ? 'sm:min-h-[340px] sm:max-h-[400px]' : 'sm:min-h-[240px] lg:h-[248px]'"
+                :class="isExpanded ? 'sm:min-h-[340px] sm:max-h-[400px]' : 'sm:min-h-[240px] lg:h-[286px]'"
               />
             </div>
 
-            <div class="relative z-10 flex flex-1 flex-col p-4 sm:col-span-6 sm:p-5">
+            <div
+              class="relative z-10 flex flex-1 flex-col p-4 sm:col-span-6"
+              :class="isExpanded ? 'sm:p-5' : 'sm:p-5 lg:py-6 lg:pl-2 lg:pr-6'"
+            >
               <div
                 class="mb-2.5 flex flex-wrap items-center gap-1.5"
                 :class="isExpanded ? 'justify-between lg:flex-col lg:items-end' : 'justify-between'"
@@ -207,7 +213,7 @@ function getCardStateClasses(prodiId, index) {
           type="button"
           data-testid="courses-stack-trigger"
           :aria-label="t('courses.expandAria')"
-          class="hidden lg:block absolute inset-0 z-40 mx-auto max-w-xl cursor-pointer rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          class="hidden lg:block absolute inset-0 z-40 mx-auto max-w-[628px] cursor-pointer rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
           @click="expandCards"
         />
       </div>
