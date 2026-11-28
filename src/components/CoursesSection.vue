@@ -123,14 +123,14 @@ function getCardStateClasses(prodiId, index) {
       >
         <div
           class="grid grid-cols-1 gap-6 md:grid-cols-2"
-          :class="isExpanded ? 'lg:grid-cols-3' : 'lg:mx-auto lg:max-w-2xl lg:grid-cols-1'"
+          :class="isExpanded ? 'lg:grid-cols-3' : 'lg:mx-auto lg:max-w-xl lg:grid-cols-1'"
         >
           <article
             v-for="(prodi, index) in studyPrograms"
             :key="prodi.id"
             :style="isExpanded ? { animationDelay: `${index * 70}ms` } : undefined"
             class="group relative grid grid-cols-1 overflow-hidden rounded-3xl border border-surface-border bg-white shadow-card transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none sm:grid-cols-12"
-            :class="getCardStateClasses(prodi.id, index)"
+            :class="[getCardStateClasses(prodi.id, index), isExpanded ? '' : 'lg:h-[260px]']"
             @mouseenter="isExpanded && (hoveredId = prodi.id)"
             @mouseleave="isExpanded && (hoveredId = null)"
             @focusin="isExpanded && (hoveredId = prodi.id)"
@@ -141,12 +141,13 @@ function getCardStateClasses(prodiId, index) {
               aria-hidden="true"
             />
 
-            <div class="relative z-10 flex items-end justify-center pt-4 sm:col-span-6">
+            <div class="relative z-10 flex items-end justify-center pt-3 sm:col-span-6">
               <img
                 :src="resolveProgramPhoto(prodi.id)"
                 :alt="prodi.title"
                 decoding="async"
-                class="relative z-10 h-64 w-full max-w-[230px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out group-hover:-translate-y-1 sm:h-full sm:min-h-[260px] sm:max-w-none"
+                class="relative z-10 h-72 w-full max-w-[240px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out group-hover:-translate-y-1 sm:h-full sm:max-w-none"
+                :class="isExpanded ? 'sm:min-h-[340px] sm:max-h-[400px]' : 'sm:min-h-[240px] lg:h-[248px]'"
               />
             </div>
 
@@ -206,7 +207,7 @@ function getCardStateClasses(prodiId, index) {
           type="button"
           data-testid="courses-stack-trigger"
           :aria-label="t('courses.expandAria')"
-          class="hidden lg:block absolute inset-0 z-40 mx-auto max-w-2xl cursor-pointer rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          class="hidden lg:block absolute inset-0 z-40 mx-auto max-w-xl cursor-pointer rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
           @click="expandCards"
         />
       </div>
