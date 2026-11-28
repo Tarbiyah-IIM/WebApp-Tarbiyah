@@ -140,7 +140,7 @@ function getCardStateClasses(prodiId, index) {
             :key="prodi.id"
             :style="isExpanded ? { animationDelay: `${index * 70}ms` } : undefined"
             class="group relative grid overflow-hidden rounded-3xl border border-surface-border bg-white shadow-card transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none"
-            :class="[getCardStateClasses(prodi.id, index), isExpanded ? 'grid-cols-1 sm:grid-cols-12' : 'grid-cols-1 sm:grid-cols-12 lg:grid-cols-1']"
+            :class="[getCardStateClasses(prodi.id, index), isExpanded ? 'grid-cols-12' : 'grid-cols-12 lg:grid-cols-1']"
             @mouseenter="isExpanded && (hoveredId = prodi.id)"
             @mouseleave="isExpanded && (hoveredId = null)"
             @focusin="isExpanded && (hoveredId = prodi.id)"
@@ -165,66 +165,66 @@ function getCardStateClasses(prodiId, index) {
             </div>
 
             <div
-              class="relative z-10 flex items-end justify-center pt-3 sm:col-span-6"
+              class="relative z-10 col-span-5 flex items-end justify-center pt-3 pl-1 sm:col-span-6 sm:pl-0"
               :class="isExpanded ? '' : 'lg:hidden'"
             >
               <img
                 :src="resolveProgramPhoto(prodi.id)"
                 :alt="prodi.title"
                 decoding="async"
-                class="relative z-10 h-72 w-full max-w-[240px] object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out group-hover:-translate-y-1 sm:h-full sm:max-w-none"
-                :class="isExpanded ? 'sm:min-h-[340px] sm:max-h-[400px]' : 'sm:min-h-[240px]'"
+                class="relative z-10 h-full w-full object-contain object-bottom drop-shadow-[0_16px_24px_rgba(15,23,42,0.22)] transition duration-500 ease-out group-hover:-translate-y-1"
+                :class="isExpanded ? 'min-h-[225px] max-h-[290px] sm:min-h-[340px] sm:max-h-[400px]' : 'min-h-[225px] max-h-[290px] sm:min-h-[310px] sm:max-h-[370px]'"
               />
             </div>
 
             <div
-              class="relative z-10 flex flex-1 flex-col p-4 sm:col-span-6"
-              :class="isExpanded ? 'sm:p-5' : 'sm:p-5 lg:p-7'"
+              class="relative z-10 col-span-7 flex flex-1 flex-col p-3.5 sm:col-span-6 sm:p-5"
+              :class="isExpanded ? '' : 'lg:col-span-1 lg:p-7'"
             >
               <div
-                class="mb-2.5 flex flex-wrap items-center gap-1.5"
-                :class="isExpanded ? 'justify-between lg:flex-col lg:items-end' : 'justify-between'"
+                class="mb-2 flex flex-wrap gap-1 sm:mb-2.5 sm:gap-1.5"
+                :class="isExpanded ? 'flex-col items-end' : 'flex-col items-end lg:flex-row lg:items-center lg:justify-between'"
               >
                 <span
-                  class="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700"
-                  :class="isExpanded ? 'lg:order-2' : 'lg:px-3 lg:text-xs'"
+                  class="rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-semibold text-brand-700 sm:py-1 sm:text-[11px]"
+                  :class="isExpanded ? 'order-2' : 'order-2 lg:order-1 lg:px-3 lg:text-xs'"
                 >
                   {{ prodi.code }}
                 </span>
                 <span
-                  class="ml-auto rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-bold text-slate-900 shadow-xs"
-                  :class="isExpanded ? 'lg:order-1 lg:ml-0' : 'lg:hidden'"
+                  class="rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] font-bold text-slate-900 shadow-xs sm:py-1 sm:text-[11px]"
+                  :class="isExpanded ? 'order-1' : 'order-1 lg:hidden'"
                 >
                   {{ prodi.badge }}
                 </span>
                 <GraduationCap
                   v-if="!isExpanded"
-                  class="hidden h-4 w-4 text-brand-600 lg:inline-block"
+                  class="hidden h-4 w-4 text-brand-600 lg:order-2 lg:inline-block"
                   aria-hidden="true"
                 />
               </div>
 
               <h3
-                class="text-base font-bold leading-snug text-brand-900 xl:text-lg"
+                class="text-sm font-bold leading-snug text-brand-900 sm:text-base xl:text-lg"
                 :class="isExpanded ? '' : 'lg:text-lg'"
               >
                 {{ prodi.title }}
               </h3>
 
               <p
-                class="mt-2 flex-1 text-xs leading-relaxed text-slate-600"
-                :class="isExpanded ? 'sm:text-xs' : 'sm:text-sm lg:mb-1'"
+                class="mt-1.5 flex-1 text-[11px] leading-relaxed text-slate-600 sm:mt-2"
+                :class="isExpanded ? 'sm:text-xs' : 'sm:text-xs md:text-sm lg:mb-1 lg:text-sm'"
               >
                 {{ prodi.description }}
               </p>
 
               <div
-                class="mt-3 flex flex-col gap-2 pt-1 transition-all duration-300"
+                class="mt-2.5 flex flex-col gap-1.5 pt-1 transition-all duration-300 sm:mt-3 sm:gap-2"
                 :class="isExpanded ? 'flex' : 'flex lg:hidden'"
               >
                 <router-link
                   :to="`/program-studi/${prodi.id}`"
-                  class="inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 px-3.5 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-100 sm:text-sm"
+                  class="inline-flex min-h-[38px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100 sm:min-h-[40px] sm:px-3.5 sm:py-2 sm:text-sm"
                 >
                   <span>{{ t('courses.detailBtn') }}</span>
                 </router-link>
@@ -232,10 +232,10 @@ function getCardStateClasses(prodiId, index) {
                   :href="prodi.pmbUrl"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-brand-700 sm:text-sm"
+                  class="inline-flex min-h-[38px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-700 sm:min-h-[40px] sm:px-3.5 sm:py-2 sm:text-sm"
                 >
                   <span>{{ t('courses.pmbBtn') }}</span>
-                  <ArrowRight class="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <ArrowRight class="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
                 </a>
               </div>
             </div>

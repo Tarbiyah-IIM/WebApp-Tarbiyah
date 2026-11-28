@@ -193,13 +193,20 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     for (let idx = 0; idx < 3; idx += 1) {
       await expect(courseImages.nth(idx)).toBeVisible();
       await expect.poll(async () => courseImages.nth(idx).evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
-      const [cardBox, imgBox] = await Promise.all([
-        courseArticles.nth(idx).boundingBox(),
-        courseImages.nth(idx).boundingBox()
-      ]);
-      expect(imgBox.height).toBeGreaterThanOrEqual(220);
-      expect(imgBox.x).toBeGreaterThanOrEqual(cardBox.x - 1);
-      expect(imgBox.x + imgBox.width).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+      await expect
+        .poll(async () => {
+          const [cardBox, imgBox] = await Promise.all([
+            courseArticles.nth(idx).boundingBox(),
+            courseImages.nth(idx).boundingBox()
+          ]);
+          if (!cardBox || !imgBox) return false;
+          return (
+            imgBox.height >= 220 &&
+            imgBox.x >= cardBox.x - 1 &&
+            imgBox.x + imgBox.width <= cardBox.x + cardBox.width + 1
+          );
+        })
+        .toBe(true);
     }
     await courseArticles.nth(0).hover();
     await expect(courseArticles.nth(0)).toHaveCSS('filter', /grayscale\(0\)|none/);
@@ -542,6 +549,12 @@ test.describe('Fakultas Tarbiyah Critical User Journeys', () => {
     await expect(mobileSearchDialog).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(mobileSearchDialog).toHaveCount(0);
+
+    const [mobileImgBox, mobileTitleBox] = await Promise.all([
+      courseImages.first().boundingBox(),
+      page.locator('#courses-section article h3').first().boundingBox()
+    ]);
+    expect(mobileImgBox.x + mobileImgBox.width).toBeLessThanOrEqual(mobileTitleBox.x + 8);
 
     await page.setViewportSize({ width: 1280, height: 720 });
     await expect(bottomNav).toBeHidden();
